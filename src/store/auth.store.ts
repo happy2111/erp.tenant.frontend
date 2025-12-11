@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { TenantLoginDto, tenantLoginSchema } from "@/schemas/auth.schema";
 import { toast } from "sonner";
 import {TenantAuthService} from "@/services/auth.service";
+import {useOrganizationStore} from "@/store/organization.store";
 
 interface TenantAuthState {
   user: any | null;
@@ -46,7 +47,9 @@ export const useTenantAuthStore = create<TenantAuthState>((set, get) => ({
         apiKey: loadedApiKey
       });
 
+
       const success = await get().refresh();
+
 
       if (!success) {
         await get().removeTokenFromStorage();
