@@ -18,6 +18,7 @@ import {
 import {
   DeleteOrganizationDialog
 } from "@/components/organization/DeleteOrganizationDialog";
+import {ArrowUpDown, ChevronDown} from "lucide-react";
 
 
 
@@ -44,6 +45,7 @@ export default function OrganizationsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState<{ open: boolean; id?: string }>({ open: false });
   const [deleteOpen, setDeleteOpen] = useState<{ open: boolean; id?: string }>({ open: false });
+  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     fetchAllOrganizations(filters);
@@ -60,16 +62,19 @@ export default function OrganizationsPage() {
   }, [deleteOpen.id, allOrganizations]);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="px-6 space-y-6">
+      <div className="sm:flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Tashkilotlar</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 max-sm:mt-3">
           <ColumnsPicker visible={visibleColumns} setVisible={setVisibleColumns} />
           <Button onClick={() => setCreateOpen(true)}>+ Tashkilot qo'shish</Button>
+          <Button onClick={() => setFilterOpen(!filterOpen)} variant={"ghost"}>Filterlar <span style={{rotate: `${filterOpen ? "180deg" : ""}`}}><ChevronDown /></span></Button>
         </div>
       </div>
 
-      <OrganizationsFilters filters={filters} setFilters={setFilters} />
+      {
+        filterOpen && (<OrganizationsFilters filters={filters} setFilters={setFilters} />)
+      }
 
       <OrganizationTable
         organizations={allOrganizations}
