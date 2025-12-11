@@ -25,7 +25,6 @@ export function TeamSwitcher() {
   const { isMobile } = useSidebar()
   const router = useRouter()
 
-  // Get state and actions from store
   const {
     organizations,
     currentOrganization,
@@ -36,7 +35,6 @@ export function TeamSwitcher() {
 
   const [mounted, setMounted] = useState(false)
 
-  // Initialize on mount
   useEffect(() => {
     setMounted(true)
     fetchUserOrganizations()

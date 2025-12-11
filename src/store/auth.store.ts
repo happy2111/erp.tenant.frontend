@@ -31,7 +31,7 @@ const service = new TenantAuthService();
 export const useTenantAuthStore = create<TenantAuthState>((set, get) => ({
   user: null,
   accessToken: null,
-  loading: false,
+  loading: true,
   error: null,
   apiKey: null,
 
