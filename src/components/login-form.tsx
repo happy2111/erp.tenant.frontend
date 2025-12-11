@@ -18,12 +18,14 @@ import { Input } from "@/components/ui/input";
 import { useState } from 'react';
 
 // 💡 1. Импортируем наш Zustаnd Store
-import { useTenantAuthStore } from "@/store/auth.store"; // Убедитесь, что путь верный
+import { useTenantAuthStore } from "@/store/auth.store";
+import {useRouter} from "next/navigation"; // Убедитесь, что путь верный
 
 export function LoginForm({
                             className,
                             ...props
                           }: React.ComponentProps<"div">) {
+  const router = useRouter()
 
   const login = useTenantAuthStore((state) => state.login);
   const loading = useTenantAuthStore((state) => state.loading);
@@ -36,9 +38,9 @@ export function LoginForm({
 
     const success = await login({ login: email, password });
 
-    // if (success) {
-    //   // router.push('/dashboard');
-    // }
+    if (success) {
+      router.push('/dashboard');
+    }
   };
 
   return (
