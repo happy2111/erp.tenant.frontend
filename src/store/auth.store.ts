@@ -74,6 +74,8 @@ export const useTenantAuthStore = create<TenantAuthState>((set, get) => ({
       await get().saveTokenToStorage(data.accessToken)
       await get().saveApiKeyToStorage(data.apiKey);
 
+      toast.success("Muvafaqiyatli Kirish")
+
       return true;
     } catch (err: any) {
       const msg = err?.message || "Login failed";
