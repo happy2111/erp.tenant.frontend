@@ -35,9 +35,9 @@ export function ColumnsPicker({ visible, setVisible }: Props) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">Ko‘rsatmalr</Button>
+        <Button variant="outline" size="sm">Ko‘rsatmalar</Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-72">
+      <SheetContent side="right" className="w-72 p-4">
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Ko'rsatish ustunlari</h3>
 
