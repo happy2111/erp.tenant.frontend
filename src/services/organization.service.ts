@@ -2,7 +2,8 @@ import {
   CreateOrganizationDto,
   UpdateOrganizationDto,
   Organization,
-  OrganizationWithUserRole
+  OrganizationWithUserRole,
+  GetOrganizationsQueryDto
 } from "@/schemas/organization.schema";
 import api from "@/lib/axiosInstance";
 
@@ -12,8 +13,10 @@ export class OrganizationService {
     return res.data.data;
   }
 
-  async getAll(): Promise<Organization[]> {
-    const res = await api.get("/organization/admin/all");
+  async getAll(query?: GetOrganizationsQueryDto): Promise<Organization[]> {
+    const res = await api.get("/organization/admin/all", {
+      params: query,
+    });
     return res.data.data;
   }
 

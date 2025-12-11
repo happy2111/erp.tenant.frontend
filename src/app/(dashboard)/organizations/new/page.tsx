@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { OrganizationForm } from "@/components/organization/OrganizationForm";
+import { OrganizationForm2 } from "@/components/organization/OrganizationForm2";
 import { Separator } from "@/components/ui/separator";
 
 export default function CreateOrganizationPage() {
@@ -22,7 +22,7 @@ export default function CreateOrganizationPage() {
           <Separator className="bg-[var(--color-border)] mt-4" />
         </CardHeader>
         <CardContent>
-          <OrganizationForm />
+          <OrganizationForm2 />
         </CardContent>
       </Card>
     </div>

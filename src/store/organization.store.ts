@@ -4,7 +4,8 @@ import {
   CreateOrganizationDto,
   UpdateOrganizationDto,
   Organization,
-  OrganizationWithUserRole
+  OrganizationWithUserRole,
+  GetOrganizationsQueryDto
 } from "@/schemas/organization.schema";
 import { toast } from "sonner";
 
@@ -21,7 +22,7 @@ interface OrganizationState {
   updateOrganization: (id: string, dto: UpdateOrganizationDto) => Promise<Organization | null>;
   deleteOrganization: (id: string) => Promise<boolean>;
   fetchUserOrganizations: () => Promise<void>;
-  fetchAllOrganizations: () => Promise<void>;
+  fetchAllOrganizations: (query?: GetOrganizationsQueryDto) => Promise<void>;
   fetchOrganizationById: (id: string) => Promise<OrganizationWithUserRole | null>;
   setCurrentOrganization: (org: OrganizationWithUserRole | null) => void;
   clearError: () => void;
@@ -137,20 +138,23 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
     }
   },
 
-  fetchAllOrganizations: async () => {
+  fetchAllOrganizations: async (query?: GetOrganizationsQueryDto) => {
     set({ loading: true, error: null });
 
     try {
-      const organizations = await organizationService.getAll();
+      const organizations = await organizationService.getAll(query);
       set({ allOrganizations: organizations });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "Barcha tashkilotlarni yuklashda xatolik yuz berdi";
+      const errorMessage =
+        err.response?.data?.message || "Barcha tashkilotlarni yuklashda xatolik yuz berdi";
       set({ error: errorMessage });
       console.error(errorMessage);
     } finally {
       set({ loading: false });
     }
   },
+
+
 
   fetchOrganizationById: async (id: string) => {
     set({ loading: true, error: null });

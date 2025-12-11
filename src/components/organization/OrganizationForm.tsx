@@ -1,164 +1,93 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { Loader2, Mail, Phone, MapPin } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import React, { useEffect } from "react";
+import { useForm, FieldPath } from "react-hook-form";
+import { CreateOrganizationDto, UpdateOrganizationDto } from "@/schemas/organization.schema";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+type OrganizationFormValues = UpdateOrganizationDto;
 
-// Импорт обновленной схемы и DTO
-import { CreateOrganizationSchema, CreateOrganizationDto } from "@/schemas/organization.schema";
-import { useOrganizationStore } from "@/store/organization.store";
+type Props<T extends CreateOrganizationDto | UpdateOrganizationDto> = {
+  initialValues?: Partial<T>;
+  onSubmit: (values: Partial<T>) => Promise<void>;
+  submitLabel?: string;
+};
 
-// Используем схему напрямую
-type OrganizationFormValues = z.infer<typeof CreateOrganizationSchema>;
+export function OrganizationForm<T extends CreateOrganizationDto | UpdateOrganizationDto>({
+                                                                                            // Use the suggested fix: ensure initialValues is correctly typed
+                                                                                            initialValues = {} as Partial<T>,
+                                                                                            onSubmit,
+                                                                                            submitLabel = "Saqlash",
+                                                                                          }: Props<T>) {
 
-export function OrganizationForm() {
-  const router = useRouter();
-  const createOrganization = useOrganizationStore((state) => state.createOrganization);
-  const loading = useOrganizationStore((state) => state.loading);
+  // 2. Cast initialValues to the specific internal type for defaultValues
+  const formInitialValues = initialValues as OrganizationFormValues;
 
-  const form = useForm<OrganizationFormValues>({
-    resolver: zodResolver(CreateOrganizationSchema),
-    defaultValues: {
-      name: "",
-      address: "",
-      phone: "",
-      email: "",
-    },
+  const { register, handleSubmit, reset, formState } = useForm<OrganizationFormValues>({
+    // Use the concrete, non-generic type for RHF
+    defaultValues: formInitialValues,
   });
 
-  const onSubmit = async (values: OrganizationFormValues) => {
-    const dto: CreateOrganizationDto = values;
+  // Destructure the form state
+  const { isSubmitting } = formState;
 
-    const newOrg = await createOrganization(dto);
+  useEffect(() => {
+    // 3. Reset uses the concrete type. Dependency array is now safe.
+    reset(formInitialValues);
+    // We only reset when the initial data changes.
+    // The cast is needed because the initialValues prop itself is still Partial<T>
+  }, [initialValues, reset]);
 
-    // if (newOrg) {
-    //   // Перенаправление на страницу новой организации
-    //   router.push(`/organizations/${newOrg.id}`);
-    // }
+  // 4. Handle form submission
+  const handleFormSubmit = async (values: OrganizationFormValues) => {
+    // Cast the internal form values back to the expected generic type for onSubmit
+    await onSubmit(values as Partial<T>);
   };
 
+  // 5. Use FieldPath for type-safe key registration
+  // FieldPath ensures that only keys on OrganizationFormValues are used.
+  const nameField: FieldPath<OrganizationFormValues> = "name";
+  const emailField: FieldPath<OrganizationFormValues> = "email";
+  const phoneField: FieldPath<OrganizationFormValues> = "phone";
+  const addressField: FieldPath<OrganizationFormValues> = "address";
+
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Поле Название Организации (Обязательное) */}
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Название Организации <span className="text-[var(--color-destructive)]">*</span></FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Например, 'OOO TechSolutions'"
-                  {...field}
-                  className="h-10 text-[var(--color-foreground)] border-[var(--color-border)] focus-visible:ring-[var(--color-ring)]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      <div>
+        <Label htmlFor={nameField}>Nomi</Label>
+        {/* Registration is now type-safe! */}
+        <Input
+          id={nameField}
+          {...register(nameField, {
+            required: "Organization name is required"
+            // Note: If T is CreateOrganizationDto, "name" is required.
+            // For updates, it's optional. You may need to refine the required rule.
+          })}
         />
+      </div>
 
-        {/* Поле Email (Необязательное) */}
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-foreground)]" />
-                  <Input
-                    placeholder="contact@company.com"
-                    {...field}
-                    value={field.value || ""} // Для корректной работы с nullable/optional
-                    className="pl-10 h-10 text-[var(--color-foreground)] border-[var(--color-border)] focus-visible:ring-[var(--color-ring)]"
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <div>
+        <Label htmlFor={emailField}>Email</Label>
+        <Input id={emailField} {...register(emailField)} />
+      </div>
 
-        {/* Поле Телефон (Необязательное) */}
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Телефон</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-foreground)]" />
-                  <Input
-                    placeholder="+998 90 123 45 67"
-                    {...field}
-                    value={field.value || ""}
-                    className="pl-10 h-10 text-[var(--color-foreground)] border-[var(--color-border)] focus-visible:ring-[var(--color-ring)]"
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <div>
+        <Label htmlFor={phoneField}>Telefon</Label>
+        <Input id={phoneField} {...register(phoneField)} />
+      </div>
 
-        {/* Поле Адрес (Необязательное, используем Textarea для потенциально длинного текста) */}
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Адрес</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-[var(--color-muted-foreground)]" />
-                  <Textarea
-                    placeholder="Главный офис, ул. Независимости, 10"
-                    className="resize-none pl-10 min-h-[80px] text-[var(--color-foreground)] border-[var(--color-border)] focus-visible:ring-[var(--color-ring)]"
-                    {...field}
-                    value={field.value || ""}
-                  />
-                </div>
-              </FormControl>
-              <FormDescription className="text-[var(--color-muted-foreground)]">
-                Физический или юридический адрес организации.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <div>
+        <Label htmlFor={addressField}>Manzil</Label>
+        <Input id={addressField} {...register(addressField)} />
+      </div>
 
-        {/* Кнопка Отправить */}
-        <Button
-          type="submit"
-          disabled={loading}
-          className="w-full h-10 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-[var(--color-primary-foreground)] rounded-[var(--radius-sm)]"
-        >
-          {loading ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Создание...</>
-          ) : (
-            "Создать Организацию"
-          )}
+      <div className="flex justify-end">
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saqlanmoqda..." : submitLabel}
         </Button>
-      </form>
-    </Form>
+      </div>
+    </form>
   );
 }

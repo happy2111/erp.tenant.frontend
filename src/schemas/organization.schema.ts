@@ -7,10 +7,19 @@ export const CreateOrganizationSchema = z.object({
   email: z.string().email().optional().nullable(),
 });
 
+
+export const GetOrganizationsQuery = z.object({
+  search: z.string().optional().nullable(),
+  order: z.enum(["asc", "desc"]).optional().nullable(),
+  sortField: z.enum(["name", "email", "phone", "createdAt"]).optional().nullable(),
+})
+
 export const UpdateOrganizationSchema = CreateOrganizationSchema.partial();
 
 export type CreateOrganizationDto = z.infer<typeof CreateOrganizationSchema>;
 export type UpdateOrganizationDto = z.infer<typeof UpdateOrganizationSchema>;
+export type GetOrganizationsQueryDto = z.infer<typeof GetOrganizationsQuery>;
+
 
 export enum OrgUserRole {
   OWNER = "OWNER",
@@ -47,3 +56,4 @@ export type OrganizationWithUserRole = Organization & {
   userRole?: OrgUserRole;
   userPosition?: string | null;
 };
+
