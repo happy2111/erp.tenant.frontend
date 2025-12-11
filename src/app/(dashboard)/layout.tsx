@@ -13,6 +13,7 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb"
 import { useBreadcrumbs } from "@/hooks/useBreadcrumbs"
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -54,7 +55,12 @@ const DashboardLayoutComponent = ({ children }: DashboardLayoutProps) => {
           </header>
 
           <div className="flex-1 flex flex-col bg-background">
-            <main className="flex-1 overflow-auto p-4">{children}</main>
+
+              <main className="flex-1 overflow-auto p-4">
+                <ProtectedRoute>
+                    {children}
+                </ProtectedRoute>
+              </main>
           </div>
         </SidebarInset>
       </div>

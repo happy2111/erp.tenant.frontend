@@ -38,10 +38,8 @@ export function NavUser() {
   const router = useRouter()
   const { user, logout, loading } = useTenantAuthStore()
 
-  // Get primary phone with null checks
   const primaryPhone = user?.phoneNumbers?.find((p: any) => p.isPrimary === true)
 
-  // Handle logout
   const handleLogout = async () => {
     try {
       await logout()
@@ -51,7 +49,6 @@ export function NavUser() {
     }
   }
 
-  // If loading or no user, show a simplified button
   if (loading || !user) {
     return (
       <SidebarMenu>
@@ -76,7 +73,6 @@ export function NavUser() {
     )
   }
 
-  // Get user initials for avatar fallback
   const getInitials = () => {
     if (!user.firstName && !user.lastName) return "U"
     return `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase()
