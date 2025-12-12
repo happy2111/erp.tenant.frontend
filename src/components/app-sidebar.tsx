@@ -4,7 +4,7 @@ import * as React from "react"
 import {
   AudioWaveform,
   BookOpen,
-  Bot,
+  Bot, Building,
   Command,
   Frame,
   GalleryVerticalEnd,
@@ -27,23 +27,6 @@ import {
 } from "@/components/ui/sidebar"
 
 const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Playground",
@@ -133,19 +116,9 @@ const data = {
   ],
   projects: [
     {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      name: "Organizatsialar",
+      url: "/organizations",
+      icon: Building,
     },
   ],
 }
