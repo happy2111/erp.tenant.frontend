@@ -1,3 +1,4 @@
+// src/store/organization.user.store.ts
 import { create } from "zustand";
 import { toast } from "sonner";
 import {
@@ -6,10 +7,15 @@ import {
 } from "@/services/organization.user.service";
 import {
   CreateOrganizationUserDto,
-  CreateOrganizationUserWithTenantDto,
+  // 🔑 Updated DTO name for the create-with-user endpoint
+  CreateOrgUserWithUserDto,
   UpdateOrganizationUserDto,
   OrgUserFilterDto,
 } from "@/schemas/organization.user.schema";
+
+// ---------------------------------------------------
+// 1. Interface Update
+// ---------------------------------------------------
 
 interface OrganizationUserState {
   users: OrganizationUser[];
@@ -23,9 +29,10 @@ interface OrganizationUserState {
 
   // CRUD
   createUser: (dto: CreateOrganizationUserDto) => Promise<OrganizationUser | null>;
-  createUserWithTenant: (
-    orgId: string,
-    dto: CreateOrganizationUserWithTenantDto
+  // 🔑 Renamed and updated signature to match the backend service/controller logic
+  // The organizationId is now inside the DTO (CreateOrgUserWithUserDto)
+  createUserWithUser: (
+    dto: CreateOrgUserWithUserDto
   ) => Promise<OrganizationUser | null>;
   updateUser: (id: string, dto: UpdateOrganizationUserDto) => Promise<OrganizationUser | null>;
   deleteUser: (id: string) => Promise<boolean>;
@@ -42,6 +49,10 @@ interface OrganizationUserState {
 
 const service = new OrganizationUserService();
 
+// ---------------------------------------------------
+// 2. Store Implementation Update
+// ---------------------------------------------------
+
 export const useOrganizationUserStore = create<OrganizationUserState>((set, get) => ({
   users: [],
   total: 0,
@@ -51,15 +62,16 @@ export const useOrganizationUserStore = create<OrganizationUserState>((set, get)
   error: null,
   service,
 
+  // Existing: Creates OrgUser with an EXISTING Tenant User
   createUser: async (dto) => {
     set({ loading: true, error: null });
     try {
       const user = await service.create(dto);
       set((state) => ({ users: [user, ...state.users] }));
-      toast.success("User successfully created");
+      toast.success("User successfully assigned to organization");
       return user;
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Error creating user";
+      const msg = err.response?.data?.message || "Error creating organization user";
       set({ error: msg });
       toast.error(msg);
       return null;
@@ -68,15 +80,17 @@ export const useOrganizationUserStore = create<OrganizationUserState>((set, get)
     }
   },
 
-  createUserWithTenant: async (orgId, dto) => {
+  // 🔑 Updated implementation: Creates OrgUser with a NEW Tenant User
+  createUserWithUser: async (dto) => {
     set({ loading: true, error: null });
     try {
-      const user = await service.createWithTenantUser(orgId, dto);
+      // 🔑 Call the new service method: service.createWithUser(dto)
+      const user = await service.createWithUser(dto);
       set((state) => ({ users: [user, ...state.users] }));
-      toast.success("User with tenant successfully created");
+      toast.success("New user and organization assignment successfully created");
       return user;
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Error creating tenant user";
+      const msg = err.response?.data?.message || "Error creating new user and organization assignment";
       set({ error: msg });
       toast.error(msg);
       return null;
@@ -84,6 +98,14 @@ export const useOrganizationUserStore = create<OrganizationUserState>((set, get)
       set({ loading: false });
     }
   },
+
+  // Renamed the original (now unused) method to the correct implementation name.
+  // The original store had:
+  // createUserWithTenant: async (orgId, dto) => { ... service.createWithTenantUser(orgId, dto) ... }
+  // This has been replaced by the more accurate: createUserWithUser: async (dto) => { ... service.createWithUser(dto) ... }
+  // The old signature is not needed, as the new DTO contains organizationId.
+  // I will remove the old definition to prevent conflicts and keep the store clean.
+
 
   updateUser: async (id, dto) => {
     set({ loading: true, error: null });
