@@ -17,9 +17,10 @@ type Props = {
 export function EditOrganizationDialog({ open, id, initialData, onOpenChange }: Props) {
   const updateOrganization = useOrganizationStore(s => s.updateOrganization);
 
-  const handleSubmit = async (values: Partial<UpdateOrganizationDto>) => {
+  const handleSubmit = async (values: any) => {
     if (!id) return;
-    const res = await updateOrganization(id, values as UpdateOrganizationDto);
+    const {id: org_id, createdAt, updatedAt, ...others} = values;
+    const res = await updateOrganization(id, others as UpdateOrganizationDto);
     if (res) {
       toast.success("Yangilandi");
       onOpenChange(false);

@@ -19,10 +19,12 @@ import {
   DeleteOrganizationDialog
 } from "@/components/organization/DeleteOrganizationDialog";
 import {ArrowUpDown, ChevronDown} from "lucide-react";
+import {useRouter} from "next/navigation";
 
 
 
 export default function OrganizationsPage() {
+  const router = useRouter();
   const fetchAllOrganizations = useOrganizationStore(s => s.fetchAllOrganizations);
   const allOrganizations = useOrganizationStore(s => s.allOrganizations);
   const loading = useOrganizationStore(s => s.loading);
@@ -67,7 +69,7 @@ export default function OrganizationsPage() {
         <h1 className="text-2xl font-semibold">Tashkilotlar</h1>
         <div className="flex flex-wrap items-center gap-3 max-sm:mt-3">
           <ColumnsPicker visible={visibleColumns} setVisible={setVisibleColumns} />
-          <Button onClick={() => setCreateOpen(true)}>+ Tashkilot qo'shish</Button>
+          <Button onClick={() => router.push("/organizations/new")}>+ Tashkilot qo'shish</Button>
           <Button onClick={() => setFilterOpen(!filterOpen)} variant={"ghost"}>Filterlar <span style={{rotate: `${filterOpen ? "180deg" : ""}`}}><ChevronDown /></span></Button>
         </div>
       </div>
