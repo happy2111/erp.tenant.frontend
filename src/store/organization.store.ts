@@ -85,7 +85,6 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
           : state.currentOrganization
       }));
 
-      toast.success("Tashkilot muvaffaqiyatli yangilandi");
       return updatedOrg;
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || "Tashkilotni yangilashda xatolik yuz berdi";
