@@ -125,6 +125,11 @@ const data = {
       url: "/organizations/users",
       icon: User,
     },
+    {
+      name: "Mijozlar",
+      url: "/organizations/customers",
+      icon: User,
+    },
   ],
 }
 
