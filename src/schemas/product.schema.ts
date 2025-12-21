@@ -3,7 +3,6 @@ import { Brand } from "./brand.schema";
 import { Category } from "./category.schema";
 import { ProductPrice } from "./product-price.schema";
 
-// UUID валидация
 const uuidSchema = z.string().uuid({ message: "Неверный формат UUID" });
 
 export const createProductSchema = z.object({
@@ -30,35 +29,60 @@ export const productFilterSchema = z.object({
 
 export type ProductFilterDto = z.infer<typeof productFilterSchema>;
 
+
 export interface ProductVariant {
   id: string;
-  name: string;
-  sku: string;
-  // другие поля варианта
+  productId: string;
+  sku: string | null;
+  barcode: string | null;
+  title: string;
+  defaultPrice: number | null; // В зависимости от того, как вы работаете с числами
+  currencyId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+
+  currency?: any; // Можно заменить на интерфейс Currency
+  product?: any;  // Можно заменить на интерфейс Product
+  product_instance?: any[];
+  product_variant_attribute?: any[];
+  product_batches?: any[];
+  stocks?: any[];
+  purchase_items?: any[];
+  sele_items?: any[];
+  images?: any[];
 }
 
 export interface ProductStock {
   id: string;
+  organizationId: string;
+  productVariantId: string;
   quantity: number;
-  // другие поля остатка
+  updatedAt: Date;
+
+  organization?: any; // Можно заменить на интерфейс Organization
+  product_variant?: ProductVariant;
 }
 
 export interface Product {
   id: string;
-  code: string;
+  code: string;               // Уникальный артикул или код товара
   organizationId: string;
   name: string;
-  description?: string;
-  brandId?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  description: string | null;
+  brandId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 
-  // Relations (included in API responses)
-  brand?: Brand;
-  categories: Category[];
-  prices: ProductPrice[];
-  variants?: ProductVariant[];
-  stocks?: ProductStock[];
+  // Связи (Relations)
+  organization?: any;         // Organization
+  brand?: {
+    id: string;
+    name: string
+  };                // Brand | null
+  categories?: any[];         // ProductCategory[]
+  prices?: any[];             // ProductPrice[]
+  variants?: ProductVariant[]; // Связь с вашими вариантами
+  images?: any[];             // ProductImage[]
 }
 
 export interface PaginatedProducts {
@@ -77,14 +101,14 @@ export interface ProductWithDetails extends Product {
   totalStock?: number;
 }
 
-// Хелпер для получения основной цены товара
-export function getMainPrice(product: Product): ProductPrice | undefined {
-  return product.prices?.find(price =>
-    price.priceType === 'CASH' && !price.customerType
-  ) || product.prices?.[0];
-}
-
-// Хелпер для получения общего остатка
-export function getTotalStock(product: Product): number {
-  return product.stocks?.reduce((sum, stock) => sum + stock.quantity, 0) || 0;
-}
+// // Хелпер для получения основной цены товара
+// export function getMainPrice(product: Product): ProductPrice | undefined {
+//   return product.prices?.find(price =>
+//     price.priceType === 'CASH' && !price.customerType
+//   ) || product.prices?.[0];
+// }
+//
+// // Хелпер для получения общего остатка
+// export function getTotalStock(product: Product): number {
+//   return product.stocks?.reduce((sum, stock) => sum + stock.quantity, 0) || 0;
+// }
