@@ -3,18 +3,25 @@ import { ZodSchema } from "zod";
 export type CrudField<T> = {
   name: keyof T | string;
   label: string;
-
-  type?: "text" | "number" | "select";
+  type?:
+    | "text"
+    | "textarea"
+    | "number"
+    | "date"
+    | "select"
+    | "checkbox"
+    | "file"
+    | "email";
   options?: { label: string; value: string }[];
-
+  placeholder?: string;
+  required?: boolean;
   hiddenInTable?: boolean;
   hiddenInCard?: boolean;
-
+  hiddenInForm?: boolean;
   render?: (row: T) => React.ReactNode;
+  renderForm?: (field: any) => React.ReactNode; // для полностью кастомного поля
 
-  images?: boolean;
 };
-
 
 
 export interface CrudConfig<T, CreateDto, UpdateDto> {

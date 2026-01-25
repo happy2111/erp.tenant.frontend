@@ -12,6 +12,8 @@ export const GetOrganizationsQuery = z.object({
   search: z.string().optional().nullable(),
   order: z.enum(["asc", "desc"]).optional().nullable(),
   sortField: z.enum(["name", "email", "phone", "createdAt"]).optional().nullable(),
+  page: z.number().optional().nullable(),
+  limit: z.number().optional().nullable(),
 })
 
 export const UpdateOrganizationSchema = CreateOrganizationSchema.partial();
@@ -52,6 +54,8 @@ export type Organization = {
     // Add other kassa fields as needed
   }>;
 };
+
+
 
 export type OrganizationWithUserRole = Organization & {
   userRole?: OrgUserRole;

@@ -39,7 +39,7 @@ export function CrudForm<T, Dto>({
       onSubmit={form.handleSubmit(onSubmit)}
       className="space-y-4"
     >
-      {fields.map((field) => {
+      {fields.filter((field) => !field.hiddenInForm).map((field) => {
         const fieldName = field.name as any;
         const error =
           form.formState.errors[fieldName]?.message as string;

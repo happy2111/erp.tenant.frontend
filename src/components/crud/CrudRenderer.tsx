@@ -14,14 +14,36 @@ interface Props<T extends { id: string }> {
   onEdit?: (row: T) => void;
   onDelete?: (id: string) => void;
 }
-
+// src/components/crud/CrudRenderer.tsx
 export function CrudRenderer<T extends { id: string }>({
                                                          view,
-                                                         ...props
-                                                       }: Props<T>) {
+                                                         data,
+                                                         fields,
+                                                         permissions,
+                                                         onEdit,
+                                                         onDelete,
+                                                         sortField,
+                                                         sortOrder,
+                                                         onSort,
+                                                       }: Props<T> & {
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+  onSort?: (field: string) => void;
+}) {
   if (view === "card") {
-    return <CrudCard {...props} />;
+    return <CrudCard data={data} fields={fields} permissions={permissions} onEdit={onEdit} onDelete={onDelete} />;
   }
 
-  return <CrudTable {...props} />;
+  return (
+    <CrudTable
+      data={data}
+      fields={fields}
+      permissions={permissions}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      sortField={sortField}
+      sortOrder={sortOrder}
+      onSort={onSort}
+    />
+  );
 }
