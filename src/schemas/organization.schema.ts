@@ -37,6 +37,7 @@ export type Organization = {
   createdAt: Date;
   updatedAt: Date;
   org_users?: Array<{
+    id: string;
     role: OrgUserRole;
     position?: string | null;
   }>;

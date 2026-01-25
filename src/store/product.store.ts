@@ -11,6 +11,7 @@ import {
 } from "@/schemas/product.schema";
 
 import { productService } from "@/services/product.service";
+import {productImagesService} from "@/services/product-image.service";
 
 interface ProductState {
   // ===== DATA =====
@@ -42,6 +43,11 @@ interface ProductState {
   setSearch: (search: string) => void;
   setPage: (page: number) => void;
   resetCurrentProduct: () => void;
+
+  images: Record<string, Product["images"]>; // ключ productId
+  fetchProductImages: (productId: string) => Promise<void>;
+  uploadProductImage: (productId: string, file: File, isPrimary?: boolean) => Promise<void>;
+  removeProductImage: (productId: string, imageId: string) => Promise<void>;
 }
 
 export const useProductStore = create<ProductState>()(
@@ -49,6 +55,7 @@ export const useProductStore = create<ProductState>()(
     (set, get) => ({
       // ===== INITIAL STATE =====
       products: [],
+      images: {},
       total: 0,
       page: 1,
       limit: 10,
@@ -208,6 +215,33 @@ export const useProductStore = create<ProductState>()(
 
       resetCurrentProduct: () => {
         set({ currentProduct: null });
+      },
+
+      fetchProductImages: async (productId) => {
+        const imgs = await productImagesService.list(productId);
+        set((state) => ({
+          images: { ...state.images, [productId]: imgs },
+        }));
+      },
+
+      uploadProductImage: async (productId, file, isPrimary = false) => {
+        const img = await productImagesService.upload(productId, file, { isPrimary });
+        set((state) => ({
+          images: {
+            ...state.images,
+            [productId]: [img, ...(state.images[productId] || [])],
+          },
+        }));
+      },
+
+      removeProductImage: async (productId, imageId) => {
+        await productImagesService.remove(imageId);
+        set((state) => ({
+          images: {
+            ...state.images,
+            [productId]: state.images[productId]?.filter((i) => i.id !== imageId),
+          },
+        }));
       },
     }),
     {

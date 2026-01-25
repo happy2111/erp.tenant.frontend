@@ -13,7 +13,13 @@ export class OrganizationService {
     return res.data.data;
   }
 
-  async getAll(query?: GetOrganizationsQueryDto): Promise<Organization[]> {
+
+  static async getAll() {
+    const res = await api.get("/organization/all");
+    return res.data.data;
+  }
+
+  async getAllForAdmin(query?: GetOrganizationsQueryDto): Promise<Organization[]> {
     const res = await api.get("/organization/admin/all", {
       params: query,
     });

@@ -30,42 +30,42 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useTenantAuthStore } from "@/store/auth.store"
+import { useTenantAuthStore } from "@/store/tenant-auth.store" // Проверь путь к стору
 import { useRouter } from "next/navigation"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter()
-  const { user, logout, loading } = useTenantAuthStore()
 
-  const primaryPhone = user?.phoneNumbers?.find((p: any) => p.isPrimary === true)
+  // Берем данные и флаги из нового стора
+  const { user, logout, isLoading, isInitialized } = useTenantAuthStore()
+
+  // 1. Находим основной номер телефона из массива
+  const primaryPhone = user?.phoneNumbers?.find((p) => p.isPrimary) || user?.phoneNumbers?.[0]
 
   const handleLogout = async () => {
     try {
       await logout()
-      router.push("/login")
+      router.replace("/login") // replace лучше push для выхода
     } catch (error) {
       console.error("Logout failed:", error)
     }
   }
 
-  if (loading || !user) {
+  // 2. Отображаем скелетон/заглушку, пока идет инициализация
+  if (!isInitialized || isLoading || !user) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton
-            size="lg"
-            disabled
-            className="opacity-50"
-          >
+          <SidebarMenuButton size="lg" disabled className="opacity-50">
             <Avatar className="h-8 w-8 rounded-lg">
               <AvatarFallback className="rounded-lg">
                 <User className="size-4" />
               </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">Yuklanmoqda...</span>
-              <span className="truncate text-xs">Foydalanuvchi</span>
+            <div className="grid flex-1 text-left text-sm leading-tight animate-pulse">
+              <div className="h-4 w-24 bg-muted rounded mb-1" />
+              <div className="h-3 w-32 bg-muted rounded" />
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -73,10 +73,14 @@ export function NavUser() {
     )
   }
 
+  // 3. Формируем инициалы (Platform Owner -> PO)
   const getInitials = () => {
-    if (!user.firstName && !user.lastName) return "U"
-    return `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase()
+    const first = user.firstName?.[0] || ""
+    const last = user.lastName?.[0] || ""
+    return (first + last).toUpperCase() || "U"
   }
+
+  const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim()
 
   return (
     <SidebarMenu>
@@ -88,17 +92,16 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={`${user.firstName} ${user.lastName}`} />
-                <AvatarFallback className="rounded-lg">
+                {/* Если на бэкенде появится поле avatar/image, подставь его сюда */}
+                <AvatarImage src={(user as any).avatar} alt={fullName} />
+                <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {user.firstName} {user.lastName}
-                </span>
-                <span className="truncate text-xs">
-                  {primaryPhone?.phone || user.email || "Telefon yo'q"}
+                <span className="truncate font-medium">{fullName}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {primaryPhone?.phone || "Telefon kiritilmagan"}
                 </span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -113,45 +116,37 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={`${user.firstName} ${user.lastName}`} />
-                  <AvatarFallback className="rounded-lg">
+                  <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">
-                    {user.firstName} {user.lastName}
-                  </span>
-                  <span className="truncate text-xs">
-                    {primaryPhone?.phone || user.email || "Telefon yo'q"}
+                  <span className="truncate font-medium">{fullName}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {user.role} • {primaryPhone?.phone}
                   </span>
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles className="mr-2 h-4 w-4" />
-                <span>Pro versiyaga o'tish</span>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck className="mr-2 h-4 w-4" />
-                <span>Hisob</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard className="mr-2 h-4 w-4" />
-                <span>To'lovlar</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell className="mr-2 h-4 w-4" />
-                <span>Bildirishnomalar</span>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
+
+            {/*<DropdownMenuSeparator />*/}
+
+
+
+            {/*<DropdownMenuGroup>*/}
+            {/*  <DropdownMenuItem>*/}
+            {/*    <BadgeCheck className="mr-2 h-4 w-4" />*/}
+            {/*    <span>Profil sozlamalari</span>*/}
+            {/*  </DropdownMenuItem>*/}
+            {/*  <DropdownMenuItem>*/}
+            {/*    <Bell className="mr-2 h-4 w-4" />*/}
+            {/*    <span>Bildirishnomalar</span>*/}
+            {/*  </DropdownMenuItem>*/}
+            {/*</DropdownMenuGroup>*/}
+
+            {/*<DropdownMenuSeparator />*/}
+
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Chiqish</span>
             </DropdownMenuItem>

@@ -5,6 +5,16 @@
   export const productFields = (
     brands: Brand[]
   ): CrudField<Product>[] => [
+
+    {
+      name: "images",
+      label: "Изображения",
+      render: (row) =>
+        row.images?.map((img) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={img.id} src={img.url} alt={img.alt!} className="w-10 h-10 object-cover rounded" />
+      )),
+    },
     {
       name: "name",
       label: "Название товара",
@@ -13,15 +23,11 @@
       name: "code",
       label: "Код",
     },
-
-    // 🔥 ВАЖНОЕ МЕСТО
     {
       name: "brand",
       label: "Бренд",
       render: (product) => product.brand?.name ?? "—",
     },
-
-    // 👇 используется ТОЛЬКО в форме
     {
       name: "brandId",
       label: "Бренд",
@@ -31,5 +37,8 @@
         value: b.id,
       })),
       hiddenInTable: true,
+      hiddenInCard: true,
     },
+
+
   ];

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Brand } from "./brand.schema";
 import { Category } from "./category.schema";
 import { ProductPrice } from "./product-price.schema";
+import {ProductImage} from "@/schemas/product-image.schema";
 
 const uuidSchema = z.string().uuid({ message: "Неверный формат UUID" });
 
@@ -82,7 +83,7 @@ export interface Product {
   categories?: any[];         // ProductCategory[]
   prices?: any[];             // ProductPrice[]
   variants?: ProductVariant[]; // Связь с вашими вариантами
-  images?: any[];             // ProductImage[]
+  images?: ProductImage[];             // ProductImage[]
 }
 
 export interface PaginatedProducts {

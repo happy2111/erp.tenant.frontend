@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import { TenantLoginDto, tenantLoginSchema } from "@/schemas/auth.schema";
 import { toast } from "sonner";
-import {TenantAuthService} from "@/services/auth.service";
-import {useOrganizationStore} from "@/store/organization.store";
+import {TenantAuthService} from "@/services/tenant-auth.service";
 
 interface TenantAuthState {
   user: any | null;

@@ -32,6 +32,7 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
+
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
   open: boolean
@@ -244,7 +245,12 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          className={cn(
+            "flex h-full w-full flex-col transition-all duration-300",
+            // Убираем bg-sidebar/50 здесь, так как он уже есть на родителе
+            "group-data-[variant=floating]:rounded-2xl group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border/50 group-data-[variant=floating]:shadow-2xl",
+            "group-data-[variant=inset]:bg-transparent"
+          )}
         >
           {children}
         </div>
@@ -319,14 +325,17 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
 }
 
 function SidebarInput({
-  className,
-  ...props
-}: React.ComponentProps<typeof Input>) {
+                        className,
+                        ...props
+                      }: React.ComponentProps<typeof Input>) {
   return (
     <Input
       data-slot="sidebar-input"
       data-sidebar="input"
-      className={cn("bg-background h-8 w-full shadow-none", className)}
+      className={cn(
+        "bg-background/40 backdrop-blur-md border-sidebar-border/50 h-10 w-full shadow-none focus-visible:ring-primary/20 transition-all",
+        className
+      )}
       {...props}
     />
   )
@@ -392,12 +401,11 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
     />
   )
 }
-
 function SidebarGroupLabel({
-  className,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"div"> & { asChild?: boolean }) {
+                             className,
+                             asChild = false,
+                             ...props
+                           }: React.ComponentProps<"div"> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : "div"
 
   return (
@@ -405,7 +413,7 @@ function SidebarGroupLabel({
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
       className={cn(
-        "text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+        "text-sidebar-foreground/40 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-4 text-[10px] font-bold uppercase tracking-[0.15em] outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
         className
       )}

@@ -25,58 +25,57 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import Link from "next/link";
-
-export function NavProjects({
-  projects,
-}: {
-  projects: {
-    name: string
-    url: string
-    icon: LucideIcon
-  }[]
-}) {
+export function NavProjects({ projects }: { projects: any[] }) {
   const { isMobile } = useSidebar()
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Projects</SidebarGroupLabel>
-      <SidebarMenu>
+      <SidebarGroupLabel className="px-3 mb-2 text-[10px] uppercase tracking-[0.15em] opacity-60">
+        Tashkilotlar
+      </SidebarGroupLabel>
+      <SidebarMenu className="gap-2">
         {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <Link href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
+          <SidebarMenuItem key={item.name} className="relative group/item">
+            <SidebarMenuButton
+              asChild
+              className="h-12 px-3 rounded-xl transition-all duration-300 hover:bg-sidebar-accent hover:translate-x-1"
+            >
+              <Link href={item.url} className="flex items-center">
+                <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center mr-2 group-hover/item:bg-primary/20 transition-colors">
+                  <item.icon className="size-4 text-primary" />
+                </div>
+                <span className="font-semibold text-[14px]">{item.name}</span>
               </Link>
             </SidebarMenuButton>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
+                <SidebarMenuAction
+                  showOnHover
+                  className="top-1.5 right-2 size-8 rounded-lg hover:bg-background/80 backdrop-blur-sm"
+                >
+                  <MoreHorizontal className="size-4" />
                   <span className="sr-only">More</span>
                 </SidebarMenuAction>
               </DropdownMenuTrigger>
+              {/* DropdownContent тоже должен быть стеклянным */}
               <DropdownMenuContent
-                className="w-48 rounded-lg"
+                className="w-56 p-2 rounded-xl bg-popover/80 backdrop-blur-xl border-border/50 shadow-xl"
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
-                <DropdownMenuItem asChild>
-                  <Link href='/organizations/new' >
-                    <Plus className="text-muted-foreground" />
-                    <span>new</span>
+                <DropdownMenuItem asChild className="rounded-lg h-10 cursor-pointer focus:bg-primary/10">
+                  <Link href='/organizations/new' className="flex items-center gap-3 w-full">
+                    <div className="size-6 rounded-md bg-primary/20 flex items-center justify-center">
+                      <Plus className="size-3 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium">Yangi tashkilot</span>
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
         ))}
-        {/*<SidebarMenuItem>*/}
-        {/*  <SidebarMenuButton className="text-sidebar-foreground/70">*/}
-        {/*    <MoreHorizontal className="text-sidebar-foreground/70" />*/}
-        {/*    <span>More</span>*/}
-        {/*  </SidebarMenuButton>*/}
-        {/*</SidebarMenuItem>*/}
       </SidebarMenu>
     </SidebarGroup>
   )

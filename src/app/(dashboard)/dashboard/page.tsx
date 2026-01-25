@@ -1,7 +1,5 @@
-
-
 export default function Page() {
   return (
-    <div>Home</div>
+    <div>Dashboard</div>
   )
 }

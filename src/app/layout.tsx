@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import {Toaster} from "@/components/ui/sonner";
-import {AppInitializer} from "@/app/init";
 import {ThemeProvider} from "@/components/theme-provider";
+import {Providers} from "@/app/providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +20,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`antialiased`}
       >
-        <AppInitializer/>
+      <Providers>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -31,6 +30,7 @@ export default function RootLayout({
           {children}
           <Toaster />
         </ThemeProvider>
+      </Providers>
       </body>
     </html>
   );

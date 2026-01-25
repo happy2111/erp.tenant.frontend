@@ -8,9 +8,11 @@ export type CrudField<T> = {
   options?: { label: string; value: string }[];
 
   hiddenInTable?: boolean;
+  hiddenInCard?: boolean;
 
-  // 👇 ВАЖНО
   render?: (row: T) => React.ReactNode;
+
+  images?: boolean;
 };
 
 

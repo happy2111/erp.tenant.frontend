@@ -13,33 +13,37 @@ interface Props<T extends { id: string }> {
   onDelete?: (id: string) => void;
 }
 
-export function CrudCard<T extends { id: string }>({
-                                                     data,
-                                                     fields,
-                                                     permissions = {
-                                                       canEdit: true,
-                                                       canDelete: true,
-                                                     },
-                                                     onEdit,
-                                                     onDelete,
-                                                   }: Props<T>) {
+export function CrudCard<T extends { id: string; images?: { id: string; url: string; alt?: string }[] }>({
+                                                                                                           data,
+                                                                                                           fields,
+                                                                                                           permissions = { canEdit: true, canDelete: true },
+                                                                                                           onEdit,
+                                                                                                           onDelete,
+                                                                                                         }: Props<T>) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {data.map((row) => (
         <Card key={row.id}>
           <CardContent className="space-y-2 pt-4">
-            {fields.map((field) => (
-              <div key={String(field.name)}>
-                <p className="text-xs text-muted-foreground">
-                  {field.label}
-                </p>
-                <p className="font-medium">
-                  {field.render
-                    ? field.render(row)
-                    : String(row[field.name as keyof typeof row] ?? "—")}
-                </p>
+            {fields
+              .filter((f) => !f.hiddenInCard)
+              .map((field) => (
+                <div key={String(field.name)}>
+                  <p className="text-xs text-muted-foreground">{field.label}</p>
+                  <p className="font-medium">
+                    {field.render ? field.render(row) : String(row[field.name as keyof typeof row] ?? "—")}
+                  </p>
+                </div>
+              ))}
+
+            {/* изображения */}
+            {row.images?.length > 0 && (
+              <div className="flex gap-2 mt-2">
+                {row.images.map((img) => (
+                  <img key={img.id} src={img.url} alt={img.alt} className="w-16 h-16 object-cover rounded" />
+                ))}
               </div>
-            ))}
+            )}
           </CardContent>
 
           {(permissions.canEdit || permissions.canDelete) && (
