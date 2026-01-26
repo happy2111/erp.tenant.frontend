@@ -43,6 +43,8 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 :root {
+  --border: oklch(0.85 0 0); /* Сделали чуть темнее и убрали прозрачность для базы */
+  --sidebar-border: oklch(0.9 0 0);
   --radius: 1.25rem;
   --background: oklch(0.98 0 0);
   --foreground: oklch(0.15 0 0);
@@ -59,7 +61,6 @@
   --accent: oklch(0.92 0 0);
   --accent-foreground: oklch(0.15 0 0);
   --destructive: oklch(0.6 0.18 25);
-  --border: oklch(0.9 0 0 / 80%);
   --input: oklch(0.9 0 0 / 40%);
   --ring: oklch(0.2 0 0 / 15%);
 
@@ -69,11 +70,12 @@
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.94 0 0);
   --sidebar-accent-foreground: oklch(0.2 0 0);
-  --sidebar-border: oklch(0.9 0 0 / 40%);
   --sidebar-ring: oklch(0.2 0 0 / 10%);
 }
 
 .dark {
+  --border: oklch(0.3 0 0); /* Четкая граница в темноте */
+  --sidebar-border: oklch(0.25 0 0);
   --background: oklch(0.12 0 0);
   --foreground: oklch(0.98 0 0);
   --card: oklch(0.16 0 0 / 85%); /* Повышена плотность */
@@ -89,7 +91,6 @@
   --accent: oklch(0.22 0 0);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.5 0.15 25);
-  --border: oklch(0.35 0 0 / 60%); /* Граница чуть заметнее */
   --input: oklch(0.2 0 0 / 60%);
   --ring: oklch(0.98 0 0 / 20%);
 
@@ -99,7 +100,6 @@
   --sidebar-primary-foreground: oklch(0.14 0 0);
   --sidebar-accent: oklch(0.2 0 0);
   --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.3 0 0 / 40%);
   --sidebar-ring: oklch(0.98 0 0 / 10%);
 }
 
@@ -111,6 +111,10 @@
       var(--background);
     background-attachment: fixed;
     min-height: 100vh;
+  }
+
+  img {
+    content-visibility: auto; /* Оптимизация рендеринга */
   }
 
   /* Улучшенный блюр для всех карточек и поповеров */
@@ -128,6 +132,9 @@
     backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     background-color: var(--sidebar) !important;
+  }
+  .bg-card {
+    border: 1.5px solid var(--border) !important; /* Увеличили толщину до 1.5px */
   }
 
   * {
