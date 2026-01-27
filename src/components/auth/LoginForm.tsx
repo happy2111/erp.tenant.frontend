@@ -83,7 +83,13 @@ export function LoginForm() {
         toast.error(result.error || "Kirishda xatolik yuz berdi");
       }
     } catch (err) {
-      toast.error("Server bilan bog'lanishda xatolik");
+      console.error("Full error:", err); // Посмотрите в консоль браузера!
+
+      if (err.response?.status === 404) {
+        toast.error("Endpoint topilmadi (404). API manzili xato.");
+      } else {
+        toast.error(err.response?.data?.message || "Server bilan bog'lanishda xatolik");
+      }
     } finally {
       setIsLoading(false);
     }

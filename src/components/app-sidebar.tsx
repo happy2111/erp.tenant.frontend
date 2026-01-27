@@ -2,15 +2,7 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot, Building,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
+  Building,
   SquareTerminal, User,
 } from "lucide-react"
 
@@ -31,7 +23,7 @@ const data = {
   navMain: [
     {
       title: "Maxsulotlar",
-      url: "#",
+      url: "/products",
       icon: SquareTerminal,
       isActive: true,
       items: [
@@ -55,6 +47,11 @@ const data = {
     {
       name: "Xodimlar",
       url: "/organizations/users",
+      icon: User,
+    },
+    {
+      name: "Foydalanuvchilar",
+      url: "/tenant-users",
       icon: User,
     },
     {

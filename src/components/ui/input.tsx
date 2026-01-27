@@ -1,5 +1,4 @@
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
@@ -8,9 +7,30 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       type={type}
       data-slot="input"
       className={cn(
-        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        // Базовые размеры и отступы (высота увеличена до h-12)
+        "h-12 w-full px-4 py-2 text-base md:text-[15px] transition-all duration-200",
+
+        // Фон и стекло (Liquid Glass)
+        "bg-background/50 backdrop-blur-md dark:bg-input/20",
+
+        // Границы (делаем их четче, как в ваших карточках)
+        "border-2 border-border/60 rounded-[12px] shadow-sm",
+
+        // Текст и плейсхолдер
+        "text-foreground placeholder:text-muted-foreground/50 font-medium",
+
+        // Файлы
+        "file:inline-flex file:h-full file:border-0 file:bg-transparent file:text-sm file:font-bold file:text-primary",
+
+        // Состояние фокуса (интенсивное свечение)
+        "focus:bg-background focus:border-primary/50 focus:ring-4 focus:ring-primary/10 focus:outline-none",
+
+        // Состояние ошибки
+        "aria-invalid:border-destructive aria-invalid:ring-destructive/10",
+
+        // Отключенное состояние
+        "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-muted/30",
+
         className
       )}
       {...props}

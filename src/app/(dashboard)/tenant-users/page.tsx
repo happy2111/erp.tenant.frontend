@@ -1,13 +1,11 @@
 import React from 'react'
 import ProtectedRoute from "@/components/auth/protected-route";
-import {
-  OrganizationUserCrud
-} from "@/features/organization-user/OrganizationUserCrud";
+import {TenantUserCrud} from "@/features/tenant-user/TenantUserCrud";
 
 const Page = () => {
   return (
     <ProtectedRoute>
-      <OrganizationUserCrud/>
+      <TenantUserCrud/>
     </ProtectedRoute>
   )
 }

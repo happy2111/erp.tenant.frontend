@@ -2,8 +2,7 @@
 
 import { CrudTable } from "./CrudTable";
 import { CrudCard } from "./CrudCard";
-import { CrudField, CrudPermissions } from "./types";
-import { CrudViewMode } from "./types";
+import { CrudField, CrudPermissions, CrudViewMode } from "./types";
 
 interface Props<T extends { id: string }> {
   view: CrudViewMode;
@@ -11,10 +10,21 @@ interface Props<T extends { id: string }> {
   fields: CrudField<T>[];
   permissions?: CrudPermissions;
 
+  // Обработчики действий
   onEdit?: (row: T) => void;
   onDelete?: (id: string) => void;
+
+  /** * Новый пропс: срабатывает при клике на всю строку таблицы или всю карточку.
+   * Пример: (row) => router.push(`/tenant-user/${row.id}`)
+   */
+  onRowClick?: (row: T) => void;
+
+  // Сортировка
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+  onSort?: (field: string) => void;
 }
-// src/components/crud/CrudRenderer.tsx
+
 export function CrudRenderer<T extends { id: string }>({
                                                          view,
                                                          data,
@@ -22,25 +32,28 @@ export function CrudRenderer<T extends { id: string }>({
                                                          permissions,
                                                          onEdit,
                                                          onDelete,
+                                                         onRowClick,
                                                          sortField,
                                                          sortOrder,
                                                          onSort,
-                                                       }: Props<T> & {
-  sortField?: string;
-  sortOrder?: "asc" | "desc";
-  onSort?: (field: string) => void;
-}) {
+                                                       }: Props<T>) {
+
+  const commonProps = {
+    data,
+    fields,
+    permissions,
+    onEdit,
+    onDelete,
+    onRowClick,
+  };
+
   if (view === "card") {
-    return <CrudCard data={data} fields={fields} permissions={permissions} onEdit={onEdit} onDelete={onDelete} />;
+    return <CrudCard {...commonProps} />;
   }
 
   return (
     <CrudTable
-      data={data}
-      fields={fields}
-      permissions={permissions}
-      onEdit={onEdit}
-      onDelete={onDelete}
+      {...commonProps}
       sortField={sortField}
       sortOrder={sortOrder}
       onSort={onSort}

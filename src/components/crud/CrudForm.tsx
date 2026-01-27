@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Switch } from "@/components/ui/switch";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +71,21 @@ export function CrudForm<T, Dto>({
                   ))}
                 </SelectContent>
               </Select>
-            ) : (
+            ) : field.type === "boolean" ? (
+              /* ===== BOOLEAN (SWITCH) ===== */
+              <div className="flex items-center space-x-2 py-2">
+                <Switch
+                  id={String(field.name)}
+                  checked={form.watch(fieldName)}
+                  onCheckedChange={(checked) =>
+                    form.setValue(fieldName, checked as any)
+                  }
+                />
+                <span className="text-sm text-muted-foreground">
+            {form.watch(fieldName) ? "Да" : "Нет"}
+          </span>
+              </div>
+            ): (
               /* ===== INPUT ===== */
               <Input
                 type={field.type ?? "text"}

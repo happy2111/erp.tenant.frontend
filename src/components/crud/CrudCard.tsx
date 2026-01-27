@@ -11,6 +11,7 @@ interface Props<T extends { id: string }> {
   fields: CrudField<T>[];
   permissions?: CrudPermissions;
   onEdit?: (row: T) => void;
+  onRowClick?: (row: T) => void;
   onDelete?: (id: string) => void;
 }
 export function CrudCard<T extends { id: string; images?: { id: string; url: string; alt?: string }[] }>({
@@ -19,6 +20,7 @@ export function CrudCard<T extends { id: string; images?: { id: string; url: str
                                                                                                            permissions = { canEdit: true, canDelete: true },
                                                                                                            onEdit,
                                                                                                            onDelete,
+                                                                                                           onRowClick
                                                                                                          }: Props<T>) {
   return (
     /* Изменено: добавлена поддержка 4 и 5 колонок на больших экранах */
@@ -26,6 +28,7 @@ export function CrudCard<T extends { id: string; images?: { id: string; url: str
       {data.map((row) => (
         <Card
           key={row.id}
+          onClick={() => onRowClick?.(row)}
           className={cn(
             "group relative overflow-hidden transition-all duration-300",
             "rounded-[1.5rem] bg-card/40 backdrop-blur-xl hover:-translate-y-1",
@@ -53,9 +56,10 @@ export function CrudCard<T extends { id: string; images?: { id: string; url: str
                 )}
               </div>
             ) : (
-              <div className="h-36 w-full rounded-xl bg-sidebar-accent/20 flex items-center justify-center border border-dashed border-border/50 text-muted-foreground/40">
-                <ImageIcon className="size-8" />
-              </div>
+              <div></div>
+              // <div className="h-36 w-full rounded-xl bg-sidebar-accent/20 flex items-center justify-center border border-dashed border-border/50 text-muted-foreground/40">
+              //   <ImageIcon className="size-8" />
+              // </div>
             )}
 
             <div className="grid grid-cols-2 gap-2"> {/* Поля теперь в две колонки для компактности */}
@@ -75,7 +79,7 @@ export function CrudCard<T extends { id: string; images?: { id: string; url: str
           </CardContent>
 
           {(permissions.canEdit || permissions.canDelete) && (
-            <CardFooter className="flex gap-1 justify-end p-2 bg-sidebar-accent/10 border-t border-border/50">
+            <CardFooter onClick={(e) => e.stopPropagation()} className="flex gap-1 justify-end p-2 bg-sidebar-accent/10 border-t border-border/50">
               {permissions.canEdit && onEdit && (
                 <Button
                   size="sm"
@@ -96,7 +100,7 @@ export function CrudCard<T extends { id: string; images?: { id: string; url: str
                   className="h-8 px-2 rounded-lg hover:bg-destructive/10 hover:text-destructive gap-1.5 transition-all text-[11px]"
                 >
                   <Trash2 className="size-3" />
-                  O'chirish
+                  O&lsquo;chirish
                 </Button>
               )}
             </CardFooter>

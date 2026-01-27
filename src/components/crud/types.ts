@@ -11,7 +11,9 @@ export type CrudField<T> = {
     | "select"
     | "checkbox"
     | "file"
-    | "email";
+    | "email"
+    | "boolean"
+    | "phone_array";
   options?: { label: string; value: string }[];
   placeholder?: string;
   required?: boolean;

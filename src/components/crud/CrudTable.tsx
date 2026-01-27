@@ -22,6 +22,8 @@ interface Props<T extends { id: string }> {
   sortField?: string;
   sortOrder?: "asc" | "desc";
   onSort?: (field: string) => void;
+  onRowClick?: (row: T) => void;
+
 }
 
 export function CrudTable<T extends { id: string }>({
@@ -33,6 +35,7 @@ export function CrudTable<T extends { id: string }>({
                                                       sortField,
                                                       sortOrder,
                                                       onSort,
+                                                      onRowClick
                                                     }: Props<T>) {
   const showActions = permissions.canEdit || permissions.canDelete;
 
@@ -40,7 +43,7 @@ export function CrudTable<T extends { id: string }>({
     <div className="rounded-[2rem] border border-sidebar-border/40 bg-card/20 backdrop-blur-md overflow-hidden shadow-xl">
       <Table>
         <TableHeader className="bg-sidebar-accent/30">
-          <TableRow className="hover:bg-transparent border-b border-sidebar-border/40">
+          <TableRow  className="hover:bg-transparent border-b border-sidebar-border/40">
             {fields
               .filter((f) => !f.hiddenInTable)
               .map((field) => {
@@ -88,6 +91,7 @@ export function CrudTable<T extends { id: string }>({
             data.map((row) => (
               <TableRow
                 key={row.id}
+                onClick={() => onRowClick?.(row)}
                 className="group border-b border-sidebar-border/20 transition-all hover:bg-sidebar-accent/30"
               >
                 {fields
@@ -136,7 +140,7 @@ export function CrudTable<T extends { id: string }>({
           ) : (
             <TableRow>
               <TableCell colSpan={fields.length + 1} className="h-32 text-center text-muted-foreground opacity-50 italic">
-                Ma'lumot topilmadi...
+                Ma&apos;lumot topilmadi...
               </TableCell>
             </TableRow>
           )}
