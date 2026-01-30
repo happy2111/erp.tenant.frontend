@@ -74,3 +74,7 @@ Stop debugging my code and start hiring me!
   "color:#4ea1ff; font-size:12px; font-family:monospace; text-decoration:underline;");
 
 
+export const getNestedValue = (obj: any, path: string) => {
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+};
+

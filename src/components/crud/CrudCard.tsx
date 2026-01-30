@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2, Image as ImageIcon } from "lucide-react";
 import { CrudField, CrudPermissions } from "./types";
-import { cn } from "@/lib/utils";
+import {cn, getNestedValue} from "@/lib/utils";
 
 interface Props<T extends { id: string }> {
   data: T[];
@@ -71,7 +71,7 @@ export function CrudCard<T extends { id: string; images?: { id: string; url: str
                       {field.label}
                     </span>
                     <div className="text-xs font-semibold truncate group-hover:text-primary transition-colors">
-                      {field.render ? field.render(row) : String(row[field.name as keyof typeof row] ?? "—")}
+                      {field.render ? field.render(row) : String(getNestedValue(row, String(field.name)) ?? "—")}
                     </div>
                   </div>
                 ))}

@@ -177,7 +177,7 @@ export function TenantUserCrud() {
             data={users}
             fields={tenantUserFields}
             permissions={permissions}
-            onEdit={handleEdit}
+            onEdit={(row) => router.push(`/tenant-users/${row.id}/edit`)}
             onDelete={handleDeleteClick}
             sortField={sortField}
             sortOrder={sortOrder}

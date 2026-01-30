@@ -22,8 +22,10 @@ import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import { useEffect, useState } from "react";
 import {useCrudController} from "@/hooks/useCrudController";
+import {useRouter} from "next/navigation";
 
 export function OrganizationUserCrud() {
+  const router = useRouter()
   const queryClient = useQueryClient();
   const controller = useCrudController<OrganizationUser>();
 
@@ -177,6 +179,7 @@ export function OrganizationUserCrud() {
           <CrudRenderer
             view={view}
             data={users}
+            onRowClick={(row) => router.push(`/tenant-users/${row.user.id}`)}
             fields={organizationUserFields}
             permissions={permissions}
             onEdit={handleEdit}

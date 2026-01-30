@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, ArrowUp, ArrowDown, Edit2, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {cn, getNestedValue} from "@/lib/utils";
 
 import { CrudField } from "./types";
 import { CrudPermissions } from "./types";
@@ -96,27 +96,39 @@ export function CrudTable<T extends { id: string }>({
               >
                 {fields
                   .filter((f) => !f.hiddenInTable)
-                  .map((field) => (
-                    <TableCell key={String(field.name)} className="px-6 py-4 text-sm font-medium">
-                      {field.render ? (
-                        field.render(row)
-                      ) : (
-                        <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-                          {String(row[field.name as keyof typeof row] ?? "—")}
+                  .map((field) => {
+                    // alert(JSON.stringify(row))
+
+                    return (
+                      <TableCell
+                        key={String(field.name)}
+                        className="px-6 py-4 text-sm font-medium"
+                      >
+                        {field.render ? (
+                          field.render(row)
+                        ) : (
+                          <span className="opacity-90 group-hover:opacity-100 transition-opacity">
+                            {String(getNestedValue(row, String(field.name)) ?? "—")}
                         </span>
-                      )}
-                    </TableCell>
-                  ))}
+                        )}
+                      </TableCell>
+                    )
+
+                  })}
 
                 {showActions && (
-                  <TableCell className="px-6 py-4">
+                  <TableCell className="px-6 py-4" >
                     <div className="flex items-center gap-2 sm:opacity-60 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
                       {permissions.canEdit && onEdit && (
                         <Button
                           size="icon"
                           variant="ghost"
                           className="size-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
-                          onClick={() => onEdit(row)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(row);
+                            alert("cliecked"+row.id)
+                          }}
                         >
                           <Edit2 className="size-4" />
                         </Button>

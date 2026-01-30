@@ -11,45 +11,61 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
-export function CreateProfileSection({ onChange }: { onChange: (v: any) => void }) {
+import {TenantUser} from "@/schemas/tenant-user.schema";
+export function CreateProfileSection({ onChange, initialData }: { onChange: (v: any) => void, initialData: TenantUser | undefined}) {
   const [state, setState] = useState({
     // Основное
-    firstName: "",
-    lastName: "",
-    patronymic: "",
-    gender: undefined as string | undefined,
+    firstName: initialData?.profile?.firstName || "",
+    lastName: initialData?.profile?.lastName || "",
+    patronymic: initialData?.profile?.patronymic || "",
+    gender: initialData?.profile?.gender || undefined as string | undefined,
     dateOfBirth: "",
 
     // Паспортные данные
-    passportSeries: "",
-    passportNumber: "",
-    issuedBy: "",
-    issuedDate: "",
-    expiryDate: "",
+    passportSeries: initialData?.profile?.passportSeries || "",
+    passportNumber: initialData?.profile?.passportNumber || "",
+    issuedBy:  initialData?.profile?.issuedBy || "",
+    issuedDate: initialData?.profile?.issuedDate || "",
+    expiryDate: initialData?.profile?.expiryDate || "",
 
     // Адрес и локация
-    country: "O'zbekiston",
-    region: "",
-    city: "",
-    district: "",
-    address: "",
-    registration: "",
+    country: initialData?.profile?.country || "O'zbekiston",
+    region: initialData?.profile?.region || "",
+    city: initialData?.profile?.city || "",
+    district: initialData?.profile?.district || "",
+    address: initialData?.profile?.address || "",
+    registration: initialData?.profile?.registration || "",
   });
 
+  // Внутри CreateProfileSection
   useEffect(() => {
-    // Преобразуем даты в ISO формат для бэкенда при отправке
-    const formatToISO = (dateStr: string) => dateStr ? new Date(dateStr).toISOString() : undefined;
+    const formatToISO = (dateStr: string) => {
+      if (!dateStr) return undefined;
+      try {
+        return new Date(dateStr).toISOString();
+      } catch {
+        return undefined;
+      }
+    };
 
+    // Отправляем данные родителю
     onChange({
-      ...state,
-      dateOfBirth: formatToISO(state.dateOfBirth),
-      issuedDate: formatToISO(state.issuedDate),
-      expiryDate: formatToISO(state.expiryDate),
-      // Убираем пустые строки, заменяя их на undefined для опциональных полей
+      firstName: state.firstName,
+      lastName: state.lastName,
       patronymic: state.patronymic || undefined,
+      gender: state.gender,
+      dateOfBirth: formatToISO(state.dateOfBirth),
       passportSeries: state.passportSeries || undefined,
       passportNumber: state.passportNumber || undefined,
-      // ... и так далее для остальных опциональных полей
+      issuedBy: state.issuedBy || undefined,
+      issuedDate: formatToISO(state.issuedDate),
+      expiryDate: formatToISO(state.expiryDate),
+      country: state.country,
+      region: state.region,
+      city: state.city,
+      district: state.district,
+      address: state.address,
+      registration: state.registration,
     });
   }, [state]);
 

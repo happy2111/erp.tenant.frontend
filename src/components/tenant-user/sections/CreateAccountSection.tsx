@@ -16,15 +16,18 @@ import {
 import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce"; // Оптимально для проверки ввода
 import { TenantUserService } from "@/services/tenant-user.service";
-import { CheckUserExistenceResponse } from "@/schemas/tenant-user.schema";
+import {
+  CheckUserExistenceResponse,
+  TenantUser
+} from "@/schemas/tenant-user.schema";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export function CreateAccountSection({ onChange }: { onChange: (v: any) => void }) {
+export function CreateAccountSection({ onChange, initialData }: { onChange: (v: any) => void , initialData?: TenantUser | undefined}) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialData?.email || "");
   const [password, setPassword] = useState("");
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(initialData?.isActive || true);
 
   // Состояния для API проверки
   const [debouncedEmail] = useDebounce(email, 600); // Ждем 600мс после ввода
@@ -35,7 +38,7 @@ export function CreateAccountSection({ onChange }: { onChange: (v: any) => void 
   useEffect(() => {
     onChange({
       email: email || undefined,
-      password,
+      ...(password.trim().length > 0 ? { password } : {}),
       isActive,
     });
   }, [email, password, isActive, onChange]);
@@ -104,7 +107,7 @@ export function CreateAccountSection({ onChange }: { onChange: (v: any) => void 
             className="bg-background/50 border-border/60 focus-visible:ring-primary"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
+            // required
           />
         </div>
 

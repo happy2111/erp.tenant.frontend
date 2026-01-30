@@ -1,5 +1,5 @@
 import ProtectedRoute from "@/components/auth/protected-route";
-import { TenantUserEdit } from "@/features/tenant-user/TenantUserEdit";
+import EditTenantUserPage from "@/components/tenant-user/EditTenantUserPage";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
 
@@ -8,7 +8,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   return (
     <ProtectedRoute>
-      <TenantUserEdit userId={id} />
+      <EditTenantUserPage id={id} />
     </ProtectedRoute>
   );
 }

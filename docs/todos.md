@@ -7,6 +7,8 @@
 - [ ] Tenant user edit like crete
 - [ ] Xodim create 
 - [ ] Xodim update
+- [ ] После созжании tenat- user редиректит на tenant-users/undefined
+- [ ] отображается не данные на tenant-crud 
 
 
 
