@@ -8,10 +8,12 @@ import { useState } from "react";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Секции (создадим ниже или адаптируем ваши)
 import {CreateAccountSection} from "@/components/tenant-user/sections/CreateAccountSection";
 import {CreateProfileSection} from "@/components/tenant-user/sections/CreateProfileSection";
 import { EditPhonesSection} from "@/components/tenant-user/sections/EditPhonesSecation";
+import {
+  EditAccountSection
+} from "@/components/tenant-user/sections/EditAccountSection";
 
 export default function EditTenantUserPage({id}: { id: string}) {
   const router = useRouter();
@@ -85,10 +87,9 @@ export default function EditTenantUserPage({id}: { id: string}) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 space-y-6">
-          <CreateAccountSection
-            // Данные аккаунта (email, password, isActive) — на верхнем уровне
-            onChange={(val) => setFormData((prev: any) => ({ ...prev, ...val }))}
+          <EditAccountSection
             initialData={user?.data}
+            onChange={(val) => setFormData((prev: any) => ({ ...prev, ...val }))}
           />
           <EditPhonesSection
             // Данные телефонов (phonesToAdd, и т.д.) — на верхнем уровне
