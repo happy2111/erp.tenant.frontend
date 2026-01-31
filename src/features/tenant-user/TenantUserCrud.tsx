@@ -6,8 +6,6 @@ import {
   TenantUser,
   CreateTenantUserDto,
   UpdateTenantUserDto,
-  CreateTenantUserSchema,
-  UpdateTenantUserSchema,
   GetTenantUsersQueryDto,
 } from "@/schemas/tenant-user.schema";
 import { tenantUserFields } from "./tenant-user.fields";
@@ -17,12 +15,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CrudRenderer } from "@/components/crud/CrudRenderer";
 import { CrudViewToggle } from "@/components/crud/CrudViewToggle";
-import { CrudDialog } from "@/components/crud/CrudDialog";
-import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import { useEffect, useState } from "react";
 import {useRouter} from "next/navigation";
+import {Plus} from "lucide-react";
 
 export function TenantUserCrud() {
   const router = useRouter()
@@ -38,13 +35,11 @@ export function TenantUserCrud() {
     page,
     setPage,
     limit,
-    createOpen,
     setCreateOpen,
     editItem,
     setEditItem,
     deleteId,
     setDeleteId,
-    handleEdit,
     handleDeleteClick,
   } = controller;
 
@@ -151,7 +146,7 @@ export function TenantUserCrud() {
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
           <Button onClick={() => router.push("/tenant-users/create")}>
-            Добавить пользователя
+            <Plus/>
           </Button>
 
         </div>
@@ -206,22 +201,6 @@ export function TenantUserCrud() {
           </div>
         </>
       )}
-
-      <CrudDialog
-        open={createOpen}
-        onOpenChange={(open) => {
-          setCreateOpen(open);
-          if (!open) setEditItem(null);
-        }}
-        title={editItem ? "Редактировать пользователя" : "Добавить пользователя"}
-      >
-        <CrudForm
-          fields={tenantUserFields}
-          schema={editItem ? UpdateTenantUserSchema : CreateTenantUserSchema}
-          defaultValues={editItem ?? {}}
-          onSubmit={editItem ? handleUpdate : handleCreate}
-        />
-      </CrudDialog>
 
       <ConfirmDialog
         open={!!deleteId}

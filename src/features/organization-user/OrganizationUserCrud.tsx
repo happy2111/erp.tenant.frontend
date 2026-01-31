@@ -21,13 +21,20 @@ import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import { useEffect, useState } from "react";
-import {useCrudController} from "@/hooks/useCrudController";
-import {useRouter} from "next/navigation";
+import { useCrudController } from "@/hooks/useCrudController";
+import { useRouter } from "next/navigation";
+import { CreateOrgUserDrawer } from "./CreateOrgUserDrawer";
+import {Plus, UserCheck} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export function OrganizationUserCrud() {
-  const router = useRouter()
+  const router = useRouter();
   const queryClient = useQueryClient();
   const controller = useCrudController<OrganizationUser>();
+
+  // Состояния для Drawer и выбранного пользователя
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string } | null>(null);
 
   const {
     search,
@@ -51,16 +58,14 @@ export function OrganizationUserCrud() {
     return (saved as CrudViewMode) || "table";
   });
 
-  const [sortField, setSortField] = useState<
-    "createdAt" | "role" | "position" | "user.profile.firstName" | "user.profile.lastName"
-  >("createdAt");
+  const [sortField, setSortField] = useState<string>("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     localStorage.setItem("crud-view-mode-org-user", view);
   }, [view]);
 
-  // ─── Запрос списка пользователей организации ───
+  // ─── Запрос списка ───
   const { data, isLoading, error } = useQuery({
     queryKey: ["organization-users", debouncedSearch, page, limit, sortField, sortOrder],
     queryFn: () =>
@@ -71,7 +76,6 @@ export function OrganizationUserCrud() {
         sortField,
         order: sortOrder,
       } as GetOrgUsersQueryDto),
-    keepPreviousData: true,
   });
 
   const users = data?.items ?? [];
@@ -83,6 +87,7 @@ export function OrganizationUserCrud() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization-users"] });
       setCreateOpen(false);
+      setSelectedUser(null);
     },
   });
 
@@ -105,6 +110,12 @@ export function OrganizationUserCrud() {
   });
 
   // ─── Handlers ───
+  const handleSelectUser = (id: string, email: string) => {
+    setSelectedUser({ id, email });
+    setDrawerOpen(false);
+    setCreateOpen(true); // После выбора в Drawer открываем форму параметров (роль/позиция)
+  };
+
   const handleCreate = (dto: CreateOrganizationUserDto) => {
     createMutation.mutate(dto);
   };
@@ -119,14 +130,7 @@ export function OrganizationUserCrud() {
     deleteMutation.mutate(deleteId);
   };
 
-  const handleSort = (
-    field:
-      | "createdAt"
-      | "role"
-      | "position"
-      | "user.profile.firstName"
-      | "user.profile.lastName",
-  ) => {
+  const handleSort = (field: string) => {
     if (sortField === field) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
@@ -136,41 +140,30 @@ export function OrganizationUserCrud() {
     setPage(1);
   };
 
-  const permissions = {
-    canCreate: true,
-    canEdit: true,
-    canDelete: true,
-  };
+  const permissions = { canCreate: true, canEdit: true, canDelete: true };
 
   return (
     <div className="space-y-6">
-      {/* Поиск + переключение вида + кнопка создания */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Input
-          placeholder="Поиск по имени, фамилии, email, должности..."
+          placeholder="Qidiruv..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-md"
         />
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>
-            Добавить пользователя
+          <Button onClick={() => setDrawerOpen(true)}>
+            <Plus/>
           </Button>
         </div>
       </div>
 
-      {/* Состояния загрузки / ошибки */}
       {isLoading && (
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+            <div key={i} className="h-16 bg-muted animate-pulse rounded-2xl" />
           ))}
-        </div>
-      )}
-      {error && (
-        <div className="text-destructive text-center py-10 p-4 bg-destructive/10 rounded-lg">
-          Ошибка загрузки пользователей: {error instanceof Error ? error.message : "Неизвестная ошибка"}
         </div>
       )}
 
@@ -189,52 +182,72 @@ export function OrganizationUserCrud() {
             onSort={handleSort}
           />
 
-          {/* Пагинация */}
           <div className="flex justify-between items-center mt-6">
             <Button
               variant="outline"
               disabled={page === 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              Предыдущая
+              Oldingi
             </Button>
-            <span>
-              Страница {page} из {Math.ceil(total / limit)}
+            <span className="text-sm text-muted-foreground font-medium">
+              Sahifa {page} / {Math.ceil(total / limit) || 1}
             </span>
             <Button
               variant="outline"
               disabled={users.length < limit}
               onClick={() => setPage((p) => p + 1)}
             >
-              Следующая
+              Keyingi
             </Button>
           </div>
         </>
       )}
 
-      {/* Диалог создания / редактирования */}
+      {/* Выбор пользователя через Drawer */}
+      <CreateOrgUserDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onSelect={handleSelectUser}
+      />
+
+      {/* Диалог создания (параметры) / редактирования */}
       <CrudDialog
         open={createOpen}
         onOpenChange={(open) => {
           setCreateOpen(open);
-          if (!open) setEditItem(null);
+          if (!open) {
+            setEditItem(null);
+            setSelectedUser(null);
+          }
         }}
-        title={editItem ? "Редактировать пользователя" : "Добавить пользователя"}
+        title={editItem ? "Tahrirlash" : "Kirish huquqini sozlash"}
       >
+        {/* Инфо-блок выбранного пользователя при создании */}
+        {!editItem && selectedUser && (
+          <div className="mb-4 p-3 rounded-2xl bg-primary/5 border border-primary/20 flex items-center justify-between animate-in fade-in zoom-in duration-300">
+            <div className="flex items-center gap-2">
+              <UserCheck className="size-4 text-primary" />
+              <span className="text-sm font-bold tracking-tight">{selectedUser.email}</span>
+            </div>
+            <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">Tanlangan</Badge>
+          </div>
+        )}
+
         <CrudForm
-          fields={organizationUserFields}
+          // При создании фильтруем userId из формы, так как он задается программно
+          fields={editItem ? organizationUserFields : organizationUserFields.filter(f => f.name !== 'userId')}
           schema={editItem ? UpdateOrganizationUserSchema : CreateOrganizationUserSchema}
-          defaultValues={editItem ?? {}}
+          defaultValues={editItem ? editItem : { userId: selectedUser?.id }}
           onSubmit={editItem ? handleUpdate : handleCreate}
         />
       </CrudDialog>
 
-      {/* Подтверждение удаления */}
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Удалить пользователя из организации?"
-        description="Пользователь будет удалён из этой организации. Это действие нельзя отменить."
+        title="O'chirishni tasdiqlaysizmi?"
+        description="Foydalanuvchi tashkilot a'zolari ro'yxatidan o'chiriladi."
         onConfirm={handleDelete}
       />
     </div>

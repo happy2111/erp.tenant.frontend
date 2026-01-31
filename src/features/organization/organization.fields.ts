@@ -12,11 +12,13 @@ export const organizationFields: CrudField<OrganizationWithUserRole>[] = [
     label: "Email",
     type: "email",
     placeholder: "example@company.uz",
+    required: false,
   },
   {
     name: "phone",
     label: "Телефон",
     placeholder: "+998901234567",
+    type: "phone",
   },
   {
     name: "address",

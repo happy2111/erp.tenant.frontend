@@ -8,6 +8,8 @@ export const organizationUserFields: CrudField<OrganizationUser>[] = [
     type: "text",
     required: true,
     placeholder: "Введите имя",
+    hiddenInForm: true,
+
   },
   {
     name: "user.profile.lastName",
@@ -15,18 +17,24 @@ export const organizationUserFields: CrudField<OrganizationUser>[] = [
     type: "text",
     required: true,
     placeholder: "Введите фамилию",
+    hiddenInForm: true,
+
   },
   {
     name: "user.profile.patronymic",
     label: "Отчество",
     type: "text",
     placeholder: "Введите отчество (если есть)",
+    hiddenInForm: true,
+
   },
   {
     name: "user.email",
     label: "Email",
     type: "email",
     placeholder: "example@company.uz",
+    hiddenInForm: true,
+
   },
   {
     name: "role",

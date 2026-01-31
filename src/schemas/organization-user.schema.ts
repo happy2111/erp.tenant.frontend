@@ -2,7 +2,6 @@ import { z } from "zod";
 
 // ─── DTO для создания привязки существующего пользователя ───────
 export const CreateOrganizationUserSchema = z.object({
-  organizationId: z.string().uuid("Некорректный ID организации"),
   userId: z.string().uuid("Некорректный ID пользователя"),
   role: z.enum(["OWNER", "ADMIN", "MANAGER", "EMPLOYEE", "CASHIER"], {
     message: "Некорректная роль",
@@ -74,7 +73,7 @@ export type GetOrgUsersQueryDto = z.infer<typeof GetOrgUsersQuerySchema>;
 
 // ─── Тип возвращаемой сущности OrganizationUser ──────────────────
 export type OrganizationUser = {
-  id: string;
+  id: string
   organizationId: string;
   userId: string;
   role: "OWNER" | "ADMIN" | "MANAGER" | "EMPLOYEE" | "CASHIER";

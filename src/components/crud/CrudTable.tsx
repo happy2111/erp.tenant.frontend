@@ -127,7 +127,6 @@ export function CrudTable<T extends { id: string }>({
                           onClick={(e) => {
                             e.stopPropagation();
                             onEdit(row);
-                            alert("cliecked"+row.id)
                           }}
                         >
                           <Edit2 className="size-4" />

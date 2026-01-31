@@ -4,10 +4,10 @@
 - [ ] Улучшить CRUD компоненты и использоватьа под organziation
   Доработай CrudForm — добавь поддержку остальных типов полей
   Добавь индикаторы загрузки мутаций (disabled кнопки, спиннеры)
-- [ ] Tenant user edit like crete
-- [ ] Xodim create 
-- [ ] Xodim update
-- [ ] После созжании tenat- user редиректит на tenant-users/undefined
+- [X] Tenant user edit like crete
+- [X] Xodim create 
+- [X] Xodim update
+- [X] После созжании tenat- user редиректит на tenant-users/undefined
 - [ ] отображается не данные на tenant-crud 
 
 

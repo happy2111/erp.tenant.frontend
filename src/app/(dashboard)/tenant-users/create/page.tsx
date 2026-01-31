@@ -27,7 +27,10 @@ export default function TenantUserCreatePage() {
 
   const mutation = useMutation({
     mutationFn: TenantUserService.create,
-    onSuccess: (user) => router.push(`/tenant-users/${user.id}`),
+    onSuccess: (user) => {
+      console.log(user);
+      router.push(`/tenant-users/${user.data.id}`)
+    },
   });
 
   const handleSubmit = () => {

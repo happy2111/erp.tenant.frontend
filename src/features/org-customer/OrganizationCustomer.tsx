@@ -1,13 +1,18 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { OrganizationService } from "@/services/organization.service";
+import { useEffect, useState } from "react";
+
+import { OrganizationCustomerService } from "@/services/org.customer.service";
 import {
-  OrganizationWithUserRole,
-  CreateOrganizationDto,
-  UpdateOrganizationDto, UpdateOrganizationSchema, CreateOrganizationSchema,
-} from "@/schemas/organization.schema";
-import { organizationFields } from "./organization.fields";
+  OrganizationCustomer,
+  CreateOrgCustomerDto,
+  UpdateOrgCustomerDto,
+  CreateOrgCustomerSchema,
+  UpdateOrgCustomerSchema,
+} from "@/schemas/org-customer.schema";
+
+import { organizationCustomerFields } from "./organization-customer-fields";
 import { useCrudController } from "@/hooks/useCrudController";
 
 import { Input } from "@/components/ui/input";
@@ -18,12 +23,13 @@ import { CrudDialog } from "@/components/crud/CrudDialog";
 import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
-import {useEffect, useState} from "react";
 import {Plus} from "lucide-react";
+import {useRouter} from "next/navigation";
 
-export function OrganizationCrud() {
+export function OrganizationCustomerCrud() {
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const controller = useCrudController<OrganizationWithUserRole>();
+  const controller = useCrudController<OrganizationCustomer>();
 
   const {
     search,
@@ -43,69 +49,68 @@ export function OrganizationCrud() {
   } = controller;
 
   const [view, setView] = useState<CrudViewMode>(() => {
-    const saved = localStorage.getItem("crud-view-mode");
+    const saved = localStorage.getItem("org-customer-view-mode");
     return (saved as CrudViewMode) || "table";
   });
 
-  const [sortField, setSortField] = useState<"name" | "email" | "phone" | "createdAt">("createdAt");
+  const [sortField, setSortField] = useState<"createdAt" | "firstName" | "lastName" | "type">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
-
   useEffect(() => {
-    localStorage.setItem("crud-view-mode", view);
+    localStorage.setItem("org-customer-view-mode", view);
   }, [view]);
 
-  // ─── Запрос списка организаций ───
+  // ─── Запрос списка клиентов ───
   const { data, isLoading, error } = useQuery({
-    queryKey: ["organizations", debouncedSearch, page, limit, sortField, sortOrder],
+    queryKey: ["org-customers", debouncedSearch, page, limit, sortField, sortOrder],
     queryFn: () =>
-      OrganizationService.getAllAdmin({
-        search: debouncedSearch,
+      OrganizationCustomerService.getAllAdmin({
+        search: debouncedSearch || undefined,
         page,
         limit,
-        sortField,
-        order: sortOrder,
+        sortBy: sortField,
+        sortOrder,
       }),
     keepPreviousData: true,
   });
 
-  const organizations = data?.items ?? [];
+  const customers = data?.items ?? [];
   const total = data?.total ?? 0;
 
   // ─── Мутации ───
   const createMutation = useMutation({
-    mutationFn: OrganizationService.create,
+    mutationFn: OrganizationCustomerService.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      queryClient.invalidateQueries({ queryKey: ["org-customers"] });
       setCreateOpen(false);
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateOrganizationDto }) =>
-      OrganizationService.update(id, dto),
+    mutationFn: ({ id, dto }: { id: string; dto: UpdateOrgCustomerDto }) =>
+      OrganizationCustomerService.update(id, dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      queryClient.invalidateQueries({ queryKey: ["org-customers"] });
       setEditItem(null);
       setCreateOpen(false);
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: OrganizationService.hardDelete,
+    mutationFn: OrganizationCustomerService.hardDelete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      queryClient.invalidateQueries({ queryKey: ["org-customers"] });
       setDeleteId(null);
     },
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateOrganizationDto) => {
+  const handleCreate = (dto: CreateOrgCustomerDto) => {
     createMutation.mutate(dto);
   };
 
-  const handleUpdate = (dto: UpdateOrganizationDto) => {
-    if (!editItem) return;
+  const handleUpdate = (dto: UpdateOrgCustomerDto) => {
+    if (!editItem?.id) return;
     updateMutation.mutate({ id: editItem.id, dto });
   };
 
@@ -114,16 +119,14 @@ export function OrganizationCrud() {
     deleteMutation.mutate(deleteId);
   };
 
-  const handleSort = (field: "name" | "email" | "phone" | "createdAt") => {
+  const handleSort = (field: typeof sortField) => {
     if (sortField === field) {
-      // Если уже сортируем по этой колонке — меняем направление
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      // Новая колонка — начинаем с asc
       setSortField(field);
       setSortOrder("asc");
     }
-    setPage(1); // при смене сортировки сбрасываем на первую страницу
+    setPage(1);
   };
 
   const permissions = {
@@ -131,22 +134,20 @@ export function OrganizationCrud() {
     canEdit: true,
     canDelete: true,
   };
+
   return (
     <div className="space-y-6">
       {/* Поиск + переключение вида + кнопка создания */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Input
-          placeholder="Поиск..."
+          placeholder="Поиск по имени, фамилии, телефону..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-md"
         />
         <div className="flex items-center gap-3">
-          {/* ← Теперь toggle полностью рабочий! */}
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus/>
-          </Button>
+          <Button onClick={() => setCreateOpen(true)}><Plus/></Button>
         </div>
       </div>
 
@@ -160,7 +161,7 @@ export function OrganizationCrud() {
       )}
       {error && (
         <div className="text-destructive text-center py-10 p-4 bg-destructive/10 rounded-lg">
-          Ошибка загрузки организаций: {error instanceof Error ? error.message : "Неизвестная ошибка"}
+          Ошибка загрузки клиентов: {error instanceof Error ? error.message : "Неизвестная ошибка"}
         </div>
       )}
 
@@ -168,14 +169,21 @@ export function OrganizationCrud() {
         <>
           <CrudRenderer
             view={view}
-            data={organizations}
-            fields={organizationFields}
+            data={customers}
+            fields={organizationCustomerFields}
             permissions={permissions}
             onEdit={handleEdit}
             onDelete={handleDeleteClick}
             sortField={sortField}
             sortOrder={sortOrder}
             onSort={handleSort}
+            onRowClick={(row) => {
+              if(row?.userId) {
+                router.push(`/tenant-users/${row.userId}`);
+              }else {
+                router.push(`/organizations/customers/${row.id}/convert-to-user`);
+              }
+            }}
           />
 
           {/* Пагинация */}
@@ -192,7 +200,7 @@ export function OrganizationCrud() {
             </span>
             <Button
               variant="outline"
-              disabled={organizations.length < limit}
+              disabled={customers.length < limit}
               onClick={() => setPage((p) => p + 1)}
             >
               Следующая
@@ -208,12 +216,16 @@ export function OrganizationCrud() {
           setCreateOpen(open);
           if (!open) setEditItem(null);
         }}
-        title={editItem ? "Редактировать организацию" : "Создать организацию"}
+        title={editItem ? "Редактировать клиента" : "Создать клиента"}
       >
         <CrudForm
-          fields={organizationFields}
-          schema={editItem ? UpdateOrganizationSchema : CreateOrganizationSchema}
-          defaultValues={editItem ?? {}}
+          fields={organizationCustomerFields}
+          schema={editItem ? UpdateOrgCustomerSchema : CreateOrgCustomerSchema}
+          defaultValues={
+            editItem
+              ? { ...editItem }
+              : { type: "CLIENT" as const, isBlacklisted: false }
+          }
           onSubmit={editItem ? handleUpdate : handleCreate}
         />
       </CrudDialog>
@@ -222,8 +234,8 @@ export function OrganizationCrud() {
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Удалить организацию?"
-        description="Это действие нельзя отменить. Все связанные данные (пользователи, кассы, товары и т.д.) будут удалены."
+        title="Удалить клиента?"
+        description="Это действие нельзя отменить."
         onConfirm={handleDelete}
       />
     </div>
