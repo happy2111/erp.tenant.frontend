@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { OrganizationUserService } from "@/services/OrganizationUserService";
+import { OrganizationUserService } from "@/services/organization-user.service";
 import {
   OrganizationUser,
   CreateOrganizationUserDto,

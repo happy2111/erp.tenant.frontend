@@ -31,7 +31,6 @@ export interface Currency {
   updatedAt?: string;
 }
 
-// Для удобства - часто используемые валюты
 export const COMMON_CURRENCIES: Currency[] = [
   { id: "usd", code: "USD", name: "Доллар США", symbol: "$" },
   { id: "eur", code: "EUR", name: "Евро", symbol: "€" },
@@ -41,7 +40,6 @@ export const COMMON_CURRENCIES: Currency[] = [
   { id: "cny", code: "CNY", name: "Китайский юань", symbol: "¥" },
 ];
 
-// Хелпер для форматирования суммы с валютой
 export function formatCurrency(
   amount: number,
   currencyCode: string,
@@ -55,7 +53,6 @@ export function formatCurrency(
   }).format(amount);
 }
 
-// Хелпер для получения символа валюты по коду
 export function getCurrencySymbol(code: string): string {
   const currency = COMMON_CURRENCIES.find(c => c.code === code);
   return currency?.symbol || code;

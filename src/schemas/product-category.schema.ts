@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Category } from "./category.schema";
-import { Brand } from "./brand.schema";
+import { Brand } from "./brands.schema";
 
 // UUID валидация
 const uuidSchema = z.string().uuid({ message: "Неверный формат UUID" });

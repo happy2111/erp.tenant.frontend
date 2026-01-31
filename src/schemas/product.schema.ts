@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Brand } from "./brand.schema";
+import { Brand } from "./brands.schema";
 import { Category } from "./category.schema";
 import { ProductPrice } from "./product-price.schema";
 import {ProductImage} from "@/schemas/product-image.schema";

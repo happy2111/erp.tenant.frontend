@@ -1,4 +1,4 @@
-// src/services/OrganizationUserService.ts
+// src/services/organization-user.service.ts
 import {
   CreateOrganizationUserDto,
   CreateOrgUserWithUserDto,

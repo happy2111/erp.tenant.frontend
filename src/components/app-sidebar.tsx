@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import {
-  Building,
-  SquareTerminal, User,
+  Building, Contact, Currency, Euro,
+  SquareTerminal, Tag, User, UserStar,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -21,22 +21,22 @@ import {ModeToggle} from "@/components/mode-toggle";
 
 const data = {
   navMain: [
-    {
-      title: "Maxsulotlar",
-      url: "/products",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "Brandlar",
-          url: "/products/brands",
-        },
-        {
-          title: "Maxsulotlar",
-          url: "#",
-        },
-      ],
-    },
+    // {
+    //   title: "Maxsulotlar",
+    //   url: "/products",
+    //   icon: SquareTerminal,
+    //   isActive: true,
+    //   items: [
+    //     {
+    //       title: "Brandlar",
+    //       url: "/products/brands",
+    //     },
+    //     {
+    //       title: "Maxsulotlar",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
   ],
   projects: [
     {
@@ -45,20 +45,30 @@ const data = {
       icon: Building,
     },
     {
-      name: "Xodimlar",
-      url: "/organizations/users",
-      icon: User,
-    },
-    {
       name: "Foydalanuvchilar",
       url: "/tenant-users",
       icon: User,
     },
     {
+      name: "Xodimlar",
+      url: "/organizations/users",
+      icon: Contact,
+    },
+    {
       name: "Mijozlar",
       url: "/organizations/customers",
-      icon: User,
+      icon: UserStar,
     },
+    {
+      name: "Valyutalar",
+      url: "/currency",
+      icon: Euro,
+    },
+    {
+      name: "Brandlar",
+      url: "/products/brands",
+      icon: Tag
+    }
   ],
 }
 
