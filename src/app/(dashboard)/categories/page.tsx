@@ -1,11 +1,11 @@
 import React from 'react'
 import ProtectedRoute from "@/components/auth/protected-route";
-import {ProductsCrud} from "@/features/products/ProductsCrud";
+import {CategoriesCrud} from "@/features/categories/CategoriesCrud";
 
 const Page = () => {
   return (
     <ProtectedRoute>
-      <ProductsCrud/>
+      <CategoriesCrud/>
     </ProtectedRoute>
   )
 }

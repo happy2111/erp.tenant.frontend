@@ -138,7 +138,10 @@ export function CrudTable<T extends { id: string }>({
                           size="icon"
                           variant="ghost"
                           className="size-9 rounded-xl hover:bg-destructive/10 hover:text-destructive transition-all"
-                          onClick={() => onDelete(row.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(row.id)
+                          }}
                         >
                           <Trash2 className="size-4" />
                         </Button>

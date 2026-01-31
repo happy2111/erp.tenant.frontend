@@ -7,29 +7,29 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       type={type}
       data-slot="input"
       className={cn(
-        // Базовые размеры и отступы (высота увеличена до h-12)
-        "h-12 w-full px-4 py-2 text-base md:text-[15px] transition-all duration-200",
+        // Базовые размеры и шрифты
+        "flex h-12 w-full px-4 py-2 text-base md:text-sm transition-all duration-300",
 
-        // Фон и стекло (Liquid Glass)
-        "bg-background/50 backdrop-blur-md dark:bg-input/20",
-
-        // Границы (делаем их четче, как в ваших карточках)
-        "border-2 border-border/60 rounded-[12px] shadow-sm",
+        // Glassmorphism (Стеклянный эффект как в карточках)
+        "bg-card/40 backdrop-blur-xl border border-border/50 rounded-xl shadow-inner",
 
         // Текст и плейсхолдер
-        "text-foreground placeholder:text-muted-foreground/50 font-medium",
+        "text-foreground placeholder:text-muted-foreground/40 font-medium tracking-tight",
+
+        // Состояние фокуса (Мягкое свечение в стиле Primary)
+        "focus:outline-none focus:bg-background/60 focus:border-primary/40 focus:ring-4 focus:ring-primary/10",
+
+        // Эффект при наведении (hover)
+        "hover:border-border hover:bg-card/60",
 
         // Файлы
-        "file:inline-flex file:h-full file:border-0 file:bg-transparent file:text-sm file:font-bold file:text-primary",
-
-        // Состояние фокуса (интенсивное свечение)
-        "focus:bg-background focus:border-primary/50 focus:ring-4 focus:ring-primary/10 focus:outline-none",
+        "file:border-0 file:bg-transparent file:text-sm file:font-semibold file:text-primary",
 
         // Состояние ошибки
-        "aria-invalid:border-destructive aria-invalid:ring-destructive/10",
+        "aria-invalid:border-destructive/60 aria-invalid:ring-destructive/10",
 
         // Отключенное состояние
-        "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-muted/30",
+        "disabled:opacity-40 disabled:cursor-not-allowed disabled:grayscale-[50%]",
 
         className
       )}

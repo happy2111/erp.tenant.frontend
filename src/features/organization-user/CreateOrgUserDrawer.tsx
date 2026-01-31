@@ -8,15 +8,17 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerFooter
+  DrawerFooter,
+  DrawerDescription
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, UserPlus, Loader2 } from "lucide-react";
+import { Search, UserPlus, Loader2, Check } from "lucide-react";
 import { useDebounce } from "use-debounce";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface Props {
   open: boolean;
@@ -37,75 +39,105 @@ export function CreateOrgUserDrawer({ open, onOpenChange, onSelect }: Props) {
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader>
-          <DrawerTitle>Foydalanuvchi qidirish</DrawerTitle>
-          <div className="relative mt-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              placeholder="Elektron pochta, Telefon yoki foydalanuvchi nomini kiriting.."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </DrawerHeader>
+      <DrawerContent className="max-h-[85vh] bg-background/80 backdrop-blur-2xl border-t border-border/50">
+        <div className="mx-auto w-full max-w-md">
+          <DrawerHeader className="space-y-4">
+            <div className="space-y-1">
+              <DrawerTitle className="text-2xl font-black tracking-tighter italic uppercase">
+                Foydalanuvchi qidirish
+              </DrawerTitle>
+              <DrawerDescription className="text-xs uppercase tracking-widest opacity-60 font-medium">
+                Tizim foydalanuvchilarini filtrlash
+              </DrawerDescription>
+            </div>
 
-        <ScrollArea className="flex-1 px-4 h-[400px]">
-          {isLoading ? (
-            <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
-          ) : data?.items?.length ? (
-            <div className="space-y-2">
-              {data.items.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between p-3 rounded-xl border bg-card hover:bg-accent cursor-pointer transition-colors"
-                  onClick={() => onSelect(user.id, user.email)}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="size-10 border">
-                      <AvatarFallback>{user.profile?.firstName?.[0] || 'U'}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold">
-                        {user.profile?.firstName} {user.profile?.lastName}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{user.email}</span>
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input
+                placeholder="Email, telefon yoki foydalanuvchi nomi..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-11 h-12" // Использует твой обновленный стиль Input
+              />
+            </div>
+          </DrawerHeader>
+
+          <ScrollArea className="px-4 h-[400px]">
+            <div className="space-y-2 pb-6">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-20 opacity-50">
+                  <Loader2 className="animate-spin size-8 text-primary mb-3" />
+                  <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Qidirilmoqda...</span>
+                </div>
+              ) : data?.items?.length ? (
+                data.items.map((user) => (
+                  <div
+                    key={user.id}
+                    className={cn(
+                      "group flex items-center justify-between p-4 rounded-2xl transition-all duration-300",
+                      "bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/40 hover:bg-primary/5 cursor-pointer shadow-sm"
+                    )}
+                    onClick={() => onSelect(user.id, user.email)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <Avatar className="size-11 border-2 border-background shadow-sm group-hover:scale-105 transition-transform">
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                          {user.profile?.firstName?.[0] || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="text-[15px] font-black tracking-tight group-hover:text-primary transition-colors">
+                          {user.profile?.firstName} {user.profile?.lastName}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-medium opacity-70 italic">
+                          {user.email}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-2 rounded-xl bg-primary/10 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                      <UserPlus className="size-4 text-primary" />
                     </div>
                   </div>
-                  <UserPlus className="size-4 text-primary" />
-                </div>
-              ))}
-            </div>
-          ) : debouncedSearch.length > 2 ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center animate-in fade-in zoom-in duration-300">
-              <div className="size-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
-                <Search className="size-8 text-muted-foreground/40" />
-              </div>
-              <h3 className="text-sm font-bold tracking-tight mb-1">
-                Foydalanuvchi topilmadi
-              </h3>
-              <p className="text-[11px] text-muted-foreground max-w-[200px] mb-6">
-                Bunday email yoki ism bilan foydalanuvchi tizimda mavjud emas.
-              </p>
+                ))
+              ) : debouncedSearch.length > 2 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center animate-in fade-in zoom-in duration-500">
+                  <div className="size-20 bg-primary/5 rounded-[2rem] flex items-center justify-center mb-6 ring-1 ring-primary/10 border border-primary/5 shadow-inner">
+                    <Search className="size-10 text-primary/20" />
+                  </div>
+                  <h3 className="text-lg font-black tracking-tighter mb-2 italic">TOPILMADI</h3>
+                  <p className="text-xs text-muted-foreground max-w-[220px] mb-8 font-medium leading-relaxed opacity-70">
+                    Bunday ma'lumotga ega foydalanuvchi tizimda mavjud emas.
+                  </p>
 
-              <Button
-                variant="default"
-                className="rounded-xl shadow-lg shadow-primary/20 gap-2 h-9 px-6 text-xs font-bold uppercase tracking-wider"
-                onClick={() => router.push("/tenant-users/create")}
-              >
-                <UserPlus className="size-4" />
-                Yangi foydalanuvchi yaratish
-              </Button>
-            </div>          ) : (
-            <div className="text-center py-10 text-muted-foreground text-sm italic">
-              Butun ma&apos;lumotlar bazasini qidirish uchun yozishni boshlang (kamida 3 ta belgi)
+                  <Button
+                    onClick={() => router.push("/tenant-users/create")}
+                    className="rounded-xl shadow-xl shadow-primary/20 gap-3 h-12 px-8 font-bold uppercase text-[11px] tracking-[0.15em]"
+                  >
+                    <UserPlus className="size-4" />
+                    Yangi yaratish
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center opacity-30 italic">
+                  <p className="text-xs font-medium tracking-widest uppercase">
+                    Qidiruvni boshlang...
+                  </p>
+                  <p className="text-[10px] mt-2">(kamida 3 ta belgi)</p>
+                </div>
+              )}
             </div>
-          )}
-        </ScrollArea>
-        <DrawerFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Bekor qilish</Button>
-        </DrawerFooter>
+          </ScrollArea>
+
+          <DrawerFooter className="border-t border-border/40 pt-4 pb-8">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="h-12 rounded-xl border-border/50 bg-background/20 backdrop-blur-md hover:bg-background/40 font-bold uppercase text-[10px] tracking-widest transition-all"
+            >
+              Bekor qilish
+            </Button>
+          </DrawerFooter>
+        </div>
       </DrawerContent>
     </Drawer>
   );
