@@ -23,6 +23,7 @@ export type CrudField<T> = {
   hiddenInForm?: boolean;
   render?: (row: T) => React.ReactNode;
   renderForm?: (field: any) => React.ReactNode;
+  helperText?: string;
 };
 
 

@@ -42,11 +42,11 @@ export const organizationUserFields: CrudField<OrganizationUser>[] = [
     type: "select",
     required: true,
     options: [
-      { value: "OWNER", label: "Владелец" },
-      { value: "ADMIN", label: "Администратор" },
-      { value: "MANAGER", label: "Менеджер" },
-      { value: "EMPLOYEE", label: "Сотрудник" },
-      { value: "CASHIER", label: "Кассир" },
+      { value: "OWNER", label: "EGASI" },
+      { value: "ADMIN", label: "ADMIN" },
+      { value: "MANAGER", label: "MANAGER" },
+      { value: "SELLER", label: "SOTUVCHI" },
+      { value: "ACCOUNTANT", label: "BUXGALTER" },
     ],
   },
   {

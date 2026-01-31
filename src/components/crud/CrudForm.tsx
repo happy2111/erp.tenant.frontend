@@ -137,6 +137,7 @@ export function CrudForm<T, Dto>({
             ) : (
               /* ===== DEFAULT INPUT ===== */
               <Input
+                placeholder={field?.placeholder ?? ""}
                 type={field.type ?? "text"}
                 {...form.register(fieldName)}
               />

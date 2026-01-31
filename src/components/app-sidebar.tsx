@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import {
-  Building, Contact, Currency, Euro,
+  Building, Contact, Currency, Euro, List, Settings2,
   SquareTerminal, Tag, User, UserStar,
 } from "lucide-react"
 
@@ -68,6 +68,11 @@ const data = {
       name: "Brandlar",
       url: "/products/brands",
       icon: Tag
+    },
+    {
+      name: "Attributlar",
+      url: "/attributes",
+      icon: Settings2
     }
   ],
 }
