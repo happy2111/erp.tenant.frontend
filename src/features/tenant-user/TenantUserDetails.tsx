@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   Smartphone,
   IdCard,
-  Building2
+  Building2,
+  Users2 // Иконка для связей клиентов
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ export function TenantUserDetails({ userId }: { userId: string }) {
     queryFn: () => TenantUserService.getByIdAdmin(userId),
   });
 
+  // В вашем JSON данные лежат в response.data.data
   const user = response?.data;
 
   if (isLoading) return (
@@ -42,6 +44,13 @@ export function TenantUserDetails({ userId }: { userId: string }) {
 
   const profile = user.profile;
 
+  // Хелпер для перевода пола
+  const getGenderLabel = (gender?: string) => {
+    if (gender === 'MALE') return 'Erkak';
+    if (gender === 'FEMALE') return 'Ayol';
+    return gender || 'Ko\'rsatilmagan';
+  };
+
   return (
     <div className="space-y-8 max-w-6xl mx-auto p-4 lg:p-8 animate-in fade-in duration-500">
 
@@ -51,7 +60,7 @@ export function TenantUserDetails({ userId }: { userId: string }) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push("/tenant-users")}
+            onClick={() => router.back()}
             className="group -ml-2 text-muted-foreground hover:text-primary rounded-full"
           >
             <ArrowLeft className="mr-2 size-4 transition-transform group-hover:-translate-x-1" />
@@ -91,7 +100,7 @@ export function TenantUserDetails({ userId }: { userId: string }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        {/* --- LEFT COLUMN: Account Info --- */}
+        {/* --- LEFT COLUMN --- */}
         <div className="lg:col-span-4 space-y-6">
           <GlassCard title="Akkaunt" icon={<ShieldCheck className="size-4 text-primary" />}>
             <div className="space-y-1">
@@ -112,21 +121,19 @@ export function TenantUserDetails({ userId }: { userId: string }) {
                       <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[9px] h-5">Asosiy</Badge>
                     )}
                   </div>
-                  <div className="absolute top-0 right-0 h-full w-1 bg-primary/20 scale-y-0 group-hover:scale-y-100 transition-transform origin-top" />
                 </div>
               ))}
             </div>
           </GlassCard>
         </div>
 
-        {/* --- RIGHT COLUMN: Main Data --- */}
+        {/* --- RIGHT COLUMN --- */}
         <div className="lg:col-span-8 space-y-6">
 
-          {/* Личные и паспортные данные */}
           <GlassCard title="Shaxsiy ma'lumotlar" icon={<IdCard className="size-4 text-primary" />}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-              <Info label="Jinsi" value={profile?.gender} />
-              <Info label="Tug'ilgan sana" value={profile?.dateOfBirth && new Date(profile.dateOfBirth).toLocaleDateString()} />
+              <Info label="Jinsi" value={getGenderLabel(profile?.gender)} />
+              <Info label="Tug'ilgan sana" value={profile?.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : null} />
 
               <div className="sm:col-span-2 my-4">
                 <div className="flex items-center gap-2 mb-4">
@@ -143,19 +150,43 @@ export function TenantUserDetails({ userId }: { userId: string }) {
               <div className="sm:col-span-2">
                 <Info label="Yashash manzili" value={profile?.address} />
               </div>
-              <div className="sm:col-span-2">
-                <Info label="Ro'yxatdan o'tgan manzili (Propiska)" value={profile?.registration} />
-              </div>
             </div>
           </GlassCard>
 
-          {/* Организации */}
-          <GlassCard title="Tashkilotlar" icon={<Building2 className="size-4 text-primary" />}>
+          {/* НОВАЯ СЕКЦИЯ: cutomer_links (Связи как клиента) */}
+          <GlassCard title="Mijoz bog'liqliklari" icon={<Users2 className="size-4 text-primary" />}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {user.cutomer_links?.length > 0 ? (
+                user.cutomer_links.map((link: any, idx: number) => (
+                  <div key={idx} className="p-4 rounded-3xl bg-blue-500/5 border border-blue-500/20 hover:border-blue-500/40 transition-all group shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge className="bg-blue-500/10 text-blue-600 border-none text-[9px] uppercase font-black">
+                        {link.type || "CLIENT"}
+                      </Badge>
+                      {link.isBlacklisted && <Badge variant="destructive" className="text-[9px]">Blacklist</Badge>}
+                    </div>
+                    <div className="font-bold text-base group-hover:text-primary transition-colors">
+                      {link.organization?.name}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-1 font-mono">
+                      Org ID: {link.organization?.id.split('-')[0]}...
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="sm:col-span-2 py-6 text-center border-2 border-dashed border-border/40 rounded-[2rem] text-muted-foreground/50 italic text-sm">
+                  Mijoz sifatida bog'langan tashkilotlar topilmadi
+                </div>
+              )}
+            </div>
+          </GlassCard>
+
+          {/* СЕКЦИЯ: org_links (Связи как сотрудника) */}
+          <GlassCard title="Xodim bog'liqliklari" icon={<Building2 className="size-4 text-primary" />}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {user.org_links?.length > 0 ? (
                 user.org_links.map((link: any) => (
                   <div key={link.organization.id} className="p-4 rounded-3xl bg-card/40 border border-border/60 hover:border-primary/40 transition-all group shadow-sm">
-                    <div className="text-xs text-muted-foreground mb-1 font-mono">#{link.organization.id.split('-')[0]}</div>
                     <div className="font-bold text-base group-hover:text-primary transition-colors">{link.organization.name}</div>
                     <Badge className="mt-3 bg-primary/5 text-primary border-primary/20 rounded-lg text-[9px] uppercase font-black">
                       {link.role}
@@ -163,19 +194,19 @@ export function TenantUserDetails({ userId }: { userId: string }) {
                   </div>
                 ))
               ) : (
-                <div className="sm:col-span-2 py-8 text-center border-2 border-dashed border-border/40 rounded-[2rem] text-muted-foreground/50 italic text-sm">
-                  Bog'langan tashkilotlar mavjud emas
+                <div className="sm:col-span-2 py-6 text-center border-2 border-dashed border-border/40 rounded-[2rem] text-muted-foreground/50 italic text-sm">
+                  Xodim sifatida bog'langan tashkilotlar mavjud emas
                 </div>
               )}
             </div>
           </GlassCard>
         </div>
-
       </div>
     </div>
   );
 }
 
+// Вспомогательные компоненты остаются без изменений...
 // --- HELPER COMPONENTS ---
 
 function GlassCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {

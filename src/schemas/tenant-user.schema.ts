@@ -1,10 +1,8 @@
-// src/schemas/tenant-users.schema.ts
 import { z } from 'zod';
 
 export const GenderValues = ['MALE', 'FEMALE', 'OTHER'] as const;
 export type GenderDto = typeof GenderValues[number];
 
-// ─── Профиль ─────────────────────────────────────────────────────
 export const CreateTenantUserProfileSchema = z.object({
   firstName: z.string().min(1, 'Имя обязательно'),
   lastName: z.string().min(1, 'Фамилия обязательна'),
@@ -24,14 +22,12 @@ export const CreateTenantUserProfileSchema = z.object({
   district: z.string().optional().nullable(),
 });
 
-// ─── Телефон ─────────────────────────────────────────────────────
 export const CreateTenantUserPhoneSchema = z.object({
   phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Некорректный формат телефона'),
   isPrimary: z.boolean(),
   note: z.string().optional().nullable(),
 });
 
-// ─── Создание пользователя ───────────────────────────────────────
 export const CreateTenantUserSchema = z.object({
   email: z.string().email('Некорректный email').optional(),
   password: z.string().min(8, 'Пароль минимум 8 символов'),
@@ -40,7 +36,6 @@ export const CreateTenantUserSchema = z.object({
   phone_numbers: z.array(CreateTenantUserPhoneSchema).min(1, 'Хотя бы один телефон обязателен'),
 });
 
-// ─── Обновление ──────────────────────────────────────────────────
 export const UpdateTenantUserSchema = z.object({
   email: z.string().email().optional(),
   password: z.string().min(8).optional(),
@@ -60,7 +55,6 @@ export const UpdateTenantUserSchema = z.object({
   phonesToDelete: z.array(z.string().uuid()).optional(),
 });
 
-// ─── Запрос списка ───────────────────────────────────────────────
 export const GetTenantUsersQuerySchema = z.object({
   search: z.string().optional().nullable(),
   sortField: z.enum([
@@ -81,6 +75,7 @@ export type UpdateTenantUserDto = z.infer<typeof UpdateTenantUserSchema>;
 export type GetTenantUsersQueryDto = z.infer<typeof GetTenantUsersQuerySchema>;
 
 export type TenantUser = {
+  data: any;
   id: string;
   email?: string | null;
   isActive: boolean;
@@ -113,7 +108,6 @@ export type TenantUser = {
 };
 
 
-// ─── Схема ответа для проверки существования ─────────────────────
 export const CheckUserExistenceResponseSchema = z.object({
   userId: z.string().uuid(),
   email: z.string().email().nullable(),
@@ -129,8 +123,6 @@ export const CheckUserExistenceResponseSchema = z.object({
 
 export type CheckUserExistenceResponse = z.infer<typeof CheckUserExistenceResponseSchema>;
 
-// ─── Полная схема самого TenantUser (для типизации ответов) ──────
-// Это Zod-версия вашего типа TenantUser, которую удобно использовать для парсинга
 export const TenantUserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email().nullable().optional(),

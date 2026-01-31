@@ -13,6 +13,7 @@ export type CrudField<T> = {
     | "file"
     | "email"
     | "boolean"
+    | "phone"
     | "phone_array";
   options?: { label: string; value: string }[];
   placeholder?: string;
@@ -21,8 +22,7 @@ export type CrudField<T> = {
   hiddenInCard?: boolean;
   hiddenInForm?: boolean;
   render?: (row: T) => React.ReactNode;
-  renderForm?: (field: any) => React.ReactNode; // для полностью кастомного поля
-
+  renderForm?: (field: any) => React.ReactNode;
 };
 
 
