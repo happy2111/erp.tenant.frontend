@@ -77,14 +77,15 @@ export function CrudCard<
               )}
             </div>
           ) : (
-            <div className="h-36 flex flex-col items-center justify-center gap-1 text-muted-foreground">
-              <ImageIcon className="size-6 opacity-40" />
-              <span className="text-[11px]">Rasm yo‘q</span>
-            </div>
+            <div/>
+            // <div className="h-36 flex flex-col items-center justify-center gap-1 text-muted-foreground">
+            //   <ImageIcon className="size-6 opacity-40" />
+            //   <span className="text-[11px]">Rasm yo‘q</span>
+            // </div>
           )}
 
           {/* CONTENT */}
-          <CardContent className="p-3 space-y-3">
+          <CardContent className="p-3 pb-10 space-y-3">
             {/* title without image */}
             {!row.images?.length && titleField && (
               <div className="text-sm font-bold leading-tight line-clamp-2">
@@ -95,15 +96,18 @@ export function CrudCard<
             )}
 
             {/* meta fields */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 divide-y divide-border/40">
               {fields
                 .filter((f) => !f.hiddenInCard && !f.isTitle)
                 .map((field) => (
-                  <div key={String(field.name)} className="flex justify-between gap-2 text-xs">
-                    <span className="text-muted-foreground truncate">
+                  <div
+                    key={String(field.name)}
+                    className="flex justify-between gap-2 text-xs py-1.5 hover:bg-neutral-500/5 rounded-[2px]"
+                  >
+                    <span className="text-muted-foreground truncate text-sm">
                       {field.label}
                     </span>
-                    <span className="font-medium truncate text-right group-hover:text-primary transition-colors">
+                      <span className="font-medium text-sm truncate text-right group-hover:text-primary transition-colors">
                       {field.render
                         ? field.render(row)
                         : String(getNestedValue(row, String(field.name)) ?? "—")}
@@ -111,6 +115,7 @@ export function CrudCard<
                   </div>
                 ))}
             </div>
+
           </CardContent>
 
           {/* ACTIONS (hover only) */}
@@ -155,13 +160,17 @@ export function CrudCard<
                 </Button>
               )}
 
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 rounded-lg hover:bg-muted"
-              >
-                <ArrowRight className="size-4" />
-              </Button>
+              {
+                onRowClick && (<Button
+                  onClick={() => onRowClick?.(row)}
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-lg hover:bg-muted"
+                >
+                  <ArrowRight className="size-4" />
+                </Button>)
+              }
+
             </div>
           )}
         </Card>

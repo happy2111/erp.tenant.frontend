@@ -13,23 +13,21 @@ export function ProductInfo({ product }: { product: Product }) {
             SKU: {product.code}
           </span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-black tracking-tighter italic uppercase italic leading-none">
+        <h1 className="
+          text-2xl md:text-3xl
+            font-semibold
+            tracking-tight
+            leading-snug
+          ">
           {product.name}
         </h1>
+
       </div>
 
       <div className="space-y-4">
         <p className="text-muted-foreground leading-relaxed font-medium">
           {product.description || "Ushbu mahsulot uchun tavsif mavjud emas."}
         </p>
-
-        <div className="flex flex-wrap gap-2">
-          {product.categories.map(cat => (
-            <span key={cat.id} className="px-3 py-1.5 rounded-xl bg-background/50 border border-border/50 text-xs font-bold text-muted-foreground">
-              # {cat.name}
-            </span>
-          ))}
-        </div>
       </div>
     </div>
   );

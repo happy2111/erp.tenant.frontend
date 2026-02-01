@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Brand } from "./brands.schema";
 import { Category } from "./category.schema";
-import { ProductPrice } from "./product-price.schema";
+import { ProductPrice } from "./product-prices.schema";
 import {ProductImage} from "@/schemas/product-image.schema";
 
 const uuidSchema = z.string().uuid({ message: "Неверный формат UUID" });

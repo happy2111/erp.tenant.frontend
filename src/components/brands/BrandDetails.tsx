@@ -128,7 +128,7 @@ export function BrandDetails({ brandId }: { brandId: string }) {
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="rounded-xl bg-background border-border/40 hover:bg-primary hover:text-white transition-colors"
+                      className="rounded-xl bg-background border-border/40 hover:bg-primary hover:text-primary-foreground transition-colors"
                       onClick={() => router.push(`/products/${product.id}`)}
                     >
                       Batafsil

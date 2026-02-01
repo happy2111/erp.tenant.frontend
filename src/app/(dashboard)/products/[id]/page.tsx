@@ -9,6 +9,7 @@ import { ArrowLeft, Edit2, Loader2 } from 'lucide-react';
 import {ProductGallery} from "@/components/products/product-gallery";
 import {ProductInfo} from "@/components/products/product-info";
 import { ProductPrices } from "@/components/products/product-prices";
+import {ProductCategories} from "@/components/products/product-categories";
 // import { ProductVariants } from '@/components/product-variants';
 
 export default function ProductDetailsPage() {
@@ -49,10 +50,6 @@ export default function ProductDetailsPage() {
             <ArrowLeft className="mr-2 size-4 group-hover:-translate-x-1 transition-transform" />
             Orqaga
           </Button>
-          <Button onClick={() => router.push(`/products/edit/${id}`)} className="rounded-xl shadow-lg shadow-primary/20">
-            <Edit2 className="mr-2 size-4" />
-            Tahrirlash
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -64,10 +61,9 @@ export default function ProductDetailsPage() {
           {/* Right Column: Main Info & Stats */}
           <div className="lg:col-span-7 space-y-6">
             <ProductInfo product={product} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ProductPrices prices={product.prices} />
+            <ProductCategories productId={id as string} initialCategories={product.categories}/>
+            <ProductPrices productId={id as string} initialPrices={product.prices || []} />
               {/*<ProductVariants variants={product.variants} />*/}
-            </div>
           </div>
         </div>
       </div>

@@ -49,6 +49,9 @@ export const MinimalProductImageSchema = z.object({
   isPrimary: z.boolean(),
 });
 
+export type MinimalProductImage = z.infer<typeof MinimalProductImageSchema>;
+
+
 // ─── Полный товар (ответ от сервера) ─────────────────────────────────
 export const ProductSchema = z.object({
   id: z.string().uuid(),
