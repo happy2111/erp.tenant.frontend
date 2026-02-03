@@ -64,8 +64,8 @@ export const organizationUserFields: CrudField<OrganizationUser>[] = [
       const phones = row.user?.phone_numbers || [];
       if (phones.length === 0) return "—";
       return phones.map((p) => (
-        <div key={p.phone} className="text-sm">
-        {p.phone} {p.isPrimary && <span className="text-green-600">(основной)</span>}
+        <div key={p.phone} className={"text-sm " + `${p.isPrimary && 'text-green-600'}`}>
+        {p.phone}
         </div>
       ));
       },

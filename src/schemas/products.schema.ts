@@ -71,6 +71,7 @@ export const ProductSchema = z.object({
   prices: z.array(z.any()).optional().default([]), // можно уточнить тип цены
   images: z.array(MinimalProductImageSchema).default([]),
   variants: z.array(z.any()).optional().default([]),
+  variantImages: z.array(z.any()).optional().default([]),
 });
 
 export type Product = z.infer<typeof ProductSchema>;

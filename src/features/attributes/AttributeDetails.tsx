@@ -118,13 +118,6 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
           </div>
         </div>
 
-        <Button
-          onClick={() => router.push(`/attributes/${attribute.id}/edit`)}
-          className="rounded-2xl h-11 px-6 bg-primary hover:scale-[1.02] transition-transform"
-        >
-          <Edit3 className="mr-2 size-4" />
-          Tahrirlash
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

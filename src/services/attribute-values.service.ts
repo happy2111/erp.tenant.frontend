@@ -1,4 +1,3 @@
-// src/services/attribute-values.service.ts
 import api from '@/lib/axiosInstance';
 import {
   CreateAttributeValueDto,

@@ -12,7 +12,7 @@ import {
   Loader2,
   Tag
 } from 'lucide-react';
-import { useDebouncedCallback } from 'use-debounce'; // Используем твою библиотеку
+import { useDebouncedCallback } from 'use-debounce';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,10 +20,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -60,7 +58,6 @@ export default function CreateProductPage() {
     }
   });
 
-  // --- Логика поиска через use-debounce ---
   const fetchBrands = async (search: string) => {
     setIsBrandsLoading(true);
     try {

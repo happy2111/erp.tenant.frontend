@@ -1,40 +1,40 @@
 'use client';
-
-import { useState } from 'react';
-import { ProductImage } from '@/schemas/product-images.schema';
-import { ProductImagesService } from '@/services/product-images.service';
+import {useEffect, useState} from 'react';
+import { ProductVariantImage } from '@/schemas/product-variant-images.schema';
+import { ProductVariantImagesService } from '@/services/product-variant-images.service';
 import { Button } from '@/components/ui/button';
-import {
-  Plus,
-  Trash2,
-  Loader2,
-  Image as ImageIcon,
-  Pencil,
-  Check
-} from 'lucide-react';
+import { Plus, Trash2, Loader2, Image as ImageIcon, Pencil, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import {
-  MinimalProductImage,
-  MinimalProductImageSchema
-} from "@/schemas/products.schema";
 
 interface Props {
-  productId: string;
-  initialImages: MinimalProductImage[];
+  variantId: string;
+  // initialImages?: ProductVariantImage[];   // если бэкенд сразу возвращает
 }
 
-export function ProductGallery({ productId, initialImages }: Props) {
-  const [images, setImages] = useState<MinimalProductImage[]>(initialImages || []);
-  const [activeImage, setActiveImage] = useState<MinimalProductImage | null>(
-    images.find((img) => img.isPrimary) || images[0] || null
-  );
-
+export function ProductVariantGallery({ variantId }: Props) {
+  const [images, setImages] = useState<ProductVariantImage[]>([]);
+  const [activeImage, setActiveImage] = useState<ProductVariantImage | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  /* ---------- Upload ---------- */
+  // Загружаем изображения при монтировании
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const data = await ProductVariantImagesService.listImages(variantId);
+        setImages(data);
+        const primary = data.find(img => img.isPrimary) || data[0] || null;
+        setActiveImage(primary);
+      } catch (err) {
+        console.error(err);
+        toast.error("Не удалось загрузить изображения варианта");
+      }
+    };
+    loadImages();
+  }, [variantId]);
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -42,32 +42,26 @@ export function ProductGallery({ productId, initialImages }: Props) {
     setIsUploading(true);
     try {
       const isFirst = images.length === 0;
-      const newImg = await ProductImagesService.uploadImage(productId, file, isFirst);
-
-      const updated = [...images, newImg];
-      setImages(updated);
+      const newImg = await ProductVariantImagesService.uploadImage(variantId, file, isFirst);
+      setImages(prev => [...prev, newImg]);
       if (isFirst || !activeImage) setActiveImage(newImg);
-
       toast.success("Rasm yuklandi");
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Yuklashda xatolik");
     } finally {
       setIsUploading(false);
     }
   };
 
-  /* ---------- Delete ---------- */
   const handleDelete = async (imageId: string) => {
     setDeletingId(imageId);
     try {
-      await ProductImagesService.deleteImage(imageId);
-      const updated = images.filter((img) => img.id !== imageId);
-      setImages(updated);
-
+      await ProductVariantImagesService.deleteImage(imageId);
+      setImages(prev => prev.filter(img => img.id !== imageId));
       if (activeImage?.id === imageId) {
-        setActiveImage(updated[0] || null);
+        setActiveImage(images[0] || null);
       }
-
       toast.success("Rasm o‘chirildi");
     } catch {
       toast.error("O‘chirishda xatolik");
@@ -76,27 +70,33 @@ export function ProductGallery({ productId, initialImages }: Props) {
     }
   };
 
+  // ────────────────────────────────────────────────
+  //  Рендеринг (почти идентичен ProductGallery)
+  // ────────────────────────────────────────────────
+
   return (
     <div className="space-y-5">
-      {/* HEADER */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Rasmlar</h3>
-
+        <h3 className="text-sm font-semibold">Rasmlar (variant)</h3>
         <Button
           size="sm"
           variant={editMode ? 'default' : 'outline'}
-          onClick={() => setEditMode((v) => !v)}
+          onClick={() => setEditMode(v => !v)}
         >
-          {editMode ? (<span className={"flex items-center"}><Check className="size-4 mr-1"/> Tayyor</span>) : (<span className={"flex items-center"}><Pencil className="size-4 mr-1" />Tahrirlash</span>)}
+          {editMode ? (
+            <span className="flex items-center"><Check className="size-4 mr-1"/> Tayyor</span>
+          ) : (
+            <span className="flex items-center"><Pencil className="size-4 mr-1"/> Tahrirlash</span>
+          )}
         </Button>
       </div>
 
-      {/* MAIN IMAGE */}
+      {/* Основное изображение */}
       <div className="relative aspect-square rounded-[2.5rem] overflow-hidden bg-card/40 backdrop-blur-xl border border-border/50 shadow-xl">
         {activeImage ? (
           <img
             src={activeImage.url}
-            alt="Product"
+            alt="Variant image"
             className="w-full h-full object-cover transition-transform duration-500"
           />
         ) : (
@@ -107,7 +107,6 @@ export function ProductGallery({ productId, initialImages }: Props) {
             </span>
           </div>
         )}
-
         {activeImage?.isPrimary && (
           <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-bold text-primary uppercase">
             Asosiy
@@ -115,9 +114,8 @@ export function ProductGallery({ productId, initialImages }: Props) {
         )}
       </div>
 
-      {/* THUMBNAILS */}
+      {/* Миниатюры + кнопка добавления */}
       <div className="flex gap-3 overflow-x-auto py-1">
-        {/* ADD BUTTON (only edit mode) */}
         {editMode && (
           <label
             className={cn(
@@ -145,8 +143,7 @@ export function ProductGallery({ productId, initialImages }: Props) {
           </label>
         )}
 
-        {/* IMAGES */}
-        {images.map((img) => (
+        {images.map(img => (
           <div
             key={img.id}
             onClick={() => !editMode && setActiveImage(img)}
@@ -160,11 +157,12 @@ export function ProductGallery({ productId, initialImages }: Props) {
             )}
           >
             <img src={img.url} className="w-full h-full object-cover" />
-
-            {/* DELETE BUTTON (only edit mode) */}
             {editMode && (
               <button
-                onClick={() => handleDelete(img.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(img.id);
+                }}
                 disabled={deletingId === img.id}
                 className="absolute top-1 right-1 size-6 rounded-full bg-destructive flex items-center justify-center"
               >

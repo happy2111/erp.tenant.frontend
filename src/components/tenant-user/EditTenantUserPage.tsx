@@ -70,7 +70,7 @@ export default function EditTenantUserPage({id}: { id: string}) {
           <h1 className="text-xl font-black tracking-tight">Tahrirlash</h1>
           <p className="text-xs text-muted-foreground font-mono">{user?.data?.email}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <Button variant="ghost" className="rounded-2xl" onClick={() => router.back()}>
             <X className="mr-2 size-4" /> Bekor qilish
           </Button>
