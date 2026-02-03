@@ -9,6 +9,9 @@
 - [X] Xodim update
 - [X] После созжании tenat- user редиректит на tenant-users/undefined
 - [ ] отображается не данные на tenant-crud 
+- [X] присоздание product variant sku, barcode unique мешает даже пустой 
+- [ ] product details page add variant
+- [ ] product variant tetail page add 
 
 
 

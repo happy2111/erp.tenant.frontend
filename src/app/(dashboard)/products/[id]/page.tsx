@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit2, Loader2 } from 'lucide-react';
 import {ProductGallery} from "@/components/products/product-gallery";
 import {ProductInfo} from "@/components/products/product-info";
-import { ProductPrices } from "@/components/products/product-prices";
+import {ProductPrices } from "@/components/products/product-prices";
 import {ProductCategories} from "@/components/products/product-categories";
-// import { ProductVariants } from '@/components/product-variants';
+import {ProductVariants} from "@/components/products/product-variants";
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
@@ -63,7 +63,7 @@ export default function ProductDetailsPage() {
             <ProductInfo product={product} />
             <ProductCategories productId={id as string} initialCategories={product.categories}/>
             <ProductPrices productId={id as string} initialPrices={product.prices || []} />
-              {/*<ProductVariants variants={product.variants} />*/}
+            <ProductVariants variants={product.variants} productId={product.id} variantImages={product?.variantImages} />
           </div>
         </div>
       </div>

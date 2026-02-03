@@ -1,4 +1,3 @@
-// src/services/product-variant-attributes.service.ts
 import api from '@/lib/axiosInstance';
 import {
   CreateProductVariantAttributeDto,

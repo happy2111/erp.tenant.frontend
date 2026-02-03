@@ -49,6 +49,7 @@ export const MinimalCurrencySchema = z.object({
   id: z.string().uuid(),
   code: z.string(),
   name: z.string(),
+  symbol: z.string().optional().nullable(),
 });
 
 export const MinimalOrganizationSchema = z.object({
