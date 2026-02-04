@@ -12,6 +12,7 @@
 - [X] присоздание product variant sku, barcode unique мешает даже пустой 
 - [ ] product details page add variant
 - [ ] product variant tetail page add 
+- [ ] qr/barcode scaner 
 
 
 

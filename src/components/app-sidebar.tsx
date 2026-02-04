@@ -4,7 +4,7 @@ import * as React from "react"
 import {
   Boxes,
   Building, Contact, Euro, List, Package, Plus, Settings2, Tag, User, UserStar,
-  Cuboid, Layers,
+  Cuboid, Layers, Landmark,
 } from "lucide-react"
 
 import {NavProjects} from "@/components/nav-projects"
@@ -73,7 +73,15 @@ const sidebarGroups = [
           }
         ]
       },
-      {name: "Mahsulot namunasi", url: "/product-instances", icon: Cuboid},
+      {name: "Mahsulot namunasi", url: "/product-instances", icon: Cuboid,
+        actions: [
+          {
+            label: "Mahsulot namunasi qo'shish",
+            url: "/product-instances/create",
+            icon: Plus,
+          },
+        ],
+      },
       {name: "Kategoriyalar", url: "/categories", icon: List},
       {name: "Brandlar", url: "/products/brands", icon: Tag},
       {name: "Xarakteristikalar", url: "/attributes", icon: Settings2},
@@ -82,6 +90,7 @@ const sidebarGroups = [
   {
     label: "Moliyaviy",
     items: [
+      {name: "Kassalar", url: "/kassas", icon: Landmark},
       {name: "Valyutalar", url: "/currency", icon: Euro},
     ],
   },
@@ -89,7 +98,8 @@ const sidebarGroups = [
     label: "Sozlamalar",
     items: [
       {
-        name: "Foydalanuvchilar", url: "/tenant-users", icon: User, actions: [
+        name: "Foydalanuvchilar", url: "/tenant-users", icon: User,
+        actions: [
           {
             label: "Foydalanuvchi qo'shish",
             url: "/tenant-users/create",
@@ -105,7 +115,7 @@ const sidebarGroups = [
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="offcanvas" variant="inset" {...props}>
       <SidebarHeader>
         <TeamSwitcher />
       </SidebarHeader>

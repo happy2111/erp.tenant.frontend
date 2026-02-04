@@ -23,7 +23,7 @@ import { CrudViewMode } from "@/components/crud/types";
 import { useEffect, useState } from "react";
 import { useCrudController } from "@/hooks/useCrudController";
 import { useRouter } from "next/navigation";
-import { CreateOrgUserDrawer } from "./CreateOrgUserDrawer";
+import { CreateOrgUserDrawer } from "@/components/organization-user/drawers/CreateOrgUserDrawer";
 import {Plus, UserCheck} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
