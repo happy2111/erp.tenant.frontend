@@ -14,6 +14,9 @@ import { ProductVariantPrice } from './sections/product-variant-price';
 import {
   ProductVariantAttributes
 } from "@/components/product-variants/sections/product-variant-attributes";
+import {
+  ProductVariantInstances
+} from "@/components/product-variants/sections/product-variant-intances";
 
 export default function ProductVariantDetailPage({variantId}: {variantId: string}) {
   const router = useRouter();
@@ -92,7 +95,7 @@ export default function ProductVariantDetailPage({variantId}: {variantId: string
 
             {/* Можно добавить здесь ещё блоки, например: */}
             {/* <ProductVariantStock variantId={variant.id} /> */}
-            {/* <ProductVariantInstances variantId={variant.id} /> */}
+             <ProductVariantInstances variantId={variant.id} />
           </div>
         </div>
       </div>

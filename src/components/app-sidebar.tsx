@@ -4,11 +4,12 @@ import * as React from "react"
 import {
   Boxes,
   Building, Contact, Euro, List, Package, Plus, Settings2, Tag, User, UserStar,
+  Cuboid, Layers,
 } from "lucide-react"
 
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import {NavProjects} from "@/components/nav-projects"
+import {NavUser} from "@/components/nav-user"
+import {TeamSwitcher} from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +19,7 @@ import {
 } from "@/components/ui/sidebar"
 import {ModeToggle} from "@/components/mode-toggle";
 
-import { LucideIcon } from "lucide-react"
+import {LucideIcon} from "lucide-react"
 
 export interface SidebarAction {
   label: string
@@ -43,43 +44,52 @@ const sidebarGroups = [
   {
     label: "Tashkilot",
     items: [
-      { name: "Organizatsiyalar", url: "/organizations", icon: Building },
-      { name: "Xodimlar", url: "/organizations/users", icon: Contact },
-      { name: "Mijozlar", url: "/organizations/customers", icon: UserStar },
+      {name: "Organizatsiyalar", url: "/organizations", icon: Building},
+      {name: "Xodimlar", url: "/organizations/users", icon: Contact},
+      {name: "Mijozlar", url: "/organizations/customers", icon: UserStar},
     ],
   },
   {
     label: "Mahsulotlar",
     items: [
-      { name: "Mahsulotlar", url: "/products", icon: Package, actions: [
+      {
+        name: "Mahsulotlar", url: "/products", icon: Package, actions: [
           {
             label: "Mahsulot qo'shish",
             url: "/products/create",
             icon: Plus,
           },
-        ], },
-      {name: "Mahsolot Variantlari", url: "/product-variants", icon: Boxes, actions: [
+        ],
+      },
+      {
+        name: "Mahsolot Variantlari",
+        url: "/product-variants",
+        icon: Layers,
+        actions: [
           {
             label: "Mahsulot Variantlari qo'shish",
             url: "/product-variants/create",
             icon: Plus,
           }
-        ]},
-      { name: "Kategoriyalar", url: "/categories", icon: List },
-      { name: "Brandlar", url: "/products/brands", icon: Tag },
-      { name: "Attributlar", url: "/attributes", icon: Settings2 },
+        ]
+      },
+      {name: "Mahsulot namunasi", url: "/product-instances", icon: Cuboid},
+      {name: "Kategoriyalar", url: "/categories", icon: List},
+      {name: "Brandlar", url: "/products/brands", icon: Tag},
+      {name: "Attributlar", url: "/attributes", icon: Settings2},
     ],
   },
   {
     label: "Moliyaviy",
     items: [
-      { name: "Valyutalar", url: "/currency", icon: Euro },
+      {name: "Valyutalar", url: "/currency", icon: Euro},
     ],
   },
   {
     label: "Sozlamalar",
     items: [
-      {name: "Foydalanuvchilar", url: "/tenant-users", icon: User,actions: [
+      {
+        name: "Foydalanuvchilar", url: "/tenant-users", icon: User, actions: [
           {
             label: "Foydalanuvchi qo'shish",
             url: "/tenant-users/create",
@@ -87,14 +97,13 @@ const sidebarGroups = [
           },
         ],
       },
-      { name: "Sozlamalar", url: "/settings", icon: Settings2 },
+      {name: "Sozlamalar", url: "/settings", icon: Settings2},
     ],
   }
 ]
 
 
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -114,7 +123,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/*  <NavProjects projects={data.projects} />*/}
       {/*</SidebarContent>*/}
       <SidebarFooter>
-        <ModeToggle/>
+        <ModeToggle />
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

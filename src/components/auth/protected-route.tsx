@@ -39,9 +39,39 @@ export default function ProtectedRoute({
 
   if (!isInitialized || isLoading || !hasAccess) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Проверка доступа...</p>
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background overflow-hidden">
+        {/* Фоновые декоративные пятна для эффекта глубины */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse delay-700" />
+
+        <div className="relative flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-300">
+          {/* Кастомный лоадер с двойным кольцом */}
+          <div className="relative flex items-center justify-center">
+            <div className="size-16 rounded-full border-t-2 border-l-2 border-primary animate-spin shadow-[0_0_20px_rgba(var(--primary),0.3)]" />
+          </div>
+
+          {/* Текстовый блок */}
+          <div className="space-y-2 text-center">
+            <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none transition-all">
+              Kirish tekshirilmoqda
+            </h2>
+            <div className="flex items-center justify-center gap-2">
+              <span className="size-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
+              <span className="size-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
+              <span className="size-1 bg-primary rounded-full animate-bounce" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40 ml-1">
+                Xavfsiz ulanish
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Нижний копирайт или статусная строка */}
+        <div className="absolute bottom-10 left-0 w-full text-center">
+          <p className="text-[9px] font-medium uppercase tracking-[0.5em] opacity-20">
+            System Authentication v3.0
+          </p>
+        </div>
       </div>
     );
   }
