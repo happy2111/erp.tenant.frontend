@@ -6,7 +6,7 @@ import { ProductCategoriesService } from '@/services/product-categories.service'
 import { Button } from '@/components/ui/button';
 import { Plus, X, Hash, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { CategoryAddDrawer } from './category-add-drawer';
+import { CategoryAddDrawer } from '../drawers/category-add-drawer';
 
 interface Props {
   productId: string;

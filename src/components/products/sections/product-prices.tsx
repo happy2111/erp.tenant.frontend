@@ -6,7 +6,7 @@ import { ProductPricesService } from '@/services/product-prices.service';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Edit2, Loader2, Banknote } from 'lucide-react';
 import { toast } from 'sonner';
-import PriceFormDrawer from './price-form-drawer';
+import PriceFormDrawer from '../drawers/price-form-drawer';
 import { cn } from '@/lib/utils';
 
 export function ProductPrices({

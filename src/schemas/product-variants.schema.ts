@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {MinimalCurrencySchema} from "@/schemas/product-prices.schema";
+import {ProductSchema} from "@/schemas/products.schema";
 
 // ─── Создание варианта товара ────────────────────────────────────────
 export const CreateProductVariantSchema = z.object({
@@ -55,10 +56,11 @@ export const ProductVariantSchema = z.object({
   attributes: z.array(VariantAttributeSchema).default([]),
   currency: MinimalCurrencySchema.optional().nullable(),
   images: z.array(z.any()).default([]),
-
-  // можно добавить при необходимости:
-  // product: { id, name, code },
-  // currency: { id, code, name }
+  product: z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    code: z.string().optional().nullable(),
+  }).optional().nullable(),
 });
 
 export type ProductVariant = z.infer<typeof ProductVariantSchema>;

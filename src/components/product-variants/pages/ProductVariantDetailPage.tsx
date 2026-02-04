@@ -18,6 +18,11 @@ import {
 import {
   ProductVariantBatches
 } from "@/components/product-variants/sections/product-variant-batches";
+import {
+  ProductVariantStock
+} from "@/components/product-variants/sections/product-variant-stock";
+import ProductBreadcrumbHeader
+  from "@/components/products/ProductBreadcrumbHeader";
 
 export default function ProductVariantDetailPage({variantId}: {variantId: string}) {
   const router = useRouter();
@@ -75,8 +80,10 @@ export default function ProductVariantDetailPage({variantId}: {variantId: string
             Variant ID: <span className="font-mono">{variant.id.slice(0, 8)}...</span>
           </div>
         </div>
+        <ProductBreadcrumbHeader product={variant?.product}/>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
           {/* Левая колонка — галерея */}
           <div className="lg:col-span-5 space-y-6">
             <ProductVariantGallery
@@ -94,9 +101,9 @@ export default function ProductVariantDetailPage({variantId}: {variantId: string
 
             <ProductVariantAttributes variantId={variant.id} />
 
-            
+
             {/* Можно добавить здесь ещё блоки, например: */}
-            {/* <ProductVariantStock variantId={variant.id} /> */}
+             <ProductVariantStock variantId={variant.id} />
              <ProductVariantInstances variantId={variant.id} />
               <ProductVariantBatches variantId={variant.id} />
           </div>

@@ -6,11 +6,11 @@ import { ProductsService } from '@/services/products.service';
 import { Product } from '@/schemas/products.schema';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit2, Loader2 } from 'lucide-react';
-import {ProductGallery} from "@/components/products/product-gallery";
-import {ProductInfo} from "@/components/products/product-info";
-import {ProductPrices } from "@/components/products/product-prices";
-import {ProductCategories} from "@/components/products/product-categories";
-import {ProductVariants} from "@/components/products/product-variants";
+import {ProductGallery} from "@/components/products/sections/product-gallery";
+import {ProductInfo} from "@/components/products/sections/product-info";
+import {ProductPrices } from "@/components/products/sections/product-prices";
+import {ProductCategories} from "@/components/products/sections/product-categories";
+import {ProductVariants} from "@/components/products/sections/product-variants";
 
 export default function ProductDetailsPage() {
   const { id } = useParams();

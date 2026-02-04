@@ -1,5 +1,5 @@
 import ProtectedRoute from "@/components/auth/protected-route";
-import {TenantUserDetails} from "@/features/tenant-user/TenantUserDetails";
+import {TenantUserDetails} from "@/components/tenant-user/pages/TenantUserDetails";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
 
