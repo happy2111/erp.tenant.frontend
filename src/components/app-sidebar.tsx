@@ -76,7 +76,7 @@ const sidebarGroups = [
       {name: "Mahsulot namunasi", url: "/product-instances", icon: Cuboid},
       {name: "Kategoriyalar", url: "/categories", icon: List},
       {name: "Brandlar", url: "/products/brands", icon: Tag},
-      {name: "Attributlar", url: "/attributes", icon: Settings2},
+      {name: "Xarakteristikalar", url: "/attributes", icon: Settings2},
     ],
   },
   {

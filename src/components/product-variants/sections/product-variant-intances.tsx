@@ -68,31 +68,40 @@ export function ProductVariantInstances({ variantId }: { variantId: string }) {
                 key={instance.id}
                 className="group flex items-center justify-between p-4 rounded-2xl bg-background/40 border border-border/40 hover:border-primary/30 transition-all"
               >
-                <div className="flex items-center gap-4">
-                  <div className="size-10 rounded-xl bg-muted/50 flex items-center justify-center font-mono text-[10px] font-bold border border-border/50">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0 w-full">
+                  {/* Иконка ID - фиксированный размер, чтобы не сжималась */}
+                  <div className="shrink-0 size-9 sm:size-10 rounded-xl bg-muted/50 flex items-center justify-center font-mono text-[9px] sm:text-[10px] font-bold border border-border/50">
                     ID
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-mono text-sm font-bold tracking-tighter">
+
+                  {/* Основной контейнер с min-w-0, чтобы работал truncate внутри */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <p className="font-mono text-sm font-bold tracking-tighter truncate max-w-[120px] xs:max-w-[180px] sm:max-w-none">
                         {instance.serialNumber}
                       </p>
-                      <Badge className={cn("text-[8px] px-1.5 py-0 uppercase font-black border", statusMap[instance.currentStatus].color)}>
+
+                      {/* Бейдж статуса */}
+                      <Badge
+                        className={cn(
+                          "text-[8px] px-1.5 py-0 uppercase font-black border whitespace-nowrap",
+                          statusMap[instance.currentStatus].color
+                        )}
+                      >
                         {statusMap[instance.currentStatus].label}
                       </Badge>
                     </div>
 
                     {instance.current_owner && (
                       <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
-                        <User className="size-3" />
-                        <span className="text-[10px] font-medium">
+                        <User className="size-3 shrink-0" />
+                        <span className="text-[10px] font-medium truncate">
                           {instance.current_owner.firstName} {instance.current_owner.lastName}
                         </span>
                       </div>
                     )}
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2">
                   <Button
                     onClick={() => router.push(`/product-instances/${instance.id}`)}

@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import {
   ProductSelectDrawer
-} from "@/components/product-variants/SelectProductDrawer";
+} from "@/components/product-variants/drawers/SelectProductDrawer";
 
 export default function CreateProductInstancePage() {
   const router = useRouter();

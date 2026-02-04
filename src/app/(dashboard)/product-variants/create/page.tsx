@@ -1,7 +1,7 @@
 import React from 'react'
 import ProtectedRoute from "@/components/auth/protected-route";
 import CreateVariantPage
-  from "@/components/product-variants/CreateProductVariantPage";
+  from "@/components/product-variants/pages/CreateProductVariantPage";
 
 const Page = () => {
   return (

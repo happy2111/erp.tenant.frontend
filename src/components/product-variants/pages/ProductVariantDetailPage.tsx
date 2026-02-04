@@ -1,22 +1,23 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ProductVariantsService } from '@/services/product-variants.service';
-import { ProductVariantImagesService } from '@/services/product-variant-images.service';
 import { ProductVariant } from '@/schemas/product-variants.schema';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ProductVariantGallery } from './sections/product-variant-gallery';
-import { ProductVariantInfo } from './sections/product-variant-info';
-// import { ProductVariantAttributes } from '@/components/products/product-variant-attributes';
-import { ProductVariantPrice } from './sections/product-variant-price';
+import { ProductVariantGallery } from '../sections/product-variant-gallery';
+import { ProductVariantInfo } from '../sections/product-variant-info';
+import { ProductVariantPrice } from '../sections/product-variant-price';
 import {
   ProductVariantAttributes
 } from "@/components/product-variants/sections/product-variant-attributes";
 import {
   ProductVariantInstances
 } from "@/components/product-variants/sections/product-variant-intances";
+import {
+  ProductVariantBatches
+} from "@/components/product-variants/sections/product-variant-batches";
 
 export default function ProductVariantDetailPage({variantId}: {variantId: string}) {
   const router = useRouter();
@@ -93,9 +94,11 @@ export default function ProductVariantDetailPage({variantId}: {variantId: string
 
             <ProductVariantAttributes variantId={variant.id} />
 
+            
             {/* Можно добавить здесь ещё блоки, например: */}
             {/* <ProductVariantStock variantId={variant.id} /> */}
              <ProductVariantInstances variantId={variant.id} />
+              <ProductVariantBatches variantId={variant.id} />
           </div>
         </div>
       </div>

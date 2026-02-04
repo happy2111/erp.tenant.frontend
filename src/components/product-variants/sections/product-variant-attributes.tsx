@@ -79,20 +79,30 @@ export function ProductVariantAttributes({ variantId }: { variantId: string }) {
 
   return (
     <Card className="bg-card/30 backdrop-blur-xl border-border/60 shadow-2xl rounded-[2.5rem] overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/20 bg-muted/5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-background border border-border/40 shadow-sm">
-            <Settings2 className="size-4 text-primary" />
+      <CardHeader className="flex flex-row items-center justify-between pb-3 sm:pb-2 border-b border-border/20 bg-muted/5 px-4 sm:px-6">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* Иконка - чуть меньше на мобилках */}
+          <div className="p-1.5 sm:p-2 rounded-xl bg-background border border-border/40 shadow-sm shrink-0">
+            <Settings2 className="size-3.5 sm:size-4 text-primary" />
           </div>
-          <CardTitle className="text-xs font-black uppercase tracking-[0.2em] opacity-60">Xarakteristikalar</CardTitle>
+
+          {/* Заголовок с динамическим размером и трекингом */}
+          <CardTitle className="text-[10px] sm:text-xs font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] opacity-60 truncate">
+            Xarakteristikalar
+          </CardTitle>
         </div>
+
         <Button
           size="sm"
           variant="ghost"
           onClick={() => setIsDialogOpen(true)}
-          className="rounded-xl hover:bg-primary/10 text-primary h-8 px-3"
+          className="rounded-xl hover:bg-primary/10 text-primary h-8 px-2 sm:px-3 shrink-0 ml-2"
         >
-          <Plus className="size-4 mr-1" /> Qo'shish
+          <Plus className="size-4 sm:mr-1" />
+          {/* Текст кнопки скрывается на очень маленьких экранах (меньше 400px) */}
+          <span className="hidden xs:inline-block text-[10px] sm:text-xs font-bold">
+            Qo'shish
+          </span>
         </Button>
       </CardHeader>
 
@@ -133,62 +143,64 @@ export function ProductVariantAttributes({ variantId }: { variantId: string }) {
       </CardContent>
 
       {/* Dialog для добавления */}
-      <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if(!open) resetForm(); }}>
-        <DialogContent className="rounded-[2.5rem] max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">
-              Xarakteristika qo'shish
-            </DialogTitle>
-          </DialogHeader>
+      <div className={'mx-4'}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if(!open) resetForm(); }}>
+          <DialogContent className="rounded-[2.5rem] max-w-md ">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">
+                Xarakteristika qo&apos;shish
+              </DialogTitle>
+            </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            {/* Выбор Атрибута */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">Xarakteristika turi</label>
-              <Select value={selectedAttrId} onValueChange={(val) => { setSelectedAttrId(val); setSelectedValueId(""); }}>
-                <SelectTrigger className="rounded-xl h-12">
-                  <SelectValue placeholder="Tanlang (masalan: Rang)" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  {allAttributes?.items.map(a => (
-                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-4 py-4">
+              {/* Выбор Атрибута */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">Xarakteristika turi</label>
+                <Select value={selectedAttrId} onValueChange={(val) => { setSelectedAttrId(val); setSelectedValueId(""); }}>
+                  <SelectTrigger className="rounded-xl h-12">
+                    <SelectValue placeholder="Tanlang (masalan: Rang)" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {allAttributes?.items.map(a => (
+                      <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Выбор Значения (только если выбран атрибут) */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">Qiymati</label>
+                <Select
+                  value={selectedValueId}
+                  onValueChange={setSelectedValueId}
+                  disabled={!selectedAttrId}
+                >
+                  <SelectTrigger className="rounded-xl h-12">
+                    <SelectValue placeholder={selectedAttrId ? "Qiymatni tanlang" : "Oldin xarakteristikani tanlang"} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {selectedAttribute?.values.map(v => (
+                      <SelectItem key={v.id} value={v.id}>{v.value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* Выбор Значения (только если выбран атрибут) */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">Qiymati</label>
-              <Select
-                value={selectedValueId}
-                onValueChange={setSelectedValueId}
-                disabled={!selectedAttrId}
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="rounded-xl">Bekor qilish</Button>
+              <Button
+                disabled={!selectedValueId || createMutation.isPending}
+                onClick={() => createMutation.mutate()}
+                className="rounded-xl px-8"
               >
-                <SelectTrigger className="rounded-xl h-12">
-                  <SelectValue placeholder={selectedAttrId ? "Qiymatni tanlang" : "Oldin xarakteristikani tanlang"} />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  {selectedAttribute?.values.map(v => (
-                    <SelectItem key={v.id} value={v.id}>{v.value}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="rounded-xl">Bekor qilish</Button>
-            <Button
-              disabled={!selectedValueId || createMutation.isPending}
-              onClick={() => createMutation.mutate()}
-              className="rounded-xl px-8"
-            >
-              {createMutation.isPending ? <Loader2 className="animate-spin size-4" /> : "Saqlash"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                {createMutation.isPending ? <Loader2 className="animate-spin size-4" /> : "Saqlash"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </Card>
   );
 }

@@ -1,6 +1,6 @@
 import React from 'react'
 import ProductVariantDetailPage
-  from "@/components/product-variants/ProductVariantDetailPage";
+  from "@/components/product-variants/pages/ProductVariantDetailPage";
 import ProtectedRoute from "@/components/auth/protected-route";
 
 export default async function ConverToUser({ params }: { params: Promise<{ id: string }> }) {

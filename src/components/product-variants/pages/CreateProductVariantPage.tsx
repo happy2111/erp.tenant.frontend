@@ -22,14 +22,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CreateProductVariantSchema, CreateProductVariantDto } from "@/schemas/product-variants.schema";
 import { ProductVariantsService } from "@/services/product-variants.service";
-import { Product } from "@/schemas/product.schema";
+import { Product } from "@/schemas/products.schema";
 import { Currency } from "@/schemas/currency.schema";
 import {
   ProductSelectDrawer
-} from "@/components/product-variants/SelectProductDrawer";
+} from "@/components/product-variants/drawers/SelectProductDrawer";
 import {
   CurrencySelectDrawer
-} from "@/components/product-variants/СurrencySelectDrawer";
+} from "@/components/product-variants/drawers/СurrencySelectDrawer";
 
 export default function CreateProductVariantPage() {
   const router = useRouter();
