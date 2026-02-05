@@ -4,7 +4,7 @@ import * as React from "react"
 import {
   Boxes,
   Building, Contact, Euro, List, Package, Plus, Settings2, Tag, User, UserStar,
-  Cuboid, Layers, Landmark,
+  Cuboid, Layers, Landmark, ArrowLeftRight, ChartLine,
 } from "lucide-react"
 
 import {NavProjects} from "@/components/nav-projects"
@@ -91,7 +91,9 @@ const sidebarGroups = [
     label: "Moliyaviy",
     items: [
       {name: "Kassalar", url: "/kassas", icon: Landmark},
+      {name: "kassa transferlari", url: "/kassa-tranfers", icon: ArrowLeftRight},
       {name: "Valyutalar", url: "/currency", icon: Euro},
+      {name: "valyuta kursi", url: "/currency-rates", icon: ChartLine},
     ],
   },
   {
