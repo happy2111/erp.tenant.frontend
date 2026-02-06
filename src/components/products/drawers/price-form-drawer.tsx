@@ -34,7 +34,7 @@ function PriceFormDrawer({
     resolver: zodResolver(CreateProductPriceSchema),
     defaultValues: {
       productId,
-      priceType: 'RETAIL',
+      priceType: 'WHOLESALE',
       amount: '',
       currencyId: '',
       customerType: 'CLIENT'
@@ -67,7 +67,7 @@ function PriceFormDrawer({
           organizationId: editingPrice.organizationId
         });
       } else {
-        reset({ productId, priceType: 'RETAIL', amount: '', customerType: 'CLIENT' });
+        reset({ productId, priceType: 'WHOLESALE', amount: '', customerType: 'CLIENT' });
       }
     }
   }, [open, editingPrice, reset, productId]);
@@ -147,38 +147,38 @@ function PriceFormDrawer({
             </div>
 
             {/* Organization Selector (Simulated Search) */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest opacity-50 px-1">
-                Tashkilot (Ixtiyoriy)
-              </label>
+            {/*<div className="space-y-2">*/}
+            {/*  <label className="text-[10px] font-black uppercase tracking-widest opacity-50 px-1">*/}
+            {/*    Tashkilot (Ixtiyoriy)*/}
+            {/*  </label>*/}
 
-              <Select
-                value={watch('organizationId') ?? 'ALL'}
-                onValueChange={(value) => {
-                  if (value === 'ALL') {
-                    setValue('organizationId', undefined);
-                  } else {
-                    setValue('organizationId', value);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full h-12 rounded-xl bg-card/40 backdrop-blur-xl border border-border/40 px-4 text-xs font-bold focus:ring-2 ring-primary/20">
-                  <SelectValue placeholder="Barcha tashkilotlar uchun" />
-                </SelectTrigger>
+            {/*  <Select*/}
+            {/*    value={watch('organizationId') ?? 'ALL'}*/}
+            {/*    onValueChange={(value) => {*/}
+            {/*      if (value === 'ALL') {*/}
+            {/*        setValue('organizationId', undefined);*/}
+            {/*      } else {*/}
+            {/*        setValue('organizationId', value);*/}
+            {/*      }*/}
+            {/*    }}*/}
+            {/*  >*/}
+            {/*    <SelectTrigger className="w-full h-12 rounded-xl bg-card/40 backdrop-blur-xl border border-border/40 px-4 text-xs font-bold focus:ring-2 ring-primary/20">*/}
+            {/*      <SelectValue placeholder="Barcha tashkilotlar uchun" />*/}
+            {/*    </SelectTrigger>*/}
 
-                <SelectContent>
-                  <SelectItem value="ALL">
-                    Barcha tashkilotlar uchun
-                  </SelectItem>
+            {/*    <SelectContent>*/}
+            {/*      <SelectItem value="ALL">*/}
+            {/*        Barcha tashkilotlar uchun*/}
+            {/*      </SelectItem>*/}
 
-                  {orgs.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>
-                      {o.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/*      {orgs.map((o) => (*/}
+            {/*        <SelectItem key={o.id} value={o.id}>*/}
+            {/*          {o.name}*/}
+            {/*        </SelectItem>*/}
+            {/*      ))}*/}
+            {/*    </SelectContent>*/}
+            {/*  </Select>*/}
+            {/*</div>*/}
 
           </div>
 
@@ -187,7 +187,7 @@ function PriceFormDrawer({
               {loading && <Loader2 className="mr-2 animate-spin" />}
               {editingPrice ? "O'zgarishlarni saqlash" : "Narxni tasdiqlash"}
             </Button>
-            <Button variant="ghost" type="button" onClick={() => onOpenChange(false)} className="rounded-xl opacity-50">Bekor qilish</Button>
+            <Button  variant="ghost" type="button" onClick={() => onOpenChange(false)} className="rounded-xl mt-3 opacity-50">Bekor qilish</Button>
           </DrawerFooter>
         </form>
       </DrawerContent>

@@ -13,6 +13,7 @@
 - [ ] product details page add variant
 - [ ] product variant tetail page add 
 - [ ] qr/barcode scaner 
+- [ ] fix create kassa "type"
 
 
 

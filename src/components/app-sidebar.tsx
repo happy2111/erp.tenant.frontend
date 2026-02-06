@@ -4,7 +4,8 @@ import * as React from "react"
 import {
   Boxes,
   Building, Contact, Euro, List, Package, Plus, Settings2, Tag, User, UserStar,
-  Cuboid, Layers, Landmark, ArrowLeftRight, ChartLine,
+  Cuboid, Layers, Landmark, ArrowLeftRight, ChartLine, CalendarCheck,
+  CreditCard, ShoppingCart,
 } from "lucide-react"
 
 import {NavProjects} from "@/components/nav-projects"
@@ -41,6 +42,36 @@ export interface SidebarGroup {
 
 
 const sidebarGroups = [
+  {
+    label: "Savdo va xarid",
+    items: [
+      {name: "POS", url: "/pos", icon: Boxes},
+      {
+        name: "Savdo",
+        url: "/sales",
+        icon: ShoppingCart,
+        actions: [
+          { label: "Savdo qo'shish", url: "/sales/create", icon: Plus },
+        ],
+      },
+      {
+        name: "Xarid",
+        url: "/purchases",
+        icon: CreditCard,
+        actions: [
+          { label: "Xarid qo'shish", url: "/purchases/create", icon: Plus },
+        ],
+      },
+      {
+        name: "Bo'lib to'lashlar",
+        url: "/installments",
+        icon: CalendarCheck,
+        actions: [
+          { label: "Installment qo'shish", url: "/installments/create", icon: Plus },
+        ],
+      },
+    ],
+  },
   {
     label: "Tashkilot",
     items: [
@@ -91,7 +122,7 @@ const sidebarGroups = [
     label: "Moliyaviy",
     items: [
       {name: "Kassalar", url: "/kassas", icon: Landmark},
-      {name: "kassa transferlari", url: "/kassa-tranfers", icon: ArrowLeftRight},
+      {name: "kassa transferlari", url: "/kassa-transfers", icon: ArrowLeftRight},
       {name: "Valyutalar", url: "/currency", icon: Euro},
       {name: "valyuta kursi", url: "/currency-rates", icon: ChartLine},
     ],

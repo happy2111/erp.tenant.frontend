@@ -27,6 +27,7 @@ export const productVariantFields: CrudField<ProductVariant>[] = [
   {
     name: "defaultPrice",
     label: "Цена по умолчанию",
+    type: "number",
     render: (row) =>
       row.defaultPrice !== null && row.defaultPrice !== undefined
         ? `${row.defaultPrice.toLocaleString("ru-RU")} ${

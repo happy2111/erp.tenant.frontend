@@ -51,6 +51,17 @@ export const MinimalProductImageSchema = z.object({
 
 export type MinimalProductImage = z.infer<typeof MinimalProductImageSchema>;
 
+export const ProductPriceSchema = z.object({
+  id: z.string().uuid(),
+  productId: z.string().uuid(),
+  organizationId: z.string().uuid().nullable().optional(),
+  priceType: z.string(),
+  amount: z.coerce.number(),
+  currencyId: z.string().uuid(),
+  customerType: z.string().nullable().optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
 
 // ─── Полный товар (ответ от сервера) ─────────────────────────────────
 export const ProductSchema = z.object({
@@ -68,7 +79,7 @@ export const ProductSchema = z.object({
   categories: z
     .array(MinimalCategorySchema)
     .default([]),
-  prices: z.array(z.any()).optional().default([]), // можно уточнить тип цены
+  prices: z.array(ProductPriceSchema).optional().default([]), // можно уточнить тип цены
   images: z.array(MinimalProductImageSchema).default([]),
   variants: z.array(z.any()).optional().default([]),
   variantImages: z.array(z.any()).optional().default([]),

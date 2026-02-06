@@ -86,8 +86,9 @@ const router = useRouter();
       toast.success("Касса успешно создана");
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Не удалось создать кассу");
-    },
+      const msg = err.response?.data?.message;
+      toast.error(Array.isArray(msg) ? msg[0] : (msg || "Xatolik yuz berdi"));
+    }
   });
 
   const updateMutation = useMutation({

@@ -3758,7 +3758,7 @@ export interface components {
             instanceId: string;
             /** @example uuid-customer */
             customerId: string;
-            /** @example uuid-sale */
+            /** @example uuid-sales */
             saleId?: string;
             /** @example Продажа по чеку №123 */
             description?: string;
@@ -3789,7 +3789,7 @@ export interface components {
             instanceId: string;
             /** @example uuid-new-customer */
             newCustomerId: string;
-            /** @example uuid-new-sale */
+            /** @example uuid-new-sales */
             saleId?: string;
             /** @example Перепродажа после ремонта */
             description?: string;
@@ -3878,7 +3878,7 @@ export interface components {
         CreateInstallmentDto: {
             /**
              * @description ID продажи, к которой привязана рассрочка
-             * @example uuid-sale
+             * @example uuid-sales
              */
             saleId: string;
             /**
@@ -4004,7 +4004,7 @@ export interface components {
             customerId?: string;
             /**
              * @description ID продажи (для INCOME от клиента)
-             * @example uuid-sale
+             * @example uuid-sales
              */
             saleId?: string;
             /**
@@ -4152,7 +4152,7 @@ export interface components {
              * @enum {string}
              */
             type: "PASSPORT" | "CONTRACT" | "PAYMENT_RECEIPT" | "OTHER";
-            /** @example uuid-sale */
+            /** @example uuid-sales */
             saleId?: string;
             /** @example uuid-customer */
             customerId?: string;
@@ -4164,13 +4164,13 @@ export interface components {
             productVariantId: string;
             /** @example 2 */
             quantity: number;
-            /** @example uuid-sale-item */
+            /** @example uuid-sales-item */
             saleItemId?: string;
             /** @example 1000 */
             price?: number;
         };
         CreateReturnDto: {
-            /** @example uuid-sale */
+            /** @example uuid-sales */
             saleId: string;
             /** @example uuid-customer */
             customerId: string;

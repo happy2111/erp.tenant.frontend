@@ -25,6 +25,9 @@ import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import {Plus} from "lucide-react";
 import {useRouter} from "next/navigation";
+import {
+  OrganizationCustomerDialog
+} from "@/features/org-customer/OrganizationCustomerDialog";
 
 export function OrganizationCustomerCrud() {
   const router = useRouter();
@@ -209,26 +212,6 @@ export function OrganizationCustomerCrud() {
         </>
       )}
 
-      {/* Диалог создания / редактирования */}
-      <CrudDialog
-        open={createOpen}
-        onOpenChange={(open) => {
-          setCreateOpen(open);
-          if (!open) setEditItem(null);
-        }}
-        title={editItem ? "Редактировать клиента" : "Создать клиента"}
-      >
-        <CrudForm
-          fields={organizationCustomerFields}
-          schema={editItem ? UpdateOrgCustomerSchema : CreateOrgCustomerSchema}
-          defaultValues={
-            editItem
-              ? { ...editItem }
-              : { type: "CLIENT" as const, isBlacklisted: false }
-          }
-          onSubmit={editItem ? handleUpdate : handleCreate}
-        />
-      </CrudDialog>
 
       {/* Подтверждение удаления */}
       <ConfirmDialog
@@ -237,6 +220,15 @@ export function OrganizationCustomerCrud() {
         title="Удалить клиента?"
         description="Это действие нельзя отменить."
         onConfirm={handleDelete}
+      />
+
+      <OrganizationCustomerDialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open);
+          if (!open) setEditItem(null);
+        }}
+        editItem={editItem}
       />
     </div>
   );

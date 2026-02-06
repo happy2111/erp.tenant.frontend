@@ -14,12 +14,13 @@ export const CreateCurrencyRateSchema = z.object({
     .regex(/^[A-Z]{3,10}$/, 'Код должен состоять только из заглавных букв'),
 
   rate: z
-    .string()
-    .regex(/^\d+(\.\d{1,6})?$/, 'Некорректный формат курса (максимум 6 знаков после точки)'),
-
+    .string(),
   date: z
     .string()
-    .datetime({ offset: true, message: 'Некорректный формат даты ISO 8601' }),
+    .transform((value) => {
+      // value = "2026-02-05"
+      return new Date(value).toISOString();
+    })
 });
 
 export type CreateCurrencyRateDto = z.infer<typeof CreateCurrencyRateSchema>;
@@ -43,7 +44,7 @@ export const CurrencyRateSchema = z.object({
   id: z.string().uuid(),
   baseCurrency: z.string(),
   targetCurrency: z.string(),
-  rate: z.number(),          // Decimal приходит как number
+  rate: z.string().or(z.number()),
   date: z.coerce.date(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),

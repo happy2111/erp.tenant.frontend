@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {MinimalCurrencySchema} from "@/schemas/product-prices.schema";
 import {ProductSchema} from "@/schemas/products.schema";
+import {StockSchema} from "@/schemas/stocks.schema";
 
 // ─── Создание варианта товара ────────────────────────────────────────
 export const CreateProductVariantSchema = z.object({
@@ -8,8 +9,8 @@ export const CreateProductVariantSchema = z.object({
   sku: z.string().max(64).optional().nullable(),
   barcode: z.string().max(64).optional().nullable(),
   title: z.string().min(1).max(255),
-  defaultPrice: z.number().positive().optional().nullable(),
-  currencyId: z.string().uuid('Некорректный ID валюты').optional().nullable(),
+  defaultPrice: z.coerce.number().positive().nullable().optional(),
+  currencyId: z.string().uuid('Некорректный ID валюты').optional().nullable().optional(),
 });
 
 export type CreateProductVariantDto = z.infer<typeof CreateProductVariantSchema>;
@@ -60,7 +61,13 @@ export const ProductVariantSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
     code: z.string().optional().nullable(),
+    prices: ProductSchema.shape.prices.optional().default([]),
   }).optional().nullable(),
+  stocks: z.array(
+    z.object({
+      quantity: z.coerce.number().default(0),
+    })
+  ).default([]),
 });
 
 export type ProductVariant = z.infer<typeof ProductVariantSchema>;

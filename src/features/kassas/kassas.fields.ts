@@ -11,16 +11,6 @@ export const kassaFields: CrudField<Kassa>[] = [
   {
     name: "type",
     label: "Тип",
-    render: (row) => {
-      const typeMap: Record<string, string> = {
-        наличные: "Наличные",
-        банк: "Банковский счёт",
-        электронная: "Электронный кошелёк",
-        карточная: "Платёжные карты",
-        другая: "Другая",
-      };
-      return typeMap[row.type] || row.type;
-    },
   },
   {
     name: "currency.code",

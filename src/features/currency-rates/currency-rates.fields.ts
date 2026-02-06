@@ -18,10 +18,13 @@ export const currencyRateFields: CrudField<CurrencyRate>[] = [
     name: "rate",
     label: "Курс",
     required: true,
-    render: (row) => row.rate?.toFixed(6) || "—",
+    render: (row) => row.rate || "—",
+    type: "text"
   },
   {
     name: "date",
+    hiddenInForm: true,
+    type: "date",
     label: "Дата курса",
     render: (row) =>
       row.date
@@ -31,19 +34,5 @@ export const currencyRateFields: CrudField<CurrencyRate>[] = [
           year: "numeric",
         })
         : "—",
-  },
-  {
-    name: "createdAt",
-    label: "Создано",
-    hiddenInForm: true,
-    hiddenInCard: true,
-    render: (row) =>
-      new Date(row.createdAt).toLocaleString("ru-RU", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
   },
 ];

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const PriceTypeValues = ['CASH', 'INSTALLMENT', 'WHOLESALE', 'RETAIL'] as const;
+export const PriceTypeValues = ['CASH', 'INSTALLMENT', 'WHOLESALE', 'ONLINE', 'SPECIAL'] as const;
 export const CustomerTypeValues = ['CLIENT', 'SUPPLIER'] as const;
 
 export type PriceType = typeof PriceTypeValues[number];

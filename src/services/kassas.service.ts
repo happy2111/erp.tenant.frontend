@@ -23,6 +23,12 @@ export class KassasService {
       '/kassas/create',
       dto
     );
+
+    if (res.data.success) {
+      return res.data.data
+    }
+
+
     return KassaSchema.parse(res.data.data);
   }
 
@@ -72,6 +78,12 @@ export class KassasService {
       `/kassas/update/${id}`,
       dto
     );
+
+
+    if (res.data.success) {
+      return res.data.data
+    }
+
     return KassaSchema.parse(res.data.data);
   }
 

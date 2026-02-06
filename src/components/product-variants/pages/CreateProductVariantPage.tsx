@@ -158,7 +158,9 @@ export default function CreateProductVariantPage() {
                   <Input
                     type="number"
                     step="0.01"
-                    {...register("defaultPrice", { valueAsNumber: true })}
+                    {...register("defaultPrice", {
+                      setValueAs: (v) => (v === "" ? undefined : parseFloat(v))
+                    })}
                     placeholder="0.00"
                     className="pl-11 h-12 rounded-xl"
                   />
