@@ -26,7 +26,8 @@ export function NavProjects({
   label: string
   projects: SidebarItem[]
 }) {
-  const { isMobile } = useSidebar()
+  const { isMobile, setOpenMobile } = useSidebar()
+
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -42,7 +43,14 @@ export function NavProjects({
               asChild
               className="h-12 px-3 rounded-xl transition-all hover:bg-sidebar-accent hover:translate-x-1"
             >
-              <Link href={item.url} className="flex items-center">
+              <Link
+                href={item.url}
+                className="flex items-center"
+                onClick={() => {
+                  alert("adf")
+                  if (isMobile) setOpenMobile(false)
+                }}
+              >
                 <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center mr-2">
                   <item.icon className="size-4 text-primary" />
                 </div>
@@ -51,6 +59,7 @@ export function NavProjects({
                 </span>
               </Link>
             </SidebarMenuButton>
+
 
             {/* Actions dropdown */}
             {item.actions?.length && (
@@ -78,6 +87,9 @@ export function NavProjects({
                       <Link
                         href={action.url}
                         className="flex items-center gap-3 w-full"
+                        onClick={() => {
+                          if (isMobile) setOpenMobile(false)
+                        }}
                       >
                         {action.icon && (
                           <div className="size-6 rounded-md bg-primary/20 flex items-center justify-center">

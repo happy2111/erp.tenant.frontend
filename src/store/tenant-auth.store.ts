@@ -78,8 +78,22 @@ export const useTenantAuthStore = create<AuthState>()(
           return { success: false, error: 'Неизвестный ответ сервера' };
         } catch (err: any) {
           console.error('Login error:', err);
-          const message = err.response?.data?.message || 'Ошибка входа';
-          return { success: false, requiresOrgSelection: false, error: message };
+
+          const data = err.response?.data;
+
+          let message = 'Ошибка входа';
+
+          if (typeof data?.message === 'string') {
+            message = data.message;
+          } else if (typeof data?.message?.message === 'string') {
+            message = data.message.message;
+          }
+
+          return {
+            success: false,
+            requiresOrgSelection: false,
+            error: message,
+          };
         }
       },
 

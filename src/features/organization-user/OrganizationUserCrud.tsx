@@ -34,7 +34,7 @@ export function OrganizationUserCrud() {
 
   // Состояния для Drawer и выбранного пользователя
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string | null | undefined; firstName?: string | undefined | null; lastName?: string | undefined | null } | null>(null);
 
   const {
     search,
@@ -110,8 +110,8 @@ export function OrganizationUserCrud() {
   });
 
   // ─── Handlers ───
-  const handleSelectUser = (id: string, email: string) => {
-    setSelectedUser({ id, email });
+  const handleSelectUser = (id: string, email: string | null | undefined, firstName: string | null | undefined, lastName: string | null | undefined) => {
+    setSelectedUser({ id, email, firstName, lastName });
     setDrawerOpen(false);
     setCreateOpen(true); // После выбора в Drawer открываем форму параметров (роль/позиция)
   };
@@ -226,12 +226,22 @@ export function OrganizationUserCrud() {
         {/* Инфо-блок выбранного пользователя при создании */}
         {!editItem && selectedUser && (
           <div className="mb-4 p-3 rounded-2xl bg-primary/5 border border-primary/20 flex items-center justify-between animate-in fade-in zoom-in duration-300">
-            <div className="flex items-center gap-2">
-              <UserCheck className="size-4 text-primary" />
-              <span className="text-sm font-bold tracking-tight">{selectedUser.email}</span>
+
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <UserCheck className="size-4 text-primary shrink-0" />
+              <span className="text-sm max-w-30 font-bold tracking-tight truncate">
+                {selectedUser.email || `${selectedUser?.firstName} ${selectedUser?.lastName}`}
+              </span>
             </div>
-            <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">Tanlangan</Badge>
+
+            <Badge
+              variant="secondary"
+              className="text-[10px] uppercase tracking-wider shrink-0 ml-2"
+            >
+              Tanlangan
+            </Badge>
           </div>
+
         )}
 
         <CrudForm

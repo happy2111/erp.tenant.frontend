@@ -7,7 +7,6 @@ import { ProductPricesService } from '@/services/product-prices.service';
 import { usePosStore } from '@/store/use-pos-store';
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle
@@ -113,8 +112,8 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[480px] rounded-[3rem] p-0 overflow-hidden bg-card/60 backdrop-blur-2xl border-white/20 shadow-2xl">
-        <div className="p-8 space-y-8">
+      <DialogContent className="sm:max-w-[480px] w-full max-h-[90vh] overflow-hidden rounded-[3rem] bg-card/60 backdrop-blur-2xl border-white/20 shadow-2xl">
+        <div className="p-8 space-y-8 overflow-y-auto max-h-[calc(90vh-64px)]">
           <DialogHeader>
             <div className="flex justify-between items-start gap-4">
               <div className="space-y-2 flex-1">

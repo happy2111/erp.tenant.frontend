@@ -199,7 +199,7 @@ export function SalesCrud() {
 
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>Создать продажу</Button>
+          {/*<Button onClick={() => setCreateOpen(true)}>Создать продажу</Button>*/}
         </div>
       </div>
 

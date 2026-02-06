@@ -8,6 +8,7 @@ import {
   ProductVariantSchema,
   VariantsByProductResponseSchema,
 } from '@/schemas/product-variants.schema';
+import {z} from "zod";
 
 interface ApiResponse<T> {
   success?: boolean;
@@ -79,13 +80,12 @@ export class ProductVariantsService {
    * Получить все варианты конкретного товара
    * (удобный эндпоинт без пагинации)
    */
-  static async getVariantsByProduct(
-    productId: string
-  ): Promise<ProductVariant[]> {
-    const res = await api.get<ApiResponse<any[]>>(
+  static async getVariantsByProduct(productId: string): Promise<ProductVariant[]> {
+    const res = await api.get<ApiResponse<{ items: any[], total: number }>>(
       `/product-variants/product/${productId}`
     );
 
-    return VariantsByProductResponseSchema.parse(res.data.data);
+    // Access .items here so the component receives the array
+    return z.array(ProductVariantSchema).parse(res.data.data.items);
   }
 }

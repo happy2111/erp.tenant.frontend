@@ -64,11 +64,13 @@ export const SaleItemSchema = z.object({
   id: z.string().uuid(),
   productVariantId: z.string().uuid(),
   quantity: z.number(),
-  price: z.number(),
-  total: z.number(),
+  // Используем z.coerce.number() вместо z.number()
+  price: z.coerce.number(),
+  total: z.coerce.number(),
   currencyId: z.string().uuid(),
   product_variant: z
     .object({
+      id: z.string().uuid().optional(), // Добавили id, так как он есть в JSON
       title: z.string(),
       sku: z.string().nullable().optional(),
     })
@@ -79,20 +81,21 @@ export const SaleItemSchema = z.object({
 export type SaleItem = z.infer<typeof SaleItemSchema>;
 
 export const SaleSchema = z.object({
-  id: z.string().uuid(),
-  invoiceNumber: z.string(),
-  organizationId: z.string().uuid(),
-  customerId: z.string().uuid().nullable().optional(),
-  responsibleId: z.string().uuid(),
-  kassaId: z.string().uuid().nullable().optional(),
-  saleDate: z.coerce.date(),
-  totalAmount: z.number(),
-  paidAmount: z.number(),
-  currencyId: z.string().uuid(),
-  status: z.enum(SaleStatusValues),
-  notes: z.string().nullable().optional(),
+    id: z.string().uuid(),
+    invoiceNumber: z.string(),
+    organizationId: z.string().uuid(),
+    customerId: z.string().uuid().nullable().optional(),
+    responsibleId: z.string().uuid(),
+    kassaId: z.string().uuid().nullable().optional(),
+    saleDate: z.coerce.date(),
+    // Здесь тоже могут прийти строки, лучше перестраховаться
+    totalAmount: z.coerce.number(),
+    paidAmount: z.coerce.number(),
+    currencyId: z.string().uuid(),
+    status: z.enum(SaleStatusValues),
+    notes: z.string().nullable().optional(),
 
-  items: z.array(SaleItemSchema).default([]),
+    items: z.array(SaleItemSchema).default([]),
   currency: z
     .object({
       code: z.string(),
@@ -113,6 +116,7 @@ export const SaleSchema = z.object({
     .object({
       id: z.string().uuid(),
       name: z.string(),
+      type: z.string(),
     })
     .nullable()
     .optional(),
@@ -120,11 +124,17 @@ export const SaleSchema = z.object({
     .object({
       id: z.string().uuid(),
       email: z.string(),
+      profile: z.object({
+        firstName: z.string(),
+        lastName: z.string(),
+      })
     })
     .nullable()
     .optional(),
   payments: z.array(z.any()).optional().default([]),
   installments: z.array(z.any()).optional().default([]),
+  returns: z.array(z.any()).optional().default([]),
+
 });
 
 export type Sale = z.infer<typeof SaleSchema>;

@@ -27,11 +27,15 @@ export function PosCatalog() {
 
   const { data: variants } = useQuery({
     queryKey: ['pos-variants', search, selectedProductId],
-    queryFn: () => selectedProductId
-      ? ProductVariantsService.getVariantsByProduct(selectedProductId)
-      : ProductVariantsService.getAllAdmin({ search, limit: 50 }).then(r => r.items)
+    queryFn: async () => {
+      if (selectedProductId) {
+        // Ensure this returns the ARRAY (items)
+        return await ProductVariantsService.getVariantsByProduct(selectedProductId);
+      }
+      // This already returns .items, which is good
+      return ProductVariantsService.getAllAdmin({ search, limit: 50 }).then(r => r.items);
+    }
   });
-
   const { data: products } = useQuery({
     queryKey: ['pos-products', search],
     queryFn: () => ProductsService.getAllAdmin({ search, limit: 50 }).then(r => r.items),
@@ -42,7 +46,7 @@ export function PosCatalog() {
                         title,
                         subtitle,
                         image,
-                        stockCount, // Передаем числом
+                        stockCount,
                         onClick,
                         price,
                         isProduct = false
@@ -81,7 +85,7 @@ export function PosCatalog() {
         )}
 
         {isProduct && (
-          <div className="absolute bottom-3 left-3 bg-primary/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] text-white font-bold uppercase tracking-widest">
+          <div className="absolute bottom-3 left-3 bg-primary/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] text-primary-foreground font-bold uppercase tracking-widest">
             Продукт
           </div>
         )}
@@ -123,7 +127,7 @@ export function PosCatalog() {
   );
 
   return (
-    <div className="flex flex-col h-full space-y-4 p-4 lg:p-6 bg-transparent">
+    <div className="flex flex-col h-full space-y-4 py-5 lg:p-6 bg-transparent">
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 opacity-40" />
         <Input

@@ -93,8 +93,8 @@ export default function ConvertCustomerToUserPage({ id }: { id: string }) {
     );
   }
   const handleSave = () => {
-    if (!formData.email || !formData.password) {
-      toast.error("Email и пароль обязательны для создания пользователя");
+    if (!formData.password) {
+      toast.error("Пароль обязательны для создания пользователя");
       return;
     }
 
@@ -125,30 +125,35 @@ export default function ConvertCustomerToUserPage({ id }: { id: string }) {
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 pb-20">
       {/* Шапка */}
-      <div className="flex items-center justify-between gap-4 bg-background/40 p-4 backdrop-blur-md rounded-3xl border border-border/40">
-        <div>
-          <div className="flex items-center gap-3">
-            <UserPlus className="size-6 text-primary" />
-            <h1 className="text-xl font-black tracking-tight">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-background/40 p-4 backdrop-blur-md rounded-3xl border border-border/40">
+
+        {/* Левая часть */}
+        <div className="min-w-0">
+          <div className="flex items-start gap-3">
+            <UserPlus className="size-6 text-primary shrink-0" />
+            <h1 className="text-lg sm:text-xl font-black tracking-tight leading-tight">
               Конвертация клиента в пользователя
             </h1>
           </div>
-          <p className="text-xs text-muted-foreground font-mono mt-1">
+
+          <p className="text-xs text-muted-foreground font-mono mt-1 truncate">
             {customer.firstName} {customer.lastName} · {customer.phone}
           </p>
         </div>
 
-        <div className="flex gap-2">
+        {/* Кнопки */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <Button
             variant="ghost"
-            className="rounded-2xl"
+            className="rounded-2xl w-full sm:w-auto"
             onClick={() => router.back()}
           >
-            <X className="mr-2 size-4" /> Bekor qilish
+            <X className="mr-2 size-4" />
+            Bekor qilish
           </Button>
 
           <Button
-            className="rounded-2xl shadow-lg shadow-primary/20"
+            className="rounded-2xl shadow-lg shadow-primary/20 w-full sm:w-auto"
             onClick={handleSave}
             disabled={convertMutation.isPending}
           >

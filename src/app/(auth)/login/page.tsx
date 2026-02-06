@@ -17,7 +17,7 @@ export default function LoginPage() {
               Tizimga kirish
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Ma'lumotlaringizni kiriting
+              Ma&apos;lumotlaringizni kiriting
             </p>
           </CardHeader>
           <CardContent className="pb-8">

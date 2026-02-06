@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { useBreadcrumbs } from "@/hooks/useBreadcrumbs"
 import ProtectedRoute from "@/components/auth/protected-route";
+import {cn} from "@/lib/utils";
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -30,22 +31,22 @@ const DashboardLayoutComponent = ({ children }: DashboardLayoutProps) => {
       <SidebarProvider>
         <div className="flex h-screen w-screen bg-sidebar">
           <AppSidebar />
-          <SidebarInset className="border sm:rounded-2xl sm:m-4 sm:overflow-y-scroll">
+          <SidebarInset className="sm:border sm:rounded-2xl sm:m-4 sm:overflow-y-scroll">
             <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
               <div className="flex items-center gap-2 px-4">
-                <SidebarTrigger className="-ml-1" />
+                <SidebarTrigger className="-ml-1 scale-125" />
                 <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
 
                 <Breadcrumb>
                   <BreadcrumbList>
                     {breadcrumbs.map((item, index) => (
-                      <BreadcrumbItem key={item.href} className={index === 0 ? "hidden md:block" : ""}>
+                      <BreadcrumbItem key={item.href} className={cn("hidden sm:block" ,index === 0 ? "hidden md:block" : "") }>
                         {index !== breadcrumbs.length - 1 ? (
                           <>
                             <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink> {"/"}
                           </>
                         ) : (
-                          <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                          <BreadcrumbPage className={"max-w-[200px] truncate"}>{item.label}</BreadcrumbPage>
                         )}
                       </BreadcrumbItem>
                     ))}

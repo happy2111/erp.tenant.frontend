@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: (userId: string, email: string) => void;
+  onSelect: (userId: string, email: string |null| undefined, firstName: string | null | undefined, lastName: string | null |undefined) => void;
 }
 
 export function CreateOrgUserDrawer({ open, onOpenChange, onSelect }: Props) {
@@ -77,7 +77,7 @@ export function CreateOrgUserDrawer({ open, onOpenChange, onSelect }: Props) {
                       "group flex items-center justify-between p-4 rounded-2xl transition-all duration-300",
                       "bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/40 hover:bg-primary/5 cursor-pointer shadow-sm"
                     )}
-                    onClick={() => onSelect(user.id, user.email)}
+                    onClick={() => onSelect(user.id, user.email, user.profile?.firstName, user.profile?.lastName)}
                   >
                     <div className="flex items-center gap-4">
                       <Avatar className="size-11 border-2 border-background shadow-sm group-hover:scale-105 transition-transform">
@@ -106,7 +106,7 @@ export function CreateOrgUserDrawer({ open, onOpenChange, onSelect }: Props) {
                   </div>
                   <h3 className="text-lg font-black tracking-tighter mb-2 italic">TOPILMADI</h3>
                   <p className="text-xs text-muted-foreground max-w-[220px] mb-8 font-medium leading-relaxed opacity-70">
-                    Bunday ma'lumotga ega foydalanuvchi tizimda mavjud emas.
+                    Bunday ma&apos;lumotga ega foydalanuvchi tizimda mavjud emas.
                   </p>
 
                   <Button

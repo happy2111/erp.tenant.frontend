@@ -35,7 +35,10 @@ export function CustomerSelector() {
       <DrawerTrigger asChild>
         <Button
           variant="outline"
-          className="h-10 rounded-xl px-4 border-none bg-muted/50 flex items-center gap-2 hover:bg-muted"
+          className="py-4 h-14
+            bg-background/50 backdrop-blur-md dark:bg-input/20
+            border-2 border-border/60 rounded-[12px] shadow-sm
+             px-4 border-none flex items-center gap-2 hover:bg-muted"
         >
           <User className="size-4 opacity-50" />
           <div className="flex flex-col items-start leading-tight">
@@ -47,8 +50,8 @@ export function CustomerSelector() {
         </Button>
       </DrawerTrigger>
 
-      <DrawerContent className="h-[80vh]">
-        <div className="mx-auto w-full max-w-md px-4">
+      <DrawerContent className="h-[100dvh] mb-5 pb-5">
+        <div className="mx-auto w-full max-w-md px-4 flex flex-col h-full">
           <DrawerHeader>
             <DrawerTitle className="text-center text-2xl font-black">Поиск клиента</DrawerTitle>
           </DrawerHeader>
@@ -110,7 +113,7 @@ export function CustomerSelector() {
             )}
           </div>
 
-          <div className="mt-4 pb-8">
+          <div className="py-4">
             <Button
               variant="destructive"
               className="w-full h-12 rounded-2xl font-bold"
@@ -122,6 +125,7 @@ export function CustomerSelector() {
               Сбросить выбор
             </Button>
           </div>
+
         </div>
       </DrawerContent>
     </Drawer>

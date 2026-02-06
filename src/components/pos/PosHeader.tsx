@@ -34,7 +34,7 @@ export function PosHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full bg-background/60 backdrop-blur-2xl border-b border-border/40">
-      <div className="px-4 py-2">
+      <div className="pb-2">
         <div
           className="flex items-center gap-2 overflow-x-auto no-scrollbar"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -47,46 +47,50 @@ export function PosHeader() {
           {/* Небольшой визуальный разделитель, который не ломает строку */}
           <div className="h-6 w-px bg-border/40 shrink-0 mx-1" />
 
-          {/* ВАЛЮТА */}
-          <div className="flex items-center gap-1.5 bg-muted/40 p-1 pr-2 rounded-xl border border-border/50 shrink-0 h-9">
-            <div className="size-6 rounded-lg bg-background/50 flex items-center justify-center shadow-sm">
-              <Globe className="size-3 text-primary" />
-            </div>
-            <Select value={currencyId || ''} onValueChange={handleCurrencyChange}>
-              <SelectTrigger className="h-7 w-auto min-w-[50px] border-none bg-transparent shadow-none focus:ring-0 p-0 pr-1 text-[10px] font-black uppercase">
-                <SelectValue placeholder="USD" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border-border/40 backdrop-blur-xl">
-                {currencies?.map(c => (
-                  <SelectItem key={c.id} value={c.id} className="text-xs font-bold">{c.code}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+         <div className="flex items-center gap-2 flex-1 justify-end">
+           {/* ВАЛЮТА - Компактный вид */}
+           <div className="flex items-center gap-1.5 bg-muted/30 p-1 pr-2 rounded-2xl border border-border/50 shrink-0">
+             <div className="size-7 rounded-xl bg-background/50 flex items-center justify-center shadow-sm">
+               <Globe className="size-3.5 opacity-50 text-primary" />
+             </div>
+             <Select value={currencyId || ''} onValueChange={handleCurrencyChange}>
+               <SelectTrigger className="h-7 w-auto min-w-[60px] border-none bg-transparent shadow-none focus:ring-0 p-0 pr-1 text-[11px] font-black uppercase">
+                 <SelectValue placeholder="Валюта" />
+               </SelectTrigger>
+               <SelectContent className="rounded-2xl border-border/40 backdrop-blur-xl">
+                 {currencies?.map(c => (
+                   <SelectItem key={c.id} value={c.id} className="text-xs font-bold">{c.code}</SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
+           </div>
+         </div>
 
-          {/* КАССА */}
-          <div className={cn(
-            "flex items-center gap-1.5 bg-muted/40 p-1 pr-2 rounded-xl border border-border/50 shrink-0 h-9 transition-opacity",
-            !currencyId && "opacity-40 pointer-events-none"
-          )}>
-            <div className="size-6 rounded-lg bg-background/50 flex items-center justify-center shadow-sm">
-              <Landmark className="size-3 text-primary" />
-            </div>
-            <Select value={kassaId || ''} onValueChange={setKassa}>
-              <SelectTrigger className="h-7 w-auto min-w-[80px] border-none bg-transparent shadow-none focus:ring-0 p-0 pr-1 text-[10px] font-black uppercase">
-                <SelectValue placeholder="Касса" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border-border/40 backdrop-blur-xl">
-                {kassas?.filter(k => k.currencyId === currencyId).map(k => (
-                  <SelectItem key={k.id} value={k.id} className="text-xs font-bold">
-                    {k.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+           {/* КАССА - Компактный вид */}
+           <div className={cn(
+             "flex items-center gap-1.5 bg-muted/30 p-1 pr-2 rounded-2xl border border-border/50 shrink-0 transition-opacity",
+             !currencyId && "opacity-40 pointer-events-none"
+           )}>
+             <div className="size-7 rounded-xl bg-background/50 flex items-center justify-center shadow-sm">
+               <Landmark className="size-3.5 opacity-50 text-primary" />
+             </div>
+             <Select value={kassaId || ''} onValueChange={setKassa}>
+               <SelectTrigger className="h-7 w-auto min-w-[80px] lg:min-w-[120px] border-none bg-transparent shadow-none focus:ring-0 p-0 pr-1 text-[11px] font-black uppercase truncate">
+                 <SelectValue placeholder="Касса" />
+               </SelectTrigger>
+               <SelectContent className="rounded-2xl border-border/40 backdrop-blur-xl">
+                 {kassas?.filter(k => k.currencyId === currencyId).map(k => (
+                   <SelectItem key={k.id} value={k.id} className="text-xs font-bold">
+                     {k.name}
+                   </SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
+           </div>
+
+         </div>
         </div>
-      </div>
+
 
       {/* CSS для скрытия скроллбара (можно вынести в globals.css) */}
       <style jsx global>{`

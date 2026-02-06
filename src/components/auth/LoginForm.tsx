@@ -137,10 +137,10 @@ export function LoginForm() {
             name="phone"
             render={({ field }) => (
               <FormItem className="animate-in fade-in slide-in-from-right-2 duration-300">
-                <FormLabel className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/80">Telefon Raqami</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">Telefon Raqami</FormLabel>
                 <FormControl>
                   <div className="relative group">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">+998</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-white">+998</span>
                     <Input
                       placeholder="(90) 123-45-67"
                       {...field}
