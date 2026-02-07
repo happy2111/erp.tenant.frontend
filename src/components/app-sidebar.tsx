@@ -6,6 +6,7 @@ import {
   Building, Contact, Euro, List, Package, Plus, Settings2, Tag, User, UserStar,
   Cuboid, Layers, Landmark, ArrowLeftRight, ChartLine, CalendarCheck,
   CreditCard, ShoppingCart,
+  LayoutTemplate,
 } from "lucide-react"
 
 import {NavProjects} from "@/components/nav-projects"
@@ -45,14 +46,11 @@ const sidebarGroups = [
   {
     label: "Savdo va xarid",
     items: [
-      {name: "POS", url: "/pos", icon: Boxes},
+      {name: "POS", url: "/pos", icon: LayoutTemplate},
       {
         name: "Savdo",
         url: "/sales",
         icon: ShoppingCart,
-        actions: [
-          { label: "Savdo qo'shish", url: "/sales/create", icon: Plus },
-        ],
       },
       {
         name: "Xarid",

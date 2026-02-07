@@ -6,7 +6,7 @@ import { ProductVariant } from '@/schemas/product-variants.schema';
 import { ProductPricesService } from '@/services/product-prices.service';
 import { usePosStore } from '@/store/use-pos-store';
 import {
-  Dialog,
+  Dialog, DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle
@@ -22,9 +22,13 @@ import {
   Loader2,
   AlertCircle,
   Package,
-  ExternalLink
+  ExternalLink, X
 } from 'lucide-react';
-import { PriceType, PriceTypeValues } from '@/schemas/product-prices.schema';
+import {
+  PriceType,
+  PriceTypeLabels,
+  PriceTypeValues
+} from '@/schemas/product-prices.schema';
 import { cn } from '@/lib/utils';
 import Link from "next/link";
 
@@ -111,13 +115,20 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
   if (!variant) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[480px] w-full max-h-[90vh] overflow-hidden rounded-[3rem] bg-card/60 backdrop-blur-2xl border-white/20 shadow-2xl">
-        <div className="p-8 space-y-8 overflow-y-auto max-h-[calc(90vh-64px)]">
+    <Dialog open={isOpen} onOpenChange={onClose} >
+
+      <DialogContent showCloseButton={false} className="sm:max-w-[480px] p-0 pt-12 w-full max-h-[90vh] overflow-hidden rounded-[3rem] bg-card/60 backdrop-blur-2xl border-white/20 shadow-2xl">
+        <DialogClose asChild>
+          <Button className="absolute bg-primary top-4 right-4 h-10 w-10 rounded-full hover:bg-muted/30 transition">
+            <X className="size-5 text-gray-500" />
+          </Button>
+        </DialogClose>
+        <div className="p-3 sm:p-8 space-y-8 overflow-y-auto max-h-[calc(90vh-64px)]">
+
           <DialogHeader>
             <div className="flex justify-between items-start gap-4">
               <div className="space-y-2 flex-1">
-                <DialogTitle className="text-3xl flex  items-center gap-2 font-black tracking-tight leading-tight">
+                <DialogTitle className="text-3xl text-left flex items-center gap-2 font-black tracking-tight leading-tight">
                   {variant.title}
                   <Link  href={`/product-variants/${variant.id}`} className='text-blue-500' target='_blank'><ExternalLink /></Link>
                 </DialogTitle>
@@ -150,7 +161,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
                   onClick={() => handlePriceTypeChange('DEFAULT')}
                   disabled={!variant.defaultPrice || variant.currencyId !== currencyId}
                 >
-                  ОСНОВНАЯ
+                  Standart
                 </Button>
                 {PriceTypeValues.map((type) => (
                   <Button
@@ -160,7 +171,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
                     onClick={() => handlePriceTypeChange(type)}
                     disabled={!productPrices?.items.some(p => p.priceType === type && p.currencyId === currencyId)}
                   >
-                    {type}
+                    {PriceTypeLabels[type]} {/* ← вот здесь используем узбекскую локализацию */}
                   </Button>
                 ))}
               </div>
@@ -206,21 +217,28 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
                 <Label className="text-[10px] font-black uppercase opacity-50 ml-1">Цена за единицу</Label>
                 <div className="relative">
                   <Input
-                    type="number"
+                    type="text"                     // text для контроля через pattern
+                    inputMode="decimal"             // цифровая клавиатура с точкой на мобильных
+                    pattern="^\d*\.?\d{0,2}$"      // только числа с 0-2 знаками после точки
                     className="h-14 rounded-3xl bg-muted/40 border-none font-black text-xl focus-visible:ring-2 ring-primary/20 px-6"
                     value={price}
                     onChange={(e) => {
-                      setPrice(Number(e.target.value));
-                      setSource('manual');
+                      // фильтруем ввод: только цифры и максимум 2 знака после точки
+                      const value = e.target.value;
+                      if (/^\d*\.?\d{0,2}$/.test(value)) {
+                        setPrice(Number(value));
+                        setSource('manual');
+                      }
                     }}
                   />
                 </div>
               </div>
+
             </div>
 
             {/* ИТОГОВАЯ ПАНЕЛЬ */}
             <div className="p-6 bg-primary/10 rounded-[2.5rem] border border-primary/20 flex justify-between items-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent pointer-events-none" />
               <div className="flex flex-col relative z-10">
                 <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest leading-none mb-1">К оплате</span>
                 <span className="text-4xl font-black text-primary tracking-tighter">
@@ -239,7 +257,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
             </div>
 
             <Button
-              className="w-full h-20 rounded-[2rem] text-xl font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-2xl shadow-primary/30"
+              className="w-full h-20 rounded-[2rem] text-xl font-black uppercase transition-all active:scale-[0.98]"
               disabled={price <= 0 || pricesLoading || isInsufficient || isOutOfStock}
               onClick={handleConfirm}
             >

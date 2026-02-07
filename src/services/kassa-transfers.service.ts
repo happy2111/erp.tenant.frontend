@@ -25,7 +25,7 @@ export class KassaTransfersService {
       '/kassa-transfers/create',
       dto
     );
-    return KassaTransferSchema.parse(res.data.data);
+    return res.data.data
   }
 
   /**

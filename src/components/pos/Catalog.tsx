@@ -49,9 +49,11 @@ export function PosCatalog() {
                         stockCount,
                         onClick,
                         price,
-                        isProduct = false
+                        isProduct = false,
+                        key,
                       }: any) => (
     <Card
+      key={key}
       onClick={onClick}
       className={cn(
         "group p-0 relative overflow-hidden cursor-pointer transition-all duration-300",
@@ -156,7 +158,8 @@ export function PosCatalog() {
                 image: v.images?.[0]?.url,
                 stockCount: stockAmount, // Передаем сюда
                 price: v.defaultPrice ? `${Number(v.defaultPrice).toLocaleString()} ${v.currency?.symbol || ''}` : '---',
-                onClick: () => setSelectedVariant(v)
+                onClick: () => setSelectedVariant(v),
+                key: v.id
               });
             })}
           </div>
@@ -169,7 +172,8 @@ export function PosCatalog() {
                 title: p.name,
                 subtitle: p.code || 'PRD',
                 isProduct: true,
-                onClick: () => setSelectedProductId(p.id)
+                onClick: () => setSelectedProductId(p.id),
+                key: p.id,
               }))}
             </div>
           ) : (
@@ -186,7 +190,8 @@ export function PosCatalog() {
                     image: v.images?.[0]?.url,
                     stockCount: stockAmount,
                     price: v.defaultPrice ? `${Number(v.defaultPrice).toLocaleString()} ${v.currency?.symbol || ''}` : '---',
-                    onClick: () => setSelectedVariant(v)
+                    onClick: () => setSelectedVariant(v),
+                    key: v.key,
                   });
                 })}
               </div>

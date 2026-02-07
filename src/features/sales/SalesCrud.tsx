@@ -33,11 +33,12 @@ import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import { toast } from "sonner";
+import {useRouter} from "next/navigation";
 
 export function SalesCrud() {
   const queryClient = useQueryClient();
   const controller = useCrudController<Sale>();
-
+  const router = useRouter()
   const {
     search,
     debouncedSearch,
@@ -230,7 +231,7 @@ export function SalesCrud() {
             sortField={sortField}
             sortOrder={sortOrder}
             onSort={handleSort}
-            // onRowClick={(row) => router.push(`/admin/sales/${row.id}`)}
+            onRowClick={(row) => router.push(`/sales/${row.id}`)}
           />
 
           {/* Пагинация */}

@@ -152,7 +152,7 @@ export function CrudForm<T, Dto>({
 
       <Button
         type="submit"
-        className="w-full"
+        className="w-full h-16 rounded-[2rem] text-xl font-black uppercase tracking-[0.2em] backdrop-blur-2xl transition-all active:scale-[0.98]"
         disabled={form.formState.isSubmitting}
       >
         {form.formState.isSubmitting ? "Сохранение..." : "Сохранить"}

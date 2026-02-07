@@ -115,26 +115,32 @@ export const SaleSchema = z.object({
   kassa: z
     .object({
       id: z.string().uuid(),
-      name: z.string(),
-      type: z.string(),
+      name: z.string().nullable(),
+      type: z.string().nullable().optional(),
     })
     .nullable()
     .optional(),
   responsible: z
     .object({
       id: z.string().uuid(),
-      email: z.string(),
-      profile: z.object({
-        firstName: z.string(),
-        lastName: z.string(),
-      })
+      email: z.string().nullable(),
+      profile: z
+        .object({
+          firstName: z.string().nullable(),
+          lastName: z.string().nullable(),
+        })
+        .nullable()
+        .optional(),
     })
     .nullable()
     .optional(),
+
   payments: z.array(z.any()).optional().default([]),
   installments: z.array(z.any()).optional().default([]),
   returns: z.array(z.any()).optional().default([]),
 
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
 });
 
 export type Sale = z.infer<typeof SaleSchema>;

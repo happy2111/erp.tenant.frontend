@@ -1,19 +1,28 @@
-- [ ] Документация swagger res, req organization 
-- [ ] С помощью них сделать сделать service 
-- [ ] решить делать ли store 
-- [ ] Улучшить CRUD компоненты и использоватьа под organziation
+- [X] Документация swagger res, req organization 
+- [X] С помощью них сделать сделать service 
+- [X] решить делать ли store 
+- [X] Улучшить CRUD компоненты и использоватьа под organziation
   Доработай CrudForm — добавь поддержку остальных типов полей
   Добавь индикаторы загрузки мутаций (disabled кнопки, спиннеры)
 - [X] Tenant user edit like crete
 - [X] Xodim create 
 - [X] Xodim update
 - [X] После созжании tenat- user редиректит на tenant-users/undefined
-- [ ] отображается не данные на tenant-crud 
+- [X] отображается не данные на tenant-crud 
 - [X] присоздание product variant sku, barcode unique мешает даже пустой 
 - [ ] product details page add variant
 - [ ] product variant tetail page add 
 - [ ] qr/barcode scaner 
 - [ ] fix create kassa "type"
+- [ ] variant edit: add choose currency
+- [ ] Payments CRUD
+- [ ] Transuctions CRUD
+- [ ] Product Transactions CRUD
+- [ ] Purches CRUD ---
+- [ ] Sale Installemts CRUD --
+- [ ] Special page for CURD installments --
+- [ ] Product INstance Sell --
+- [ ] Customer ORG balance -/+
 
 
 

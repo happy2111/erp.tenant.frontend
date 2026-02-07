@@ -22,10 +22,14 @@ import { CrudDialog } from "@/components/crud/CrudDialog";
 import { CrudForm } from "@/components/crud/CrudForm";
 import { CrudViewMode } from "@/components/crud/types";
 import { toast } from "sonner";
+import {
+  CreateKassaTransferForm
+} from "@/components/kassa-transfers/CreateKassaTransfer";
 
 export function KassaTransfersCrud() {
   const queryClient = useQueryClient();
   const controller = useCrudController<KassaTransfer>();
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
 
   const {
     search,
@@ -128,7 +132,9 @@ export function KassaTransfersCrud() {
         />
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>Создать перевод</Button>
+          <Button onClick={() => setIsTransferOpen(true)}>
+            Перевод между кассами
+          </Button>
         </div>
       </div>
 
@@ -196,6 +202,14 @@ export function KassaTransfersCrud() {
           defaultValues={{ rate: "1" }}
           onSubmit={handleCreate}
         />
+      </CrudDialog>
+
+      <CrudDialog
+        open={isTransferOpen}
+        onOpenChange={setIsTransferOpen}
+        title="Внутренний перевод"
+      >
+        <CreateKassaTransferForm onSuccess={() => setIsTransferOpen(false)} />
       </CrudDialog>
     </div>
   );

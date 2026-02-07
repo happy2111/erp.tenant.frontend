@@ -47,7 +47,6 @@ export function NavProjects({
                 href={item.url}
                 className="flex items-center"
                 onClick={() => {
-                  alert("adf")
                   if (isMobile) setOpenMobile(false)
                 }}
               >

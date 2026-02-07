@@ -3,6 +3,14 @@ import { z } from 'zod';
 export const PriceTypeValues = ['CASH', 'INSTALLMENT', 'WHOLESALE', 'ONLINE', 'SPECIAL'] as const;
 export const CustomerTypeValues = ['CLIENT', 'SUPPLIER'] as const;
 
+export const PriceTypeLabels: Record<PriceType, string> = {
+  CASH: 'Naqd',
+  INSTALLMENT: 'Bo‘lib to‘lash',
+  WHOLESALE: 'Optom',
+  ONLINE: 'Onlayn',
+  SPECIAL: 'Maxsus',
+};
+
 export type PriceType = typeof PriceTypeValues[number];
 export type CustomerType = typeof CustomerTypeValues[number];
 

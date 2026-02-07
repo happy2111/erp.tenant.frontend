@@ -7,7 +7,7 @@ import { PosHeader } from "@/components/pos/PosHeader";
 const Page = () => {
   return (
     <ProtectedRoute>
-      <div className="flex flex-col h-[90vh] bg-[#F8F9FA] dark:bg-black overflow-hidden">
+      <div className="flex flex-col h-[90vh] overflow-hidden">
         {/* HEADER */}
         <PosHeader />
 

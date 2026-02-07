@@ -118,18 +118,18 @@ export default function KassaDetailPage() {
           </Card>
 
           {/* Quick Stats Placeholder */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10">
-              <TrendingUp className="size-4 text-emerald-500 mb-2" />
-              <p className="text-[9px] font-bold uppercase opacity-40">Kirimlar</p>
-              <p className="text-sm font-black">+ Operatsiyalar</p>
-            </div>
-            <div className="p-4 rounded-[2rem] bg-rose-500/5 border border-rose-500/10">
-              <TrendingDown className="size-4 text-rose-500 mb-2" />
-              <p className="text-[9px] font-bold uppercase opacity-40">Chiqimlar</p>
-              <p className="text-sm font-black">- Operatsiyalar</p>
-            </div>
-          </div>
+          {/*<div className="grid grid-cols-2 gap-4">*/}
+          {/*  <div className="p-4 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10">*/}
+          {/*    <TrendingUp className="size-4 text-emerald-500 mb-2" />*/}
+          {/*    <p className="text-[9px] font-bold uppercase opacity-40">Kirimlar</p>*/}
+          {/*    <p className="text-sm font-black">+ Operatsiyalar</p>*/}
+          {/*  </div>*/}
+          {/*  <div className="p-4 rounded-[2rem] bg-rose-500/5 border border-rose-500/10">*/}
+          {/*    <TrendingDown className="size-4 text-rose-500 mb-2" />*/}
+          {/*    <p className="text-[9px] font-bold uppercase opacity-40">Chiqimlar</p>*/}
+          {/*    <p className="text-sm font-black">- Operatsiyalar</p>*/}
+          {/*  </div>*/}
+          {/*</div>*/}
         </div>
 
         {/* History Table */}
@@ -142,7 +142,7 @@ export default function KassaDetailPage() {
 
           <CrudRenderer
             view="table"
-            data={history || []}
+            data={history?.data || []}
             fields={kassaHistoryFields}
             permissions={{ canEdit: false, canDelete: false }}
           />

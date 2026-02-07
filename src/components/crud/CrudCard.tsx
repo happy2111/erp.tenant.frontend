@@ -152,7 +152,7 @@ export function CrudCard<
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
                   "absolute inset-x-0 bottom-0",
-                  "flex justify-end gap-1 p-2",
+                  "flex justify-end items-center gap-1 p-2",
                   "bg-gradient-to-t from-background/90 to-transparent",
                   "transition-all duration-300",
 
@@ -169,7 +169,7 @@ export function CrudCard<
                     size="sm"
                     variant="ghost"
                     onClick={() => onEdit(row)}
-                    className="h-8 px-2 text-[11px] rounded-lg hover:bg-primary/10 hover:text-primary"
+                    className="h-8 px-2 text-[11px] rounded-lg hover:bg-primary/10 hover:text-primary  active:scale-95 active:translate-y-0.5 active:opacity-75"
                   >
                     <Edit2 className="size-3 mr-1" />
                     Tahrirlash
@@ -181,7 +181,7 @@ export function CrudCard<
                     size="sm"
                     variant="ghost"
                     onClick={() => onDelete(row.id)}
-                    className="h-8 px-2 text-[11px] rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                    className="h-8 px-2 text-[11px] rounded-lg hover:bg-destructive/10 hover:text-destructive  active:scale-95 active:translate-y-0.5 active:opacity-75"
                   >
                     <Trash2 className="size-3 mr-1" />
                     O‘chirish
@@ -193,9 +193,9 @@ export function CrudCard<
                     onClick={() => onRowClick?.(row)}
                     size="icon"
                     variant="ghost"
-                    className="h-8 w-8 rounded-lg hover:bg-muted"
+                    className="h-10 w-10 bg-primary rounded-full hover:bg-muted/30 transition z-50 shadow-none active:scale-95 active:translate-y-0.5 active:opacity-75"
                   >
-                    <ArrowRight className="size-4" />
+                    <ArrowRight className="size-5 text-primary-foreground sm:text-gray-500" />
                   </Button>)
                 }
 
