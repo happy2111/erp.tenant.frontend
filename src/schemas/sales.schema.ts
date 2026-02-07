@@ -6,7 +6,7 @@ export type SaleStatus = (typeof SaleStatusValues)[number];
 export const CreateSaleItemSchema = z.object({
   productVariantId: z.string().uuid('Некорректный ID варианта товара'),
   quantity: z.number().int().positive('Количество должно быть > 0'),
-  price: z.number().positive(),
+  price: z.number().nonnegative(),
 });
 
 export type CreateSaleItemDto = z.infer<typeof CreateSaleItemSchema>;
@@ -25,8 +25,8 @@ export const CreateSaleSchema = z.object({
   // Опциональная рассрочка (если нужна)
   installment: z
     .object({
-      totalAmount: z.string().regex(/^\d+(\.\d{1,2})?$/),
-      initialPayment: z.string().regex(/^\d+(\.\d{1,2})?$/),
+      totalAmount: z.number().nonnegative(),
+      initialPayment: z.number().nonnegative(),
       totalMonths: z.number().int().positive(),
       dueDate: z.string().datetime().optional().nullable(),
       notes: z.string().optional().nullable(),
@@ -76,6 +76,7 @@ export const SaleItemSchema = z.object({
     })
     .optional()
     .nullable(),
+  instanceId: z.string().uuid().nullable().optional(),
 });
 
 export type SaleItem = z.infer<typeof SaleItemSchema>;

@@ -95,17 +95,23 @@ export default function ProductVariantDetailPage({variantId}: {variantId: string
 
           {/* Правая колонка — информация */}
           <div className="lg:col-span-7 space-y-6">
-            <ProductVariantInfo variant={variant} />
+              <ProductVariantInfo variant={variant} />
 
-            <ProductVariantPrice variant={variant} />
+              <ProductVariantPrice variant={variant} />
 
-            <ProductVariantAttributes variantId={variant.id} />
+              <ProductVariantAttributes variantId={variant.id} />
 
 
-            {/* Можно добавить здесь ещё блоки, например: */}
-             <ProductVariantStock variantId={variant.id} />
-             <ProductVariantInstances variantId={variant.id} />
-              <ProductVariantBatches variantId={variant.id} />
+               <ProductVariantInstances variantId={variant.id} />
+
+              {variant.product_instance?.length === 0 && (
+                <>
+                  <ProductVariantStock variantId={variant.id} />
+
+                  <ProductVariantBatches variantId={variant.id} />
+                </>
+              )}
+
           </div>
         </div>
       </div>

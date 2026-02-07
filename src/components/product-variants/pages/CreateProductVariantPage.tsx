@@ -192,14 +192,14 @@ export default function CreateProductVariantPage() {
               type="button"
               variant="outline"
               onClick={() => router.back()}
-              className="flex-1 h-14 rounded-2xl font-bold uppercase text-[10px] tracking-widest"
+              className="flex-1 h-16 rounded-2xl font-bold uppercase text-[10px]"
             >
               Bekor qilish
             </Button>
             <Button
               type="submit"
               disabled={createMutation.isPending}
-              className="flex-1 h-14 rounded-2xl shadow-xl shadow-primary/20 bg-primary font-black uppercase text-[11px] tracking-[0.2em]"
+              className="flex-1 h-16 rounded-2xl bg-primary font-black uppercase text-[11px] "
             >
               {createMutation.isPending ? <Loader2 className="animate-spin size-5" /> : "Saqlash"}
             </Button>

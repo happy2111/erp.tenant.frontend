@@ -23,6 +23,7 @@
 - [ ] Special page for CURD installments --
 - [ ] Product INstance Sell --
 - [ ] Customer ORG balance -/+
+- [ ] add product batch fix date slectinon
 
 
 

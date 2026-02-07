@@ -67,7 +67,7 @@ export function ProductPrices({
           className="rounded-xl h-9 bg-primary/10 hover:bg-primary/20 text-primary border-none shadow-none"
         >
           <Plus className="size-4 mr-2" />
-          Qo'shish
+          Qo&apos;shish
         </Button>
       </div>
 

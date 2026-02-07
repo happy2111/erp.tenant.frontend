@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ProductsService } from '@/services/products.service';
 import { ProductVariantsService } from '@/services/product-variants.service';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,10 +29,8 @@ export function PosCatalog() {
     queryKey: ['pos-variants', search, selectedProductId],
     queryFn: async () => {
       if (selectedProductId) {
-        // Ensure this returns the ARRAY (items)
         return await ProductVariantsService.getVariantsByProduct(selectedProductId);
       }
-      // This already returns .items, which is good
       return ProductVariantsService.getAllAdmin({ search, limit: 50 }).then(r => r.items);
     }
   });
@@ -41,6 +39,14 @@ export function PosCatalog() {
     queryFn: () => ProductsService.getAllAdmin({ search, limit: 50 }).then(r => r.items),
     enabled: activeTab === 'products' && !selectedProductId
   });
+
+  const variantsWithoutInstances = variants?.filter(
+    v => !v.product_instance || v.product_instance.length === 0
+  ) || [];
+
+  const variantsWithInstances = variants?.filter(
+    v => v.product_instance && v.product_instance.length > 0
+  ) || [];
 
   const renderCard = ({
                         title,
@@ -72,7 +78,6 @@ export function PosCatalog() {
           </div>
         )}
 
-        {/* STOCK BADGE - Вернули сюда */}
         {!isProduct && stockCount !== undefined && (
           <div className="absolute top-3 right-3">
             <Badge className={cn(
@@ -88,14 +93,14 @@ export function PosCatalog() {
 
         {isProduct && (
           <div className="absolute bottom-3 left-3 bg-primary/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] text-primary-foreground font-bold uppercase tracking-widest">
-            Продукт
+            Mahsulot
           </div>
         )}
       </div>
 
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="pb-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-black opacity-30 uppercase truncate">{subtitle}</span>
+          <span className="text-[10px] m-0 font-black opacity-30 uppercase truncate">{subtitle}</span>
           <h3 className="font-bold text-sm leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
             {title}
           </h3>
@@ -104,24 +109,19 @@ export function PosCatalog() {
         <div className="flex items-center justify-between pt-2 border-t border-border/40">
           {price !== undefined ? (
             <div className="flex flex-col">
-              <span className="text-[9px] font-bold opacity-40 uppercase">Цена</span>
+              <span className="text-[9px] font-bold opacity-40 uppercase">Narx</span>
               <span className="text-primary font-black text-sm">{price}</span>
             </div>
           ) : (
-            <span className="text-[10px] font-black opacity-40 uppercase italic">Открыть</span>
+            <span className="text-[10px] font-black opacity-40 uppercase italic">Ochish</span>
           )}
 
-
-          <div className="size-8 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+          <div className="size-8 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-sm">
             {!isProduct ? (
               <Plus className="size-4 stroke-[3px]" />
-
-            ):
-              (
-                <ArrowRight className="size-4 stroke-[3px]"/>
-              )
-            }
-
+            ) : (
+              <ArrowRight className="size-4 stroke-[3px]" />
+            )}
           </div>
         </div>
       </CardContent>
@@ -134,7 +134,7 @@ export function PosCatalog() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 opacity-40" />
         <Input
           className="h-14 pl-12 rounded-3xl bg-card/30 backdrop-blur-lg border-border/50 focus-visible:ring-primary/20 shadow-none text-base"
-          placeholder="Поиск товара..."
+          placeholder="Mahsulot qidirish..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -142,24 +142,44 @@ export function PosCatalog() {
 
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSelectedProductId(null); }} className="space-y-6">
         <TabsList className="bg-card/30 backdrop-blur-md p-1 rounded-2xl border border-border/50">
-          <TabsTrigger value="variants" className="rounded-xl px-6 font-bold text-xs uppercase tracking-tighter">Варианты</TabsTrigger>
-          <TabsTrigger value="products" className="rounded-xl px-6 font-bold text-xs uppercase tracking-tighter">Продукты</TabsTrigger>
+          <TabsTrigger value="variants" className="rounded-xl px-6 font-bold text-xs uppercase tracking-tighter">Variantlar</TabsTrigger>
+          <TabsTrigger value="products" className="rounded-xl px-6 font-bold text-xs uppercase tracking-tighter">Mahsulotlar</TabsTrigger>
+          <TabsTrigger value="instances" className="rounded-xl px-6 font-bold text-xs uppercase tracking-tighter">Namunalar</TabsTrigger>
         </TabsList>
 
         <TabsContent value="variants" className="m-0 mb-[20vh]">
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-            {variants?.map(v => {
-              // РАСЧЕТ STOCK ИЗ ТВОЕГО JSON
+            {variantsWithoutInstances.map(v => {
               const stockAmount = v.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;
 
               return renderCard({
                 title: v.title,
-                subtitle: v.sku || 'No SKU',
+                subtitle: v.sku || 'SKU yo‘q',
                 image: v.images?.[0]?.url,
-                stockCount: stockAmount, // Передаем сюда
+                stockCount: stockAmount,
                 price: v.defaultPrice ? `${Number(v.defaultPrice).toLocaleString()} ${v.currency?.symbol || ''}` : '---',
                 onClick: () => setSelectedVariant(v),
                 key: v.id
+              });
+            })}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="instances" className="m-0 mb-[20vh]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {variantsWithInstances.map(v => {
+              const instancesInStock = v.product_instance?.filter(i => i.currentStatus === 'IN_STOCK').length || 0;
+              const totalStock = v.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;
+              const displayStock = instancesInStock > 0 ? instancesInStock : totalStock;
+
+              return renderCard({
+                title: v.title,
+                subtitle: v.sku || 'SKU yo‘q',
+                image: v.images?.[0]?.url,
+                stockCount: displayStock,
+                price: v.defaultPrice ? `${Number(v.defaultPrice).toLocaleString()} ${v.currency?.symbol || ''}` : '---',
+                onClick: () => setSelectedVariant(v),
+                key: v?.product_instance[0]?.id || v.id
               });
             })}
           </div>
@@ -179,19 +199,19 @@ export function PosCatalog() {
           ) : (
             <div className="space-y-4">
               <Button variant="ghost" size="sm" onClick={() => setSelectedProductId(null)} className="rounded-xl">
-                <ArrowLeft className="mr-2 size-4" /> Назад
+                <ArrowLeft className="mr-2 size-4" /> Orqaga
               </Button>
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                {variants?.map(v => {
+                {variantsWithoutInstances.map(v => {
                   const stockAmount = v.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;
                   return renderCard({
                     title: v.title,
-                    subtitle: v.sku,
+                    subtitle: v.sku || 'SKU yo‘q',
                     image: v.images?.[0]?.url,
                     stockCount: stockAmount,
                     price: v.defaultPrice ? `${Number(v.defaultPrice).toLocaleString()} ${v.currency?.symbol || ''}` : '---',
                     onClick: () => setSelectedVariant(v),
-                    key: v.key,
+                    key: v.id,
                   });
                 })}
               </div>
@@ -203,7 +223,9 @@ export function PosCatalog() {
       <AddToCartModal
         variant={selectedVariant}
         isOpen={!!selectedVariant}
-        onClose={() => setSelectedVariant(null)}
+        onClose={() => {
+          setSelectedVariant(null)
+        }}
       />
     </div>
   );

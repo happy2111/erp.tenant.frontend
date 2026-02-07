@@ -31,6 +31,7 @@ import {
 } from '@/schemas/product-prices.schema';
 import { cn } from '@/lib/utils';
 import Link from "next/link";
+import { ProductInstancesService } from "@/services/product-instances.service";
 
 interface Props {
   variant: ProductVariant | null;
@@ -45,13 +46,20 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
   const [price, setPrice] = useState(0);
   const [selectedPriceType, setSelectedPriceType] = useState<PriceType | 'DEFAULT'>('DEFAULT');
   const [source, setSource] = useState<'special' | 'variant_default' | 'manual'>('manual');
+  const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null);
 
-  // Расчет доступного остатка из массива stocks
-  const totalStock = variant?.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;
-  const isOutOfStock = totalStock <= 0;
-  const isInsufficient = quantity > totalStock;
+  const { data: instancesData, isLoading: instancesLoading } = useQuery({
+    queryKey: ['product-instances', variant?.id],
+    queryFn: () =>
+      variant?.id
+        ? ProductInstancesService.findAll({
+          productVariantId: variant.id,
+          status: 'IN_STOCK'
+        })
+        : Promise.resolve({ data: [], total: 0, page: 1, limit: 20, totalPages: 1 }),
+    enabled: !!variant && isOpen,
+  });
 
-  // 1. ЗАПРОС ЦЕН ПРОДУКТА
   const { data: productPrices, isLoading: pricesLoading } = useQuery({
     queryKey: ['product-prices', variant?.productId, currencyId],
     queryFn: () => ProductPricesService.getAllAdmin({
@@ -105,43 +113,57 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
 
   const handleConfirm = () => {
     if (!variant || price <= 0 || isInsufficient) return;
-    addItem(variant, price);
-    if (quantity > 1) {
+    addItem(variant, price, selectedInstanceId || undefined);
+    if (!selectedInstanceId && quantity > 1) {
       usePosStore.getState().updateQuantity(variant.id, quantity);
     }
     onClose();
   };
 
+  const totalVariantStock = variant?.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;
+  const hasInstancesInStock = instancesData?.data?.length > 0;
+
+  const isOutOfStock = totalVariantStock <= 0 && !hasInstancesInStock;
+  const selectedInstanceStock = selectedInstanceId ? 1 : totalVariantStock;
+  const isInsufficient = quantity > selectedInstanceStock;
+  const requiresInstanceSelection = hasInstancesInStock && !selectedInstanceId;
+
   if (!variant) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} >
-
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        onClose();
+        setSelectedInstanceId(null);
+      }
+    }}>
       <DialogContent showCloseButton={false} className="sm:max-w-[480px] p-0 pt-12 w-full max-h-[90vh] overflow-hidden rounded-[3rem] bg-card/60 backdrop-blur-2xl border-white/20 shadow-2xl">
         <DialogClose asChild>
           <Button className="absolute bg-primary top-4 right-4 h-10 w-10 rounded-full hover:bg-muted/30 transition">
             <X className="size-5 text-gray-500" />
           </Button>
         </DialogClose>
-        <div className="p-3 sm:p-8 space-y-8 overflow-y-auto max-h-[calc(90vh-64px)]">
 
+        <div className="p-3 sm:p-8 space-y-8 overflow-y-auto max-h-[calc(90vh-64px)]">
           <DialogHeader>
             <div className="flex justify-between items-start gap-4">
               <div className="space-y-2 flex-1">
                 <DialogTitle className="text-3xl text-left flex items-center gap-2 font-black tracking-tight leading-tight">
                   {variant.title}
-                  <Link  href={`/product-variants/${variant.id}`} className='text-blue-500' target='_blank'><ExternalLink /></Link>
+                  <Link href={`/product-variants/${variant.id}`} className='text-blue-500' target='_blank'>
+                    <ExternalLink />
+                  </Link>
                 </DialogTitle>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline" className="rounded-lg border-primary/20 bg-primary/5 text-primary text-[10px] font-bold">
-                    {variant.sku || 'Без SKU'}
+                    {variant.sku || 'SKU yo‘q'}
                   </Badge>
                   <Badge className={cn(
                     "rounded-lg border-none font-bold text-[10px]",
                     isOutOfStock ? "bg-destructive/20 text-destructive" : "bg-emerald-500/20 text-emerald-600"
                   )}>
                     <Package className="size-3 mr-1" />
-                    На складе: {totalStock}
+                    Omborda: {hasInstancesInStock ? instancesData?.data.length : totalVariantStock}
                   </Badge>
                 </div>
               </div>
@@ -149,10 +171,40 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
           </DialogHeader>
 
           <div className="space-y-8">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase opacity-50 tracking-widest flex items-center gap-2 ml-1">
+                <Package className="size-3" /> Seriya raqamini tanlang
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {instancesLoading ? (
+                  <Loader2 className="animate-spin size-5" />
+                ) : instancesData?.data.length ? (
+                  instancesData.data.map(inst => (
+                    <Button
+                      key={inst.id}
+                      size="sm"
+                      variant={selectedInstanceId === inst.id ? 'default' : 'outline'}
+                      className="rounded-xl text-[10px] font-bold"
+                      onClick={() => {
+                        setSelectedInstanceId(inst.id);
+                        setQuantity(1);
+                      }}
+                    >
+                      {inst.serialNumber}
+                    </Button>
+                  ))
+                ) : (
+                  <Badge variant="outline" className="rounded-lg border-primary/20 bg-primary/5 text-primary text-[10px] font-bold">
+                    Mavjud namunalar yo‘q
+                  </Badge>
+                )}
+              </div>
+            </div>
+
             {/* ТИПЫ ЦЕН */}
             <div className="space-y-4">
               <Label className="text-[10px] font-black uppercase opacity-50 tracking-widest flex items-center gap-2 ml-1">
-                <Tag className="size-3" /> Выберите тариф
+                <Tag className="size-3" /> Narx turini tanlang
               </Label>
               <div className="flex flex-wrap gap-2">
                 <Button
@@ -171,7 +223,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
                     onClick={() => handlePriceTypeChange(type)}
                     disabled={!productPrices?.items.some(p => p.priceType === type && p.currencyId === currencyId)}
                   >
-                    {PriceTypeLabels[type]} {/* ← вот здесь используем узбекскую локализацию */}
+                    {PriceTypeLabels[type]}
                   </Button>
                 ))}
               </div>
@@ -180,7 +232,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
             {/* КОЛИЧЕСТВО И ЦЕНА */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase opacity-50 ml-1">Количество</Label>
+                <Label className="text-[10px] font-black uppercase opacity-50 ml-1">Miqdori</Label>
                 <div className={cn(
                   "flex items-center justify-between bg-muted/40 rounded-3xl p-1.5 border transition-colors",
                   isInsufficient && "border-destructive/50 bg-destructive/5"
@@ -190,40 +242,46 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
                     size="icon"
                     className="rounded-2xl size-10"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={selectedInstanceId !== null || quantity <= 1}
                   >
                     <Minus className="size-4" />
                   </Button>
+
                   <span className={cn("font-black text-2xl", isInsufficient && "text-destructive")}>
                     {quantity}
                   </span>
+
                   <Button
                     variant="ghost"
                     size="icon"
                     className="rounded-2xl size-10"
                     onClick={() => setQuantity(quantity + 1)}
-                    disabled={quantity >= totalStock}
+                    disabled={
+                      selectedInstanceId !== null ||
+                      quantity >= (hasInstancesInStock ? instancesData?.data.length : totalVariantStock)
+                    }
                   >
                     <Plus className="size-4" />
                   </Button>
                 </div>
+
                 {isInsufficient && (
                   <p className="text-[10px] text-destructive font-bold flex items-center gap-1 ml-2">
-                    <AlertCircle className="size-3" /> Недостаточно на складе
+                    <AlertCircle className="size-3" /> Omborda yetarli emas
                   </p>
                 )}
               </div>
 
               <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase opacity-50 ml-1">Цена за единицу</Label>
+                <Label className="text-[10px] font-black uppercase opacity-50 ml-1">Bir dona narxi</Label>
                 <div className="relative">
                   <Input
-                    type="text"                     // text для контроля через pattern
-                    inputMode="decimal"             // цифровая клавиатура с точкой на мобильных
-                    pattern="^\d*\.?\d{0,2}$"      // только числа с 0-2 знаками после точки
+                    type="text"
+                    inputMode="decimal"
+                    pattern="^\d*\.?\d{0,2}$"
                     className="h-14 rounded-3xl bg-muted/40 border-none font-black text-xl focus-visible:ring-2 ring-primary/20 px-6"
                     value={price}
                     onChange={(e) => {
-                      // фильтруем ввод: только цифры и максимум 2 знака после точки
                       const value = e.target.value;
                       if (/^\d*\.?\d{0,2}$/.test(value)) {
                         setPrice(Number(value));
@@ -233,14 +291,13 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
                   />
                 </div>
               </div>
-
             </div>
 
             {/* ИТОГОВАЯ ПАНЕЛЬ */}
             <div className="p-6 bg-primary/10 rounded-[2.5rem] border border-primary/20 flex justify-between items-center relative overflow-hidden">
               <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent pointer-events-none" />
               <div className="flex flex-col relative z-10">
-                <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest leading-none mb-1">К оплате</span>
+                <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest leading-none mb-1">To‘lov</span>
                 <span className="text-4xl font-black text-primary tracking-tighter">
                   {(price * quantity).toLocaleString()}
                 </span>
@@ -251,23 +308,34 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
                   source === 'special' ? "bg-emerald-500 text-white" :
                     source === 'variant_default' ? "bg-blue-500 text-white" : "bg-orange-500 text-white"
                 )}>
-                  {source === 'special' ? 'ПРАЙС-ЛИСТ' : source === 'variant_default' ? 'СТАНДАРТ' : 'ВРУЧНУЮ'}
+                  {source === 'special' ? 'NARX RO‘YXATI' :
+                    source === 'variant_default' ? 'STANDART' : 'QO‘LDA'}
                 </Badge>
               </div>
             </div>
 
             <Button
               className="w-full h-20 rounded-[2rem] text-xl font-black uppercase transition-all active:scale-[0.98]"
-              disabled={price <= 0 || pricesLoading || isInsufficient || isOutOfStock}
+              disabled={
+                price <= 0 ||
+                pricesLoading ||
+                isInsufficient ||
+                isOutOfStock ||
+                requiresInstanceSelection
+              }
               onClick={handleConfirm}
             >
               {pricesLoading ? (
                 <Loader2 className="animate-spin size-6" />
               ) : isOutOfStock ? (
-                "Нет в наличии"
+                "Mavjud emas"
+              ) : requiresInstanceSelection ? (
+                "Namunani tanlang"
+              ) : price <= 0 ? (
+                "Narx kiriting"
               ) : (
-                "В корзину"
-              )}
+                "Savatga qo‘shish"
+              ) }
             </Button>
           </div>
         </div>

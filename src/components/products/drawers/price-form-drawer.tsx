@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  CreateProductPriceSchema,
+  CreateProductPriceSchema, PriceTypeLabels,
   PriceTypeValues,
 } from '@/schemas/product-prices.schema';
 import { ProductPricesService } from '@/services/product-prices.service';
@@ -34,7 +34,7 @@ function PriceFormDrawer({
     resolver: zodResolver(CreateProductPriceSchema),
     defaultValues: {
       productId,
-      priceType: 'WHOLESALE',
+      priceType: 'CASH',
       amount: '',
       currencyId: '',
       customerType: 'CLIENT'
@@ -67,7 +67,7 @@ function PriceFormDrawer({
           organizationId: editingPrice.organizationId
         });
       } else {
-        reset({ productId, priceType: 'WHOLESALE', amount: '', customerType: 'CLIENT' });
+        reset({ productId, priceType: 'CASH', amount: '', customerType: 'CLIENT' });
       }
     }
   }, [open, editingPrice, reset, productId]);
@@ -140,7 +140,7 @@ function PriceFormDrawer({
                       currentPriceType === type ? "bg-primary/20 border-primary/40 text-primary" : "bg-card/20 border-border/20"
                     )}
                   >
-                    {type}
+                    {PriceTypeLabels[type]}
                   </div>
                 ))}
               </div>
@@ -183,7 +183,7 @@ function PriceFormDrawer({
           </div>
 
             <DrawerFooter className="pb-8">
-            <Button type="submit" disabled={loading} className="h-14 rounded-[1.5rem] text-[12px] font-black uppercase tracking-[0.2em] italic shadow-xl shadow-primary/20">
+            <Button type="submit" disabled={loading} className="h-14 rounded-[1.5rem] text-[12px] font-black uppercase">
               {loading && <Loader2 className="mr-2 animate-spin" />}
               {editingPrice ? "O'zgarishlarni saqlash" : "Narxni tasdiqlash"}
             </Button>

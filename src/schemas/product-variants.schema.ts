@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {MinimalCurrencySchema} from "@/schemas/product-prices.schema";
 import {ProductSchema} from "@/schemas/products.schema";
 import {StockSchema} from "@/schemas/stocks.schema";
+import {ProductInstanceSchema} from "@/schemas/product-instances.schema";
 
 // ─── Создание варианта товара ────────────────────────────────────────
 export const CreateProductVariantSchema = z.object({
@@ -68,6 +69,7 @@ export const ProductVariantSchema = z.object({
       quantity: z.coerce.number().default(0),
     })
   ).default([]),
+  product_instance: z.array(ProductInstanceSchema).default([]).optional(),
 });
 
 export type ProductVariant = z.infer<typeof ProductVariantSchema>;

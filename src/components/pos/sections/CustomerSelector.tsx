@@ -11,12 +11,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, User, X, UserPlus, CheckCircle2 } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
+import {useRouter} from "next/navigation";
 
 export function CustomerSelector() {
   const { customerId, setCustomer } = usePosStore();
   const [search, setSearch] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [debouncedSearch] = useDebounce(search, 500);
+  const router = useRouter();
 
   const { data, isLoading } = useQuery({
     queryKey: ['pos-customers', debouncedSearch],
@@ -35,16 +37,18 @@ export function CustomerSelector() {
       <DrawerTrigger asChild>
         <Button
           variant="outline"
-          className="py-4 h-14
+          className="py-4 h-14 border border-border/50 rounded-2xl
             bg-background/50 backdrop-blur-md dark:bg-input/20
-            border-2 border-border/60 rounded-[12px] shadow-sm
-             px-4 border-none flex items-center gap-2 hover:bg-muted"
+            shadow-sm
+             px-4 flex items-center gap-2 hover:bg-muted"
         >
           <User className="size-4 opacity-50" />
           <div className="flex flex-col items-start leading-tight">
-            <span className="text-[10px] uppercase font-bold opacity-50">Клиент</span>
+            <span className="text-[10px] uppercase font-bold opacity-50">Mijoz</span>
             <span className="text-sm font-bold max-w-[120px] truncate">
-              {selectedCustomer ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : 'Выбрать клиента'}
+              {selectedCustomer
+                ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}`
+                : 'Mijozni tanlash'}
             </span>
           </div>
         </Button>
@@ -53,13 +57,13 @@ export function CustomerSelector() {
       <DrawerContent className="h-[100dvh] mb-5 pb-5">
         <div className="mx-auto w-full max-w-md px-4 flex flex-col h-full">
           <DrawerHeader>
-            <DrawerTitle className="text-center text-2xl font-black">Поиск клиента</DrawerTitle>
+            <DrawerTitle className="text-center text-2xl font-black">Mijoz qidirish</DrawerTitle>
           </DrawerHeader>
 
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 opacity-40" />
             <Input
-              placeholder="Имя, фамилия или телефон..."
+              placeholder="Ism, familiya yoki telefon..."
               className="pl-10 h-12 rounded-2xl bg-muted border-none"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -77,7 +81,7 @@ export function CustomerSelector() {
 
           <div className="mt-6 space-y-2 h-[50vh] overflow-y-auto">
             {isLoading ? (
-              <div className="text-center py-10 opacity-50">Загрузка...</div>
+              <div className="text-center py-10 opacity-50">Yuklanmoqda...</div>
             ) : data?.items.length ? (
               data.items.map((customer) => (
                 <button
@@ -105,9 +109,9 @@ export function CustomerSelector() {
               ))
             ) : (
               <div className="text-center py-10">
-                <p className="opacity-50">Клиент не найден</p>
-                <Button variant="link" className="mt-2 text-primary">
-                  <UserPlus className="mr-2 size-4" /> Добавить нового
+                <p className="opacity-50">Mijoz topilmadi</p>
+                <Button onClick={() => router.push('/organizations/customers')} variant="link" className="mt-2 text-primary">
+                  <UserPlus className="mr-2 size-4" /> Yangi qo‘shish
                 </Button>
               </div>
             )}
@@ -122,7 +126,7 @@ export function CustomerSelector() {
                 setIsOpen(false);
               }}
             >
-              Сбросить выбор
+              Tanlovni bekor qilish
             </Button>
           </div>
 
