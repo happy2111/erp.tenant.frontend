@@ -20,7 +20,7 @@ const Page = () => {
       {/* h-screen вместо h-[90vh], чтобы на мобилках не было лишнего скролла страницы.
         overflow-hidden на родителе обязателен.
       */}
-      <div className="flex flex-col h-screen overflow-hidden bg-background">
+      <div className="flex flex-col h-screen overflow-hidden bg-background bg-red-600">
         <PosHeader />
 
         <main className="flex flex-1 overflow-hidden relative">
@@ -35,7 +35,7 @@ const Page = () => {
           </aside>
 
           {/* Кнопка и Drawer для мобилок */}
-          <div className="lg:hidden">
+          <div className="lg:hidden overflow-x-scroll h-[80vh">
             <CheckoutPanel onSaleComplete={handleSaleComplete} />
           </div>
         </main>

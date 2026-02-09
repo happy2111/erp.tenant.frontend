@@ -94,7 +94,7 @@ export function PosHeader() {
                 <SelectContent className="rounded-2xl border-border/40 backdrop-blur-xl">
                   {kassas?.filter(k => k.currencyId === currencyId).map(k => (
                     <SelectItem key={k.id} value={k.id} className="text-xs font-bold">
-                      {k.name}
+                      {k.name} ({k.type})
                     </SelectItem>
                   ))}
                 </SelectContent>

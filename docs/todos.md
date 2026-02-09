@@ -24,8 +24,10 @@
 - [ ] Product INstance Sell --
 - [ ] Customer ORG balance -/+
 - [ ] add product batch fix date slectinon
-
-
+- [ ] in pos , select customer show only TYPE: Client
+- [ ] каректировка кассы
+- [ ] оплата рассрочки
+- [ ] purches crud
 
 
 ### Универсальные требования к бэкенду для CRUD-сущности

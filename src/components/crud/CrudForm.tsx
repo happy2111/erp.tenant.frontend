@@ -1,8 +1,8 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form"; // Добавили Controller
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PatternFormat } from "react-number-format"; // Импорт маски
+import { PatternFormat } from "react-number-format";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -152,7 +152,7 @@ export function CrudForm<T, Dto>({
 
       <Button
         type="submit"
-        className="w-full h-16 rounded-[2rem] text-xl font-black uppercase tracking-[0.2em] backdrop-blur-2xl transition-all active:scale-[0.98]"
+        className="w-full h-16 rounded-4xl text-xl font-black uppercase tracking-[0.2em] backdrop-blur-2xl transition-all active:scale-[0.98]"
         disabled={form.formState.isSubmitting}
       >
         {form.formState.isSubmitting ? "Сохранение..." : "Сохранить"}
