@@ -34,6 +34,7 @@ export type UpdateKassaDto = z.infer<typeof UpdateKassaSchema>;
 // ─── Фильтр / запрос списка касс ─────────────────────────────────────
 export const GetKassaQuerySchema = z.object({
   search: z.string().optional().catch(''),
+  currencyId: z.string().uuid().optional().catch(undefined),
   sortField: z.string().optional().default('createdAt').optional(),
   order: z.enum(['asc', 'desc']).default('desc').optional(),
   page: z.coerce.number().min(1).default(1).optional(),

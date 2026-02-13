@@ -19,34 +19,37 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Wallet, Landmark, CreditCard, Banknote } from 'lucide-react';
+import {Currency} from "@/schemas/currency.schema";
 
 export function AddInstallmentPaymentModal({
                                              isOpen,
                                              onClose,
                                              installmentId,
                                              remainingAmount,
-                                             monthlyPayment
+                                             monthlyPayment,
+                                             currency
                                            }: {
   isOpen: boolean;
   onClose: () => void;
   installmentId: string;
   remainingAmount: number;
   monthlyPayment: number;
+  currency: Currency;
 }) {
   const queryClient = useQueryClient();
 
-  // 1. Получаем список касс
+
   const { data: kassasData, isLoading: isLoadingKassas } = useQuery({
     queryKey: ['kassas', 'admin-all'],
-    queryFn: () => KassasService.getAllAdmin({ limit: 100 }),
-    enabled: isOpen, // Загружаем только когда модалка открыта
+    queryFn: () => KassasService.getAllAdmin({ limit: 100, currencyId: currency.id}),
+    enabled: isOpen,
   });
 
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting }, reset } = useForm<CreateInstallmentPaymentDto>({
     resolver: zodResolver(CreateInstallmentPaymentSchema),
     defaultValues: {
       installmentId,
-      amount: monthlyPayment,
+      amount: monthlyPayment.toFixed(2),
       paymentMethod: 'cash',
       kassaId: '',
     }
@@ -125,14 +128,14 @@ export function AddInstallmentPaymentModal({
               <Label className="text-[10px] font-black uppercase opacity-40 ml-1">Сумма платежа</Label>
               <div className="relative group">
                 <Input
-                  {...register('amount', { valueAsNumber: true })}
-                  type="number"
-                  className="h-14 rounded-2xl bg-muted/50 border-none font-black text-xl focus-visible:ring-primary/20 transition-all group-hover:bg-muted/80"
+                  {...register('amount')}
+                  inputMode="decimal"
+                  placeholder="0.00"
                 />
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => setValue('amount', remainingAmount)}
+                  onClick={() => setValue('amount', remainingAmount.toFixed(2))}
                   className="absolute right-2 top-2 h-10 rounded-xl text-[10px] font-black uppercase bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors"
                 >
                   Весь остаток

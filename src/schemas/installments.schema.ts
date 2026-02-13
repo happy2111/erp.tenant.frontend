@@ -20,7 +20,17 @@ export type CreateInstallmentDto = z.infer<typeof CreateInstallmentSchema>;
 // ─── Добавление платежа по рассрочке ─────────────────────────────────
 export const CreateInstallmentPaymentSchema = z.object({
   installmentId: z.string().uuid('Некорректный ID рассрочки'),
-  amount: z.number().positive('Сумма платежа должна быть положительной'),
+  amount: z
+    .coerce
+    .number({
+      invalid_type_error: 'Сумма должна быть числом',
+    })
+    .positive('Сумма должна быть положительной')
+    .refine(
+      (val) => Number.isInteger(val * 100),
+      'Допускается не более 2 знаков после запятой'
+    ),
+
   paymentMethod: z.string().optional(),
   kassaId: z.string().uuid('Некорректный ID кассы'),
   note: z.string().optional(),

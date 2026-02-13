@@ -48,7 +48,16 @@ export function InstallmentDetailView({ id }: { id: string }) {
     CANCELLED: "bg-muted text-muted-foreground border-border",
   };
 
-  const payProgress = (installment.paidAmount / installment.totalAmount) * 100;
+  const paidForInstallment = Math.max(
+    0,
+    installment.paidAmount - installment.initialPayment
+  );
+
+  const payProgress =
+    installment.totalAmount > 0
+      ? (paidForInstallment / installment.totalAmount) * 100
+      : 0;
+
 
   return (
     <div className="flex flex-col h-full space-y-6 p-4 lg:p-8 bg-transparent max-w-[1400px] mx-auto">
@@ -105,15 +114,15 @@ export function InstallmentDetailView({ id }: { id: string }) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="space-y-1">
                   <span className="text-[10px] font-black uppercase opacity-40 tracking-widest">Сумма рассрочки</span>
-                  <p className="text-3xl font-black italic">{installment.totalAmount.toLocaleString()} <span className="text-sm opacity-40 not-italic font-medium">UZS</span></p>
+                  <p className="text-3xl font-black italic">{installment.totalAmount.toLocaleString()} <span className="text-sm opacity-40 not-italic font-medium">{installment.sale?.currency.symbol}</span></p>
                 </div>
                 <div className="space-y-1 text-emerald-500">
                   <span className="text-[10px] font-black uppercase opacity-60 tracking-widest">Оплачено</span>
-                  <p className="text-3xl font-black italic">{installment.paidAmount.toLocaleString()} <span className="text-sm opacity-40 not-italic font-medium">UZS</span></p>
+                  <p className="text-3xl font-black italic">{installment.paidAmount.toLocaleString()} <span className="text-sm opacity-40 not-italic font-medium">{installment.sale?.currency.symbol}</span></p>
                 </div>
                 <div className="space-y-1 text-destructive">
                   <span className="text-[10px] font-black uppercase opacity-60 tracking-widest">Остаток</span>
-                  <p className="text-3xl font-black italic">{installment.remaining.toLocaleString()} <span className="text-sm opacity-40 not-italic font-medium">UZS</span></p>
+                  <p className="text-3xl font-black italic">{installment.remaining.toLocaleString()} <span className="text-sm opacity-40 not-italic font-medium">{installment.sale?.currency.symbol}</span></p>
                 </div>
               </div>
 
@@ -247,6 +256,7 @@ export function InstallmentDetailView({ id }: { id: string }) {
         installmentId={id}
         remainingAmount={installment.remaining}
         monthlyPayment={installment.monthlyPayment}
+        currency={installment.sale?.currency}
       />
     </div>
   );
