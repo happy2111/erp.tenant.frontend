@@ -41,117 +41,21 @@ export interface SidebarGroup {
   items: SidebarItem[]
 }
 
-
-const sidebarGroups = [
-  {
-    label: "Savdo va xarid",
-    items: [
-      {name: "POS", url: "/pos", icon: LayoutTemplate},
-      {
-        name: "Savdo",
-        url: "/sales",
-        icon: ShoppingCart,
-      },
-      {
-        name: "Xarid",
-        url: "/purchases",
-        icon: CreditCard,
-        actions: [
-          { label: "Xarid qo'shish", url: "/purchases/create", icon: Plus },
-        ],
-      },
-      {
-        name: "Bo'lib to'lashlar",
-        url: "/installments",
-        icon: CalendarCheck,
-        actions: [
-          { label: "Installment qo'shish", url: "/installments/create", icon: Plus },
-        ],
-      },
-    ],
-  },
-  {
-    label: "Tashkilot",
-    items: [
-      {name: "Organizatsiyalar", url: "/organizations", icon: Building},
-      {name: "Xodimlar", url: "/organizations/users", icon: Contact},
-      {name: "Mijozlar", url: "/organizations/customers", icon: UserStar},
-    ],
-  },
-  {
-    label: "Mahsulotlar",
-    items: [
-      {
-        name: "Mahsulotlar", url: "/products", icon: Package, actions: [
-          {
-            label: "Mahsulot qo'shish",
-            url: "/products/create",
-            icon: Plus,
-          },
-        ],
-      },
-      {
-        name: "Mahsolot Variantlari",
-        url: "/product-variants",
-        icon: Layers,
-        actions: [
-          {
-            label: "Mahsulot Variantlari qo'shish",
-            url: "/product-variants/create",
-            icon: Plus,
-          }
-        ]
-      },
-      {name: "Mahsulot namunasi", url: "/product-instances", icon: Cuboid,
-        actions: [
-          {
-            label: "Mahsulot namunasi qo'shish",
-            url: "/product-instances/create",
-            icon: Plus,
-          },
-        ],
-      },
-      {name: "Kategoriyalar", url: "/categories", icon: List},
-      {name: "Brandlar", url: "/products/brands", icon: Tag},
-      {name: "Xarakteristikalar", url: "/attributes", icon: Settings2},
-    ],
-  },
-  {
-    label: "Moliyaviy",
-    items: [
-      {name: "Kassalar", url: "/kassas", icon: Landmark},
-      {name: "kassa transferlari", url: "/kassa-transfers", icon: ArrowLeftRight},
-      {name: "Valyutalar", url: "/currency", icon: Euro},
-      {name: "valyuta kursi", url: "/currency-rates", icon: ChartLine},
-    ],
-  },
-  {
-    label: "Sozlamalar",
-    items: [
-      {
-        name: "Foydalanuvchilar", url: "/tenant-users", icon: User,
-        actions: [
-          {
-            label: "Foydalanuvchi qo'shish",
-            url: "/tenant-users/create",
-            icon: Plus,
-          },
-        ],
-      },
-      {name: "Sozlamalar", url: "/settings", icon: Settings2},
-    ],
-  }
-]
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  groups: SidebarGroup[]
+}
 
 
-export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
+
+export function AppSidebar({ groups, ...props }: AppSidebarProps) {
+
   return (
     <Sidebar collapsible="offcanvas" variant="inset" {...props}>
       <SidebarHeader>
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        {sidebarGroups.map((group) => (
+        {groups.map((group) => (
           <NavProjects
             key={group.label}
             label={group.label}

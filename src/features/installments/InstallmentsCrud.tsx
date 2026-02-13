@@ -3,17 +3,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { PurchasesService } from "@/services/purchases.service";
+import { InstallmentsService } from "@/services/installments.service";
 import {
-  Purchase,
-  CreatePurchaseDto,
-  UpdatePurchaseDto,
-  CreatePurchaseSchema,
-  UpdatePurchaseSchema,
-  PurchaseStatusValues,
-} from "@/schemas/purchases.schema";
+  Installment,
+  CreateInstallmentDto,
+  CreateInstallmentSchema,
+  InstallmentStatusValues,
+} from "@/schemas/installments.schema";
 
-import { purchaseFields } from "./purchases.fields";
+import { installmentFields } from "./installments.fields";
 import { useCrudController } from "@/hooks/useCrudController";
 
 import { Input } from "@/components/ui/input";
@@ -34,11 +32,10 @@ import { CrudViewMode } from "@/components/crud/types";
 import { toast } from "sonner";
 import {useRouter} from "next/navigation";
 
-export function PurchasesCrud() {
+export function InstallmentsCrud() {
   const queryClient = useQueryClient();
-  const controller = useCrudController<Purchase>();
+  const controller = useCrudController<Installment>();
   const router = useRouter();
-
   const {
     search,
     debouncedSearch,
@@ -57,23 +54,23 @@ export function PurchasesCrud() {
   } = controller;
 
   const [view, setView] = useState<CrudViewMode>(() => {
-    const saved = localStorage.getItem("purchases-view-mode");
+    const saved = localStorage.getItem("installments-view-mode");
     return (saved as CrudViewMode) || "table";
   });
 
-  const [sortField, setSortField] = useState<"purchaseDate" | "totalAmount" | "createdAt">("purchaseDate");
+  const [sortField, setSortField] = useState<"dueDate" | "totalAmount" | "createdAt">("dueDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    localStorage.setItem("purchases-view-mode", view);
+    localStorage.setItem("installments-view-mode", view);
   }, [view]);
 
-  // ─── Запрос списка закупок ───
+  // ─── Запрос списка рассрочек ───
   const { data, isLoading, error } = useQuery({
-    queryKey: ["purchases", debouncedSearch, page, limit, sortField, sortOrder, statusFilter],
+    queryKey: ["installments", debouncedSearch, page, limit, sortField, sortOrder, statusFilter],
     queryFn: () =>
-      PurchasesService.getAllAdmin({
+      InstallmentsService.getAllAdmin({
         search: debouncedSearch || undefined,
         sortField,
         order: sortOrder,
@@ -84,64 +81,25 @@ export function PurchasesCrud() {
     keepPreviousData: true,
   });
 
-  const purchases = data?.items ?? [];
+  const installments = data?.items ?? [];
   const total = data?.total ?? 0;
 
   // ─── Мутации ───
   const createMutation = useMutation({
-    mutationFn: PurchasesService.create,
+    mutationFn: InstallmentsService.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["purchases"] });
+      queryClient.invalidateQueries({ queryKey: ["installments"] });
       setCreateOpen(false);
-      toast.success("Закупка создана (в статусе Черновик)");
+      toast.success("Рассрочка создана");
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Не удалось создать закупку");
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdatePurchaseDto }) =>
-      PurchasesService.update(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["purchases"] });
-      setEditItem(null);
-      setCreateOpen(false);
-      toast.success("Закупка обновлена");
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Ошибка обновления закупки");
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: PurchasesService.remove,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["purchases"] });
-      setDeleteId(null);
-      toast.success("Закупка удалена");
-    },
-    onError: (err: any) => {
-      toast.error(
-        err.response?.data?.message ||
-        "Не удалось удалить закупку (возможно, уже оплачена или есть платежи)"
-      );
+      toast.error(err.response?.data?.message || "Не удалось создать рассрочку");
     },
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreatePurchaseDto) => {
+  const handleCreate = (dto: CreateInstallmentDto) => {
     createMutation.mutate(dto);
-  };
-
-  const handleUpdate = (dto: UpdatePurchaseDto) => {
-    if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
-  };
-
-  const handleDelete = () => {
-    if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
   };
 
   const handleSort = (field: typeof sortField) => {
@@ -156,8 +114,8 @@ export function PurchasesCrud() {
 
   const permissions = {
     canCreate: true,
-    canEdit: true,
-    canDelete: true, // часто лучше false — закупки удаляют редко
+    canEdit: false,   // редактирование рассрочек обычно запрещено
+    canDelete: false, // удаление рассрочек обычно запрещено
   };
 
   return (
@@ -166,7 +124,7 @@ export function PurchasesCrud() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-wrap">
         <div className="flex flex-col sm:flex-row gap-4">
           <Input
-            placeholder="Поиск по номеру накладной, поставщику, сумме..."
+            placeholder="Поиск по клиенту, сумме, номеру продажи..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-md"
@@ -182,15 +140,15 @@ export function PurchasesCrud() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Все статусы</SelectItem>
-                {PurchaseStatusValues.map((s) => (
+                {InstallmentStatusValues.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {s === "DRAFT"
-                      ? "Черновик"
-                      : s === "PARTIAL"
-                        ? "Частично оплачено"
-                        : s === "PAID"
-                          ? "Оплачено"
-                          : "Отменено"}
+                    {s === "PENDING"
+                      ? "Ожидает"
+                      : s === "COMPLETED"
+                        ? "Завершена"
+                        : s === "OVERDUE"
+                          ? "Просрочена"
+                          : "Отменена"}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -200,11 +158,11 @@ export function PurchasesCrud() {
 
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>Создать закупку</Button>
+          <Button onClick={() => setCreateOpen(true)}>Создать рассрочку</Button>
         </div>
       </div>
 
-      {/* Состояния загрузки / ошибки */}
+      {/* Загрузка / ошибка */}
       {isLoading && (
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -215,7 +173,7 @@ export function PurchasesCrud() {
 
       {error && (
         <div className="text-destructive text-center py-10 p-4 bg-destructive/10 rounded-lg">
-          Ошибка загрузки закупок: {error instanceof Error ? error.message : "Неизвестная ошибка"}
+          Ошибка загрузки рассрочек: {error instanceof Error ? error.message : "Неизвестная ошибка"}
         </div>
       )}
 
@@ -223,15 +181,15 @@ export function PurchasesCrud() {
         <>
           <CrudRenderer
             view={view}
-            data={purchases}
-            fields={purchaseFields}
+            data={installments}
+            fields={installmentFields}
             permissions={permissions}
             onEdit={handleEdit}
             onDelete={handleDeleteClick}
             sortField={sortField}
             sortOrder={sortOrder}
             onSort={handleSort}
-            onRowClick={(row) => router.push(`/purchases/${row.id}`)}
+            onRowClick={(row) => router.push(`/installments/${row.id}`)}
           />
 
           {/* Пагинация */}
@@ -248,7 +206,7 @@ export function PurchasesCrud() {
             </span>
             <Button
               variant="outline"
-              disabled={purchases.length < limit}
+              disabled={installments.length < limit}
               onClick={() => setPage((p) => p + 1)}
             >
               Следующая
@@ -257,36 +215,19 @@ export function PurchasesCrud() {
         </>
       )}
 
-      {/* Диалог создания / редактирования */}
+      {/* Диалог создания рассрочки */}
       <CrudDialog
         open={createOpen}
-        onOpenChange={(open) => {
-          setCreateOpen(open);
-          if (!open) setEditItem(null);
-        }}
-        title={editItem ? "Редактировать закупку" : "Новая закупка"}
+        onOpenChange={setCreateOpen}
+        title="Создать новую рассрочку"
       >
         <CrudForm
-          fields={purchaseFields}
-          schema={editItem ? UpdatePurchaseSchema : CreatePurchaseSchema}
-          defaultValues={
-            editItem ?? {
-              status: "DRAFT" as const,
-              items: [], // обычно добавляют на детальной странице
-            }
-          }
-          onSubmit={editItem ? handleUpdate : handleCreate}
+          fields={installmentFields}
+          schema={CreateInstallmentSchema}
+          defaultValues={{}}
+          onSubmit={handleCreate}
         />
       </CrudDialog>
-
-      {/* Подтверждение удаления */}
-      <ConfirmDialog
-        open={!!deleteId}
-        onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Удалить закупку?"
-        description="Это действие нельзя отменить. Удаление возможно только если закупка не оплачена и не имеет платежей."
-        onConfirm={handleDelete}
-      />
     </div>
   );
 }

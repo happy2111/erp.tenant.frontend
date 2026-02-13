@@ -156,8 +156,8 @@ export function SalesCrud() {
 
   const permissions = {
     canCreate: true,
-    canEdit: true,
-    canDelete: true, // часто лучше false — продажи удаляют редко
+    canEdit: false,
+    canDelete: false,
   };
 
   return (

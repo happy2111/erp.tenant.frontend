@@ -2,9 +2,9 @@
 
 import React from 'react'
 import ProtectedRoute from "@/components/auth/protected-route";
-import { PosCatalog } from "@/components/pos/Catalog";
-import { CheckoutPanel } from "@/components/pos/CheckoutPanel";
-import { PosHeader } from "@/components/pos/PosHeader";
+import { PosCatalog } from "@/components/pos/sections/Catalog";
+import { CheckoutPanel } from "@/components/pos/sections/CheckoutPanel";
+import { PosHeader } from "@/components/pos/sections/PosHeader";
 import { useQueryClient } from "@tanstack/react-query";
 
 const Page = () => {
@@ -20,7 +20,7 @@ const Page = () => {
       {/* h-screen вместо h-[90vh], чтобы на мобилках не было лишнего скролла страницы.
         overflow-hidden на родителе обязателен.
       */}
-      <div className="flex flex-col h-screen overflow-hidden bg-background bg-red-600">
+      <div className="flex flex-col h-screen overflow-hidden bg-background">
         <PosHeader />
 
         <main className="flex flex-1 overflow-hidden relative">

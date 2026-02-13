@@ -83,17 +83,19 @@ export const PayPurchaseSchema = z.object({
 });
 
 export type PayPurchaseDto = z.infer<typeof PayPurchaseSchema>;
-
-// ─── Позиция закупки (в ответе) ──────────────────────────────────────
 export const PurchaseItemSchema = z.object({
   id: z.string().uuid(),
   productVariantId: z.string().uuid(),
   quantity: z.number(),
-  price: z.number(),
-  discount: z.number(),
-  total: z.number(),
+
+  price: z.coerce.number(),
+  discount: z.coerce.number(),
+  total: z.coerce.number(),
+
+
   batchNumber: z.string().nullable().optional(),
   expiryDate: z.coerce.date().nullable().optional(),
+
   product_variant: z
     .object({
       id: z.string().uuid(),
@@ -103,9 +105,16 @@ export const PurchaseItemSchema = z.object({
     })
     .optional()
     .nullable(),
+
+  product_batches: z.array(z.any()).optional().default([]),
 });
 
+
 export type PurchaseItem = z.infer<typeof PurchaseItemSchema>;
+export const PurchaseSuplierUser = z.object({
+  id: z.string().uuid(),
+  phone_numbers: z.array(z.any()).optional().default([]),
+})
 
 // ─── Полная закупка (ответ от сервера) ───────────────────────────────
 export const PurchaseSchema = z.object({
@@ -136,6 +145,7 @@ export const PurchaseSchema = z.object({
       firstName: z.string().nullable(),
       lastName: z.string().nullable(),
       phone: z.string().nullable(),
+      user: PurchaseSuplierUser.optional().nullable(),
     })
     .nullable()
     .optional(),
@@ -143,6 +153,13 @@ export const PurchaseSchema = z.object({
     .object({
       id: z.string().uuid(),
       email: z.string(),
+      profile: z
+        .object({
+          firstName: z.string().nullable(),
+          lastName: z.string().nullable(),
+        })
+        .optional()
+        .nullable(),
     })
     .nullable()
     .optional(),
@@ -150,6 +167,7 @@ export const PurchaseSchema = z.object({
     .object({
       id: z.string().uuid(),
       name: z.string(),
+      type: z.string().nullable().optional(),
     })
     .nullable()
     .optional(),

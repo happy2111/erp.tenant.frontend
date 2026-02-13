@@ -31,6 +31,8 @@ export interface Currency {
   updatedAt?: string;
 }
 
+export type CurrencyWithId = Currency & { id: string };
+
 export const COMMON_CURRENCIES: Currency[] = [
   { id: "usd", code: "USD", name: "Доллар США", symbol: "$" },
   { id: "eur", code: "EUR", name: "Евро", symbol: "€" },

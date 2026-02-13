@@ -29,6 +29,7 @@ export type UpdateOrgCustomerDto = z.infer<typeof UpdateOrgCustomerSchema>;
 
 export const OrganizationCustomerFilterSchema = z.object({
   page: z.coerce.number().min(1).catch(1).optional(),
+  type: z.enum(CustomerTypeValues).optional(),
   limit: z.coerce.number().min(1).max(100).catch(10).optional(),
   search: z.string().optional().catch(''),
   sortBy: z.string().catch('createdAt').optional(),

@@ -87,7 +87,7 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
             paymentMode === mode ? "bg-background shadow-sm text-primary" : "opacity-40"
           )}
         >
-          {mode === 'FULL' ? "Naqd/Karta" : "Rassrochka"}
+          {mode === 'FULL' ? "Naqd/Karta" : "Bo'lib to'lash"}
         </button>
       ))}
     </div>
@@ -130,7 +130,7 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
   return (
     <>
       {/* --- DESKTOP --- */}
-      <div className="hidden bg-red-400 lg:flex flex-col h-full bg-background border-l w-[400px]">
+      <div className="hidden lg:flex flex-col h-full bg-background border-l w-[400px]">
         <div className="p-6 border-b flex justify-between items-center bg-card/30">
           <h2 className="font-black uppercase text-[10px] opacity-50 tracking-widest">Savat</h2>
           <span className="bg-primary/10 text-primary text-[10px] font-black px-2 py-1 rounded-lg uppercase">
@@ -184,7 +184,7 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
       </div>
 
       {/* --- MOBILE --- */}
-      <div className="lg:hidden bg-yellow-400 fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t z-50">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t z-50">
         <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <div className="flex items-center gap-3">
             <DrawerTrigger asChild>

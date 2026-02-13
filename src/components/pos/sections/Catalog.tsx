@@ -141,11 +141,43 @@ export function PosCatalog() {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSelectedProductId(null); }} className="space-y-6">
-        <TabsList className="bg-card/30 backdrop-blur-md p-1 rounded-2xl border border-border/50">
-          <TabsTrigger value="variants" className="rounded-xl px-6 font-bold text-xs uppercase tracking-tighter">Variantlar</TabsTrigger>
-          <TabsTrigger value="products" className="rounded-xl px-6 font-bold text-xs uppercase tracking-tighter">Mahsulotlar</TabsTrigger>
-          <TabsTrigger value="instances" className="rounded-xl px-6 font-bold text-xs uppercase tracking-tighter">Namunalar</TabsTrigger>
+        <TabsList
+          className="
+              flex
+              w-full
+              overflow-x-auto
+              no-scrollbar
+              whitespace-nowrap
+              bg-card/30
+              backdrop-blur-md
+              p-1
+              rounded-2xl
+              border border-border/50
+              gap-1
+            "
+        >
+          <TabsTrigger
+            value="variants"
+            className="shrink-0 rounded-xl px-6 font-bold text-xs uppercase tracking-tighter"
+          >
+            Variantlar
+          </TabsTrigger>
+
+          <TabsTrigger
+            value="products"
+            className="shrink-0 rounded-xl px-6 font-bold text-xs uppercase tracking-tighter"
+          >
+            Mahsulotlar
+          </TabsTrigger>
+
+          <TabsTrigger
+            value="instances"
+            className="shrink-0 rounded-xl px-6 font-bold text-xs uppercase tracking-tighter"
+          >
+            Namunalar
+          </TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="variants" className="m-0 mb-[20vh]">
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
@@ -166,7 +198,9 @@ export function PosCatalog() {
         </TabsContent>
 
         <TabsContent value="instances" className="m-0 mb-[20vh]">
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4
+              no-scrollbar
+          ">
             {variantsWithInstances.map(v => {
               const instancesInStock = v.product_instance?.filter(i => i.currentStatus === 'IN_STOCK').length || 0;
               const totalStock = v.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;

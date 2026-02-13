@@ -6,7 +6,7 @@ import { KassasService } from '@/services/kassas.service';
 import { usePosStore } from '@/store/use-pos-store';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Landmark, Globe, RotateCcw } from 'lucide-react';
-import { CustomerSelector } from './sections/CustomerSelector';
+import { CustomerSelector } from './CustomerSelector';
 import { cn } from '@/lib/utils';
 
 export function PosHeader() {
