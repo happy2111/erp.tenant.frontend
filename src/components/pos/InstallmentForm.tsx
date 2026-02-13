@@ -4,13 +4,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import {
-  CalendarDays,
   Wallet,
   Clock,
   CircleDollarSign,
   AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {InstallmentPlan} from "@/schemas/installment-settings.schema";
+import {usePosStore} from "@/store/use-pos-store";
+import {useState} from "react";
 
 interface InstallmentFormProps {
   total: number;
@@ -19,6 +21,7 @@ interface InstallmentFormProps {
   totalMonths: number;
   setTotalMonths: (v: number) => void;
   currencySymbol?: string;
+  plans?: InstallmentPlan[];
 }
 
 export function InstallmentForm({
@@ -27,13 +30,26 @@ export function InstallmentForm({
                                   setInitialPayment,
                                   totalMonths,
                                   setTotalMonths,
-                                  currencySymbol = "so'm"
+                                  currencySymbol = "so'm",
+                                  plans
                                 }: InstallmentFormProps) {
+  const [currentPlan, setCurrentPlan] = useState<InstallmentPlan>()
+
 
   const remainingAmount = total - initialPayment;
   const monthlyPayment = totalMonths > 0 ? Math.round(remainingAmount / totalMonths) : 0;
 
-  const monthOptions = [3, 6, 12, 24];
+  const withCoefficient =
+    currentPlan && totalMonths > 0
+      ? Math.round(
+        (remainingAmount * currentPlan.coefficient) /
+        currentPlan.months
+      )
+      : 0;
+
+  const currency = usePosStore(state => state.currency);
+
+
 
   return (
     <div className="space-y-6 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -50,8 +66,8 @@ export function InstallmentForm({
             className="h-14 rounded-3xl bg-muted/40 border-none px-6 font-black text-xl focus-visible:ring-2 ring-primary/20"
             placeholder="0"
           />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold opacity-30">
-            {currencySymbol}
+          <div className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-bold opacity-30">
+            {currency?.symbol}
           </div>
         </div>
       </div>
@@ -62,18 +78,21 @@ export function InstallmentForm({
           <Clock className="size-3" /> Muddat (oy)
         </Label>
         <div className="grid grid-cols-4 gap-2">
-          {monthOptions.map((m) => (
+          {plans?.map((m) => (
             <Button
-              key={m}
+              key={m.id}
               type="button"
-              variant={totalMonths === m ? 'default' : 'outline'}
-              onClick={() => setTotalMonths(m)}
+              variant={totalMonths === m.months ? 'default' : 'outline'}
+              onClick={() => {
+                setTotalMonths(m.months)
+                setCurrentPlan(m)
+              }}
               className={cn(
                 "rounded-2xl h-12 font-black transition-all shadow-none",
-                totalMonths === m ? "" : "bg-muted/20 border-transparent hover:bg-muted/40"
+                totalMonths === m.months ? "" : "bg-muted/20 border-transparent hover:bg-muted/40"
               )}
             >
-              {m}
+              {m.months}
             </Button>
           ))}
         </div>
@@ -83,8 +102,8 @@ export function InstallmentForm({
       <div className="p-5 rounded-[2.5rem] bg-primary/5 border border-primary/10 space-y-4">
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
-            <span className="text-[9px] font-black uppercase opacity-40 leading-none">Qolgan summa</span>
-            <span className="text-lg font-black">{remainingAmount.toLocaleString()}</span>
+            <span className="text-[9px] font-black uppercase opacity-40 leading-none">Qolgan summa </span>
+            <span className="text-lg font-black">{remainingAmount.toLocaleString()} {currency?.symbol}</span>
           </div>
           <div className="size-10 rounded-full bg-background flex items-center justify-center border border-primary/10">
             <CircleDollarSign className="size-5 text-primary" />
@@ -97,10 +116,14 @@ export function InstallmentForm({
           <div className="flex flex-col">
             <span className="text-[9px] font-black uppercase text-primary/60 leading-none mb-1">Oylik to‘lov</span>
             <span className="text-3xl font-black text-primary tracking-tighter">
-              {monthlyPayment.toLocaleString()}
+              {withCoefficient.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+                ?? monthlyPayment.toLocaleString()}
             </span>
           </div>
-          <span className="text-[10px] font-bold opacity-40 pb-1 uppercase">{currencySymbol} / oy</span>
+          <span className="text-[10px] font-bold opacity-40 pb-1 uppercase">{currency?.symbol} / oy</span>
         </div>
       </div>
 

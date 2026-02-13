@@ -1,16 +1,16 @@
 'use client'
 
-import { useState } from 'react';
-import { usePosStore } from '@/store/use-pos-store';
-import { SalesService } from '@/services/sales.service';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Textarea } from '@/components/ui/textarea';
+import {useEffect, useState} from 'react';
+import {usePosStore} from '@/store/use-pos-store';
+import {SalesService} from '@/services/sales.service';
+import {Button} from '@/components/ui/button';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import {Textarea} from '@/components/ui/textarea';
 import {
   Trash2, Plus, Minus, CreditCard,
-  ShoppingCart, ChevronUp, X
+  ShoppingCart, ChevronUp, X, ExternalLink, AlertCircle
 } from 'lucide-react';
-import { toast } from 'sonner';
+import {toast} from 'sonner';
 import {
   Drawer,
   DrawerContent,
@@ -18,22 +18,54 @@ import {
   DrawerTitle,
   DrawerTrigger
 } from '@/components/ui/drawer';
-import { cn } from "@/lib/utils";
-import { InstallmentForm } from "@/components/pos/InstallmentForm";
+import {cn} from "@/lib/utils";
+import {InstallmentForm} from "@/components/pos/InstallmentForm";
+import {
+  InstallmentSettingsService
+} from "@/services/installment-settings.service";
+import {
+  InstallmentSetting,
+  InstallmentSettingSchema
+} from "@/schemas/installment-settings.schema";
+import Link from "next/link";
 
 interface CheckoutPanelProps {
   onSaleComplete?: () => void;
 }
+
 type PaymentMode = 'FULL' | 'INSTALLMENT';
 
-export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
-  const { items, updateQuantity, removeItem, currencyId, customerId, kassaId, reset } = usePosStore();
+
+export function CheckoutPanel({onSaleComplete}: CheckoutPanelProps) {
+  const {
+    items,
+    updateQuantity,
+    removeItem,
+    currencyId,
+    customerId,
+    kassaId,
+    reset
+  } = usePosStore();
   const currency = usePosStore(state => state.currency);
   const [notes, setNotes] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('FULL');
   const [initialPayment, setInitialPayment] = useState(0);
-  const [totalMonths, setTotalMonths] = useState(12);
+  const [insSettings, setInsSettings] = useState<InstallmentSetting>()
+  const availbleMonth = insSettings?.plans.find((p) => p.months != null)
+  const [totalMonths, setTotalMonths] = useState();
+
+
+  useEffect(() => {
+    if (paymentMode === 'INSTALLMENT') {
+      const loadSettings = async () => {
+        const data = await InstallmentSettingsService.getMySettings();
+        setInsSettings(data);
+      };
+
+      loadSettings();
+    }
+  }, [paymentMode]);
 
   const total = items.reduce((acc, item) => acc + item.total, 0);
   const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
@@ -42,6 +74,7 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
     if (!currencyId) return toast.error("Valyutani tanlang");
     if (items.length === 0) return toast.error("Savat bo‘sh");
     if (paymentMode === 'INSTALLMENT' && !customerId) return toast.error("Mijoz tanlanishi shart");
+    if (!totalMonths) return toast.error("Muddatni tanlang")
 
     try {
       await SalesService.create({
@@ -53,7 +86,7 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
           productVariantId: i.productVariantId,
           quantity: i.quantity,
           price: i.price,
-          ...(i.instanceId ? { instanceId: i.instanceId } : {})
+          ...(i.instanceId ? {instanceId: i.instanceId} : {})
         })),
         notes: notes || undefined,
         ...(paymentMode === 'INSTALLMENT' && {
@@ -102,7 +135,10 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
         </div>
       ) : (
         items.map(item => (
-          <div key={item.instanceId || item.productVariantId} className="flex justify-between items-center gap-3 bg-muted/20 p-3 rounded-2xl border border-transparent">
+          <div
+            key={item.instanceId || item.productVariantId}
+            className="flex justify-between items-center gap-3 bg-muted/20 p-3 rounded-2xl border border-transparent"
+          >
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold truncate">{item.title}</p>
               <p className="text-[10px] font-black text-primary mt-1">
@@ -110,14 +146,29 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
               </p>
             </div>
             <div className="flex items-center gap-2 bg-background rounded-lg p-1 border">
-              <Button size="icon" variant="ghost" className="size-6" onClick={() => updateQuantity(item.productVariantId, item.quantity - 1, item.instanceId)}>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-6"
+                onClick={() => updateQuantity(item.productVariantId, item.quantity - 1, item.instanceId)}
+              >
                 <Minus className="size-3" />
               </Button>
               <span className="text-xs font-black">{item.quantity}</span>
-              <Button size="icon" variant="ghost" className="size-6" onClick={() => updateQuantity(item.productVariantId, item.quantity + 1, item.instanceId)}>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-6"
+                onClick={() => updateQuantity(item.productVariantId, item.quantity + 1, item.instanceId)}
+              >
                 <Plus className="size-3" />
               </Button>
-              <Button size="icon" variant="ghost" className="size-6 text-destructive" onClick={() => removeItem(item.productVariantId, item.instanceId)}>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-6 text-destructive"
+                onClick={() => removeItem(item.productVariantId, item.instanceId)}
+              >
                 <Trash2 className="size-3" />
               </Button>
             </div>
@@ -126,6 +177,7 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
       )}
     </div>
   );
+
 
   return (
     <>
@@ -161,13 +213,37 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
                 />
               </div>
             ) : (
-              <InstallmentForm
-                total={total}
-                initialPayment={initialPayment}
-                setInitialPayment={setInitialPayment}
-                totalMonths={totalMonths}
-                setTotalMonths={setTotalMonths}
-              />
+
+              <>
+                {insSettings?.isActive && kassaId ? (
+                  <InstallmentForm
+                    total={total}
+                    plans={insSettings.plans}
+                    initialPayment={initialPayment}
+                    setInitialPayment={setInitialPayment}
+                    totalMonths={totalMonths}
+                    setTotalMonths={setTotalMonths}
+                  />
+                ) : (
+                  <>
+                    {
+                      kassaId === null ? (
+                        <div className="flex justify-center items-center gap-2 p-3 rounded-2xl bg-destructive/10 text-destructive text-[10px] font-bold">
+                          <AlertCircle className="size-4" />
+                          Kassani Tanlang
+                        </div>) : (
+                        <span className='flex items-center justify-center'>
+                         <h1>Bo&apos;lib to&apos;lash faollashtiring</h1>
+
+                         <Link href="/settings/installments"><ExternalLink className='size-5 ml-2 text-blue-500' /></Link>
+                       </span>
+                      )
+                    }
+                  </>
+
+                )}
+              </>
+
             )}
           </div>
 
@@ -176,7 +252,11 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
               <span className="text-[10px] font-black opacity-40 uppercase">Jami</span>
               <span className="text-2xl font-black tracking-tighter text-primary">{total.toLocaleString()}</span>
             </div>
-            <Button className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-[0.2em]" onClick={onCompleteSale} disabled={items.length === 0}>
+            <Button
+              className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-[0.2em]"
+              onClick={onCompleteSale}
+              disabled={items.length === 0}
+            >
               Yakunlash
             </Button>
           </div>
@@ -185,10 +265,16 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
 
       {/* --- MOBILE --- */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t z-50">
-        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <Drawer
+          open={isDrawerOpen}
+          onOpenChange={setIsDrawerOpen}
+        >
           <div className="flex items-center gap-3">
             <DrawerTrigger asChild>
-              <Button variant="outline" className="flex-1 h-14 rounded-2xl flex justify-between px-5 items-center border-2 border-primary/10 bg-background">
+              <Button
+                variant="outline"
+                className="flex-1 h-14 rounded-2xl flex justify-between px-5 items-center border-2 border-primary/10 bg-background"
+              >
                 <div className="flex items-center gap-3">
                   <ShoppingCart className="size-5" />
                   <span className="font-black text-lg">{total.toLocaleString()}</span>
@@ -196,7 +282,11 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
                 <ChevronUp className={cn("size-5 transition-transform", isDrawerOpen && "rotate-180")} />
               </Button>
             </DrawerTrigger>
-            <Button className="h-14 w-14 rounded-2xl" onClick={onCompleteSale} disabled={items.length === 0}>
+            <Button
+              className="h-14 w-14 rounded-2xl"
+              onClick={onCompleteSale}
+              disabled={items.length === 0}
+            >
               <CreditCard className="size-6" />
             </Button>
           </div>
@@ -231,7 +321,10 @@ export function CheckoutPanel({ onSaleComplete }: CheckoutPanelProps) {
               </div>
 
               <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
-                <Button className="w-full h-16 rounded-2xl text-lg font-black uppercase tracking-widest" onClick={onCompleteSale}>
+                <Button
+                  className="w-full h-16 rounded-2xl text-lg font-black uppercase tracking-widest"
+                  onClick={onCompleteSale}
+                >
                   To&apos;lash {total.toLocaleString()}
                 </Button>
               </div>

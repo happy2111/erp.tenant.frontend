@@ -34,6 +34,7 @@ export interface SidebarItem {
   url: string
   icon: LucideIcon
   actions?: SidebarAction[]
+  isActive?: boolean; // Для подсветки активного пункта
 }
 
 export interface SidebarGroup {
@@ -62,7 +63,6 @@ export function AppSidebar({ groups, ...props }: AppSidebarProps) {
             projects={group.items}
           />
         ))}
-        <ModeToggle />
       </SidebarContent>
       {/*<SidebarContent>*/}
       {/*  <NavMain items={data.navMain} />*/}

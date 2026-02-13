@@ -5,21 +5,55 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { InstallmentSettingsService } from '@/services/installment-settings.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Percent, Lock } from 'lucide-react';
+import {Plus, Trash2, Percent, Lock, Edit} from 'lucide-react';
 import { toast } from 'sonner';
 import { CreatePlanModal } from './CreatePlanModal';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { InfoPopup } from "@/components/InfoPopup"; // Убедитесь, что путь правильный
+import { InfoPopup } from "@/components/InfoPopup";
+import { UpsertLimitModal } from './UpsertLimitModal';
+import {
+  InstallmentLimit,
+  UpsertInstallmentLimitDto
+} from "@/schemas/installment-settings.schema";
+import {InstallmentsService} from "@/services/installments.service";
+
+
 
 export function InstallmentSettingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
+  const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
+  const [editingLimit, setEditingLimit] = useState<InstallmentLimit | null>(null);
+
+
+  const handleCreateLimit = () => {
+    setEditingLimit(null);
+    setIsLimitModalOpen(true);
+  };
+
+  const handleEditLimit = (limit: InstallmentLimit) => {
+    setEditingLimit(limit);
+    setIsLimitModalOpen(true);
+  };
+
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['installment-settings'],
     queryFn: () => InstallmentSettingsService.getMySettings()
   });
+
+  const upsertLimitMutation = useMutation({
+    mutationFn: ({ currencyId, minInitialPayment, maxAmount }: UpsertInstallmentLimitDto & { currencyId: string }) =>
+      InstallmentSettingsService.upsertLimit(currencyId, { minInitialPayment, maxAmount }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['installment-settings'] });
+      toast.success('Limit muvaffaqiyatli saqlandi');
+      setIsLimitModalOpen(false);
+    },
+    onError: () => toast.error('Limitni saqlashda xatolik yuz berdi'),
+  });
+
 
   const updateSettingsMutation = useMutation({
     mutationFn: InstallmentSettingsService.updateMySettings,
@@ -30,6 +64,17 @@ export function InstallmentSettingsPage() {
     },
     onError: () => toast.error('Sozlamalarni yangilab bo‘lmadi')
   });
+
+  const deleteLimitMutation = useMutation({
+    mutationFn: (limitId: string) => InstallmentSettingsService.deleteLimit(limitId),
+    onSuccess: () => {
+      // Перезагружаем данные после успешного удаления
+      queryClient.invalidateQueries({ queryKey: ['installment-settings'] });
+      toast.success('Limit o‘chirildi');
+    },
+    onError: () => toast.error('Limitni o‘chirishda xatolik yuz berdi'),
+  });
+
 
   const planMutation = useMutation({
     mutationFn: InstallmentSettingsService.createPlan,
@@ -56,8 +101,6 @@ export function InstallmentSettingsPage() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     updateSettingsMutation.mutate({
-      minInitialPayment: Number(formData.get('minInitialPayment')),
-      maxAmount: Number(formData.get('maxAmount')),
       penaltyPercent: Number(formData.get('penaltyPercent')),
     });
   };
@@ -101,49 +144,6 @@ export function InstallmentSettingsPage() {
 
         {/* Блок 1: Глобальные лимиты и штрафы */}
         <form onSubmit={handleGlobalUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="rounded-[2.5rem] border-none bg-card shadow-sm overflow-hidden p-2">
-            <CardContent className="pt-6 space-y-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase opacity-60  tracking-widest">Pul limitlari</span>
-                </div>
-                {!isActive && <Lock className="size-3 opacity-40" />}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase ml-1 opacity-50 flex items-center gap-1">
-                    Min. boshlang‘ich to‘lov (%)
-                    <InfoPopup
-                      title="Minimal oldindan to'lov"
-                      description="Rassrochka rasmiylashtirish uchun mijoz to'lashi kerak bo'lgan minimal foiz miqdori. Agar bo'sh bo'lsa - cheklov yo'q."
-                    />
-                  </label>
-                  <Input
-                    name="minInitialPayment"
-                    defaultValue={settings?.minInitialPayment ?? 0}
-                    type="number"
-                    className="h-12 bg-muted/50 border-none rounded-xl font-black text-lg focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase ml-1 opacity-50 flex items-center gap-1">
-                    Maks. summa
-                    <InfoPopup
-                      title="Maksimal summa"
-                      description="Bitta rassrochka shartnomasi uchun ruxsat etilgan maksimal pul miqdori."
-                    />
-                  </label>
-                  <Input
-                    name="maxAmount"
-                    defaultValue={settings?.maxAmount ?? 0}
-                    type="number"
-                    className="h-12 bg-muted/50 border-none rounded-xl font-black text-lg focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           <Card className="rounded-[2.5rem] border-none bg-card shadow-sm">
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-center justify-between mb-4">
@@ -219,7 +219,7 @@ export function InstallmentSettingsPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => deletePlanMutation.mutate(plan.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full text-destructive hover:bg-destructive/10"
+                    className=" transition-opacity rounded-full text-destructive"
                   >
                     <Trash2 size={18} />
                   </Button>
@@ -240,7 +240,89 @@ export function InstallmentSettingsPage() {
             </button>
           </div>
         </div>
+
+        {/* Блок 3: Лимиты рассрочки */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-2">
+              <Lock className="size-5 text-primary" />
+              <h3 className="text-xl font-black uppercase tracking-tighter">Rassrochka limiti</h3>
+              <InfoPopup
+                title="Rassrochka limiti"
+                description="Minimal va maksimal to‘lov limitlari tashkilot uchun belgilanishi mumkin."
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {settings?.installment_limits && settings.installment_limits.length > 0 && (
+              settings.installment_limits.map((limit) => (
+                <div
+                  key={limit.id}
+                  className="p-6 rounded-[2.5rem] bg-card border border-border/50 flex justify-between items-center group hover:bg-muted/30 transition-all border-b-4 border-b-primary/10"
+                >
+                  <div>
+                    {limit.minInitialPayment != null && (
+                      <>
+                        <p className="text-[10px] font-black uppercase opacity-40">Min boshlang‘ich to‘lov</p>
+                        <p className="text-2xl font-black">{limit.minInitialPayment}{limit?.currency?.symbol}</p>
+                      </>
+                    )}
+                    {limit.maxAmount != null && (
+                      <>
+                        <p className="text-[10px] font-black uppercase opacity-40 mt-2">Maks summa</p>
+                        <p className="text-2xl font-black">{limit.maxAmount}{limit?.currency?.symbol}</p>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditLimit(limit)}
+                      className="transition-opacity rounded-full text-destructive hover:bg-destructive/10"
+                    >
+                      <Edit size={18} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteLimitMutation.mutate(limit.id)}
+                      className=" transition-opacity rounded-full text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 size={18} />
+                    </Button>
+                  </div>
+
+                </div>
+              ))
+            )}
+
+            <button
+              onClick={handleCreateLimit}
+              className="p-6 rounded-[2.5rem] border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 group min-h-[120px]"
+            >
+              <div className="size-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                <Plus size={20} />
+              </div>
+              <span className="text-[10px] font-black uppercase opacity-40 group-hover:opacity-100 tracking-tighter text-center">
+          Yangi limit qo‘shish
+        </span>
+            </button>
+          </div>
+        </div>
+
       </div>
+
+      <UpsertLimitModal
+        isOpen={isLimitModalOpen}
+        onClose={() => setIsLimitModalOpen(false)}
+        initialData={editingLimit ?? undefined}
+        onSubmit={(data) => upsertLimitMutation.mutate(data)}
+        isLoading={upsertLimitMutation.isLoading}
+      />
+
 
       <CreatePlanModal
         isOpen={isModalOpen}

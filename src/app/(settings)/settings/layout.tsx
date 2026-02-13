@@ -1,13 +1,9 @@
 "use client"
 
 import { ReactNode} from "react"
-import { AppSidebar } from "@/components/app-sidebar"
+import {AppSidebar, SidebarGroup} from "@/components/app-sidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import ProtectedRoute from "@/components/auth/protected-route";
-import {
-  CalendarCheck,
-  LayoutTemplate,
-} from "lucide-react";
 import MineSidebarInsets from "@/components/MineSidebarInsets";
 import * as React from "react";
 
@@ -15,16 +11,35 @@ interface DashboardLayoutProps {
   children: ReactNode
 }
 
+import {Home, LayoutTemplate, CalendarCheck, ArrowBigLeft} from "lucide-react";
 
-const sidebarGroups = [
+const sidebarGroups: SidebarGroup[] = [
+  {
+    label: "Asosiy", // Группа общего меню
+    items: [
+      {
+        name: "Bosh Menu",
+        url: '/pos',
+        icon: ArrowBigLeft,
+      },
+    ],
+  },
   {
     label: "Sozlamalar",
     items: [
-      {name: "Asosiy", url: "/settings", icon: LayoutTemplate},
-      {name: "Installments", url: "/settings/installments", icon: CalendarCheck},
+      {
+        name: "Asosiy sozlamalar",
+        url: '/settings',
+        icon: Home,
+      },
+      {
+        name: "Rassrochka",
+        url: '/settings/installments',
+        icon: CalendarCheck,
+      },
     ],
   },
-]
+];
 
 const SettingsLayout = ({ children }: DashboardLayoutProps) => {
   return (
