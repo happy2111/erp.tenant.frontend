@@ -24,7 +24,7 @@ import * as React from "react";
 import {
   ArrowLeftRight,
   Building,
-  CalendarCheck, ChartLine, Contact,
+  CalendarCheck, ChartLine, Cog, Contact,
   CreditCard, Cuboid, Euro, Landmark, Layers,
   LayoutTemplate, List,
   Package,
@@ -133,7 +133,7 @@ const sidebarGroups = [
           },
         ],
       },
-      {name: "Sozlamalar", url: "/settings", icon: Settings2},
+      {name: "Sozlamalar", url: "/settings", icon: Cog},
     ],
   }
 ]

@@ -74,7 +74,7 @@ export function CheckoutPanel({onSaleComplete}: CheckoutPanelProps) {
     if (!currencyId) return toast.error("Valyutani tanlang");
     if (items.length === 0) return toast.error("Savat bo‘sh");
     if (paymentMode === 'INSTALLMENT' && !customerId) return toast.error("Mijoz tanlanishi shart");
-    if (!totalMonths) return toast.error("Muddatni tanlang")
+    if (!totalMonths && paymentMode === 'INSTALLMENT') return toast.error("Muddatni tanlang")
 
     try {
       await SalesService.create({
