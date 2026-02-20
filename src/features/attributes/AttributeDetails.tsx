@@ -27,7 +27,9 @@ import {
   Type,
   Loader2
 } from "lucide-react";
-import { toast } from "sonner"; // Или ваш аналог для уведомлений
+import { toast } from "sonner";
+import {Label} from "@/components/ui/label";
+import {Switch} from "@/components/ui/switch"; // Или ваш аналог для уведомлений
 
 export function AttributeDetails({ attributeId }: { attributeId: string }) {
   const router = useRouter();
@@ -44,6 +46,8 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
     queryFn: () => AttributesService.getByIdAdmin(attributeId),
   });
 
+  const [isRequired, setIsRequired] = useState(attribute?.isRequired || false);
+
   // 2. Мутации для CRUD значений
   const createMutation = useMutation({
     mutationFn: () => AttributeValuesService.create({ attributeId, value: newValue }),
@@ -51,7 +55,7 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
       queryClient.invalidateQueries({ queryKey: ["attributes", attributeId] });
       setIsDialogOpen(false);
       setNewValue("");
-      toast.success("Qiymat muvaffaqiyatli qo'shildi");
+      toast.success("Qiymat muvaffaqiyatli qo&apos;shildi");
     }
   });
 
@@ -69,10 +73,21 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
     mutationFn: (id: string) => AttributeValuesService.hardDelete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attributes", attributeId] });
-      toast.success("Qiymat o'chirildi");
+      toast.success("Qiymat o&apos;chirildi");
     },
-    onError: () => toast.error("O'chirishda xatolik (qiymat ishlatilayotgan bo'lishi mumkin)")
+    onError: () => toast.error("O&apos;chirishda xatolik (qiymat ishlatilayotgan bo&apos;lishi mumkin)")
   });
+
+  const hadleCheckUpdate = (v: boolean) => {
+    try {
+      // alert(v)
+      setIsRequired(v);
+      AttributesService.update(attributeId, {isRequired: v});
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -83,7 +98,7 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
 
   if (error || !attribute) return (
     <div className="p-12 text-center bg-destructive/10 rounded-[2rem] border border-destructive/20 text-destructive">
-      Xarakteristika ma'lumotlarini yuklashda xatolik
+      Xarakteristika ma&apos;lumotlarini yuklashda xatolik
     </div>
   );
 
@@ -124,11 +139,15 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
 
         {/* --- LEFT: Info --- */}
         <div className="lg:col-span-4 space-y-6">
-          <GlassCard title="Asosiy ma'lumotlar" icon={<Key className="size-4 text-primary" />}>
+          <GlassCard title="Asosiy ma&apos;lumotlar" icon={<Key className="size-4 text-primary" />}>
             <Info label="Nomi (RU/UZ)" value={attribute.name} />
             <Info label="System Key" value={attribute.key} />
             <div className="h-px bg-border/40 my-4" />
-            <Info label="Yaratilgan" value={attribute.createdAt ? new Date(attribute.createdAt).toLocaleDateString() : '—'} />
+
+            <div className="py-3 px-1 group flex justify-between">
+              <Label htmlFor="airplane-mode">Majburiy</Label>
+              <Switch id="airplane-mode" checked={isRequired} onCheckedChange={(v) => hadleCheckUpdate(v)} />
+            </div>
           </GlassCard>
         </div>
 
@@ -137,14 +156,14 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
               <ListTree className="size-5 text-primary" />
-              <h2 className="text-xl font-bold tracking-tight">Qiymatlar ro'yxati</h2>
+              <h2 className="text-xl font-bold tracking-tight">Qiymatlar ro&apos;yxati</h2>
             </div>
             <Button
               size="sm"
               onClick={() => setIsDialogOpen(true)}
-              className="rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all"
+              className="rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
             >
-              <Plus className="mr-1 size-4" /> Qo'shish
+              <Plus className="mr-1 size-4" /> Qo&apos;shish
             </Button>
           </div>
 
@@ -176,7 +195,7 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
                       size="icon"
                       className="size-8 rounded-lg text-muted-foreground hover:text-destructive"
                       onClick={() => {
-                        if(confirm("Haqiqatan ham o'chirmoqchimisiz?")) deleteMutation.mutate(item.id);
+                        if(confirm("Haqiqatan ham o&apos;chirmoqchimisiz?")) deleteMutation.mutate(item.id);
                       }}
                     >
                       <Trash2 className="size-4" />
@@ -197,7 +216,7 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="rounded-[2rem] max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>Yangi qiymat qo'shish</DialogTitle>
+            <DialogTitle>Yangi qiymat qo&apos;shish</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input
@@ -275,7 +294,7 @@ function Info({ label, value }: { label: string; value: string | null | undefine
         {label}
       </div>
       <div className="text-sm font-semibold tracking-tight">
-        {value || <span className="text-muted-foreground/30 font-normal italic">ko'rsatilmagan</span>}
+        {value || <span className="text-muted-foreground/30 font-normal italic">ko&apos;rsatilmagan</span>}
       </div>
     </div>
   );

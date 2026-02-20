@@ -5,7 +5,6 @@ import { Monitor, Moon, Sun } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-// Типы для синхронизации с бэкендом (обычно бэкенд ждет капсом)
 type ThemeValue = 'LIGHT' | 'DARK' | 'SYSTEM';
 
 export function ThemeSettingsBlock({
@@ -48,7 +47,7 @@ export function ThemeSettingsBlock({
               className={cn(
                 "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all duration-200",
                 isActive
-                  ? "border-primary bg-primary/5 text-primary shadow-lg shadow-primary/10 scale-[1.02]"
+                  ? "border-primary bg-primary/5 text-primary scale-[1.02]"
                   : "border-muted bg-card hover:border-muted-foreground/30 opacity-60 hover:opacity-100"
               )}
             >

@@ -26,6 +26,7 @@ export const UpdateAttributeSchema = z.object({
     .min(2)
     .max(100)
     .optional(),
+  isRequired: z.boolean(),
 }).refine(
   (data) => data.key !== undefined || data.name !== undefined,
   { message: 'Необходимо указать хотя бы одно поле для обновления' }
@@ -58,8 +59,7 @@ export const AttributeSchema = z.object({
   id: z.string().uuid(),
   key: z.string(),
   name: z.string(),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
+  isRequired: z.boolean().optional(),
   values: z.array(AttributeValueSchema).default([]),
 });
 
