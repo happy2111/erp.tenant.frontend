@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {Currency} from "@/schemas/currency.schema";
 
 interface PurchaseItem {
   productVariantId: string;
@@ -19,6 +20,12 @@ interface PurchaseState {
   currencyId: string | null;
   kassaId: string | null;
   notes: string;
+  status: 'DRAFT' | 'PAID' | 'PARTIAL';
+  setStatus: (status: 'DRAFT' | 'PAID' | 'PARTIAL') => void;
+  setInitialPayment: (amount: number) => void;
+  initialPayment: number;
+  currency: Currency | null;
+  setCurrencyData: (currency: Currency) => void;
 
   addItem: (item: PurchaseItem) => void;
   updateQuantity: (productVariantId: string, qty: number) => void;
@@ -48,7 +55,13 @@ export const usePurchaseStore = create<PurchaseState>()(
       currencyId: null,
       kassaId: null,
       notes: '',
+      status: 'DRAFT',
+      initialPayment: 0,
+      currency: null,
 
+      setCurrencyData: (currency: Currency) => set({ currency }),
+
+      // Внутри usePurchaseStore (в методе addItem)
       addItem: (newItem) =>
         set((state) => {
           const existing = state.items.find(
@@ -57,15 +70,20 @@ export const usePurchaseStore = create<PurchaseState>()(
 
           if (existing) {
             return {
-              items: state.items.map((i) =>
-                i.productVariantId === newItem.productVariantId
-                  ? {
+              items: state.items.map((i) => {
+                if (i.productVariantId === newItem.productVariantId) {
+                  const newQty = i.quantity + newItem.quantity;
+                  // Важно: берем актуальную цену и скидку из newItem
+                  return {
                     ...i,
-                    quantity: i.quantity + newItem.quantity,
-                    total: (i.quantity + newItem.quantity) * (i.price - i.discount),
-                  }
-                  : i
-              ),
+                    price: newItem.price,
+                    discount: newItem.discount,
+                    quantity: newQty,
+                    total: newQty * (newItem.price - newItem.discount),
+                  };
+                }
+                return i;
+              }),
             };
           }
 
@@ -79,6 +97,9 @@ export const usePurchaseStore = create<PurchaseState>()(
             ],
           };
         }),
+
+      setStatus: (status) => set({ status }),
+      setInitialPayment: (initialPayment) => set({ initialPayment }),
 
       updateQuantity: (id, qty) =>
         set((state) => ({
@@ -163,6 +184,9 @@ export const usePurchaseStore = create<PurchaseState>()(
           currencyId: null,
           kassaId: null,
           notes: '',
+          status: 'DRAFT',
+          initialPayment: 0,
+          currency: null
         }),
     }),
     { name: 'purchase-draft-storage' }

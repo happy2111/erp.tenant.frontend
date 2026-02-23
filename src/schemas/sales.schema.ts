@@ -2,6 +2,12 @@ import { z } from 'zod';
 
 export const SaleStatusValues = ['DRAFT', 'PENDING', 'PAID', 'CANCELLED'] as const;
 export type SaleStatus = (typeof SaleStatusValues)[number];
+export const SaleStatusLabels: Record<SaleStatus, string> = {
+  DRAFT: "QORALAMA",
+  PENDING: "KUTUVDA",
+  PAID: "TO'LANGAN",
+  CANCELLED: "BEKOR QILINDI",
+}
 
 export const CreateSaleItemSchema = z.object({
   productVariantId: z.string().uuid('Некорректный ID варианта товара'),
@@ -22,7 +28,6 @@ export const CreateSaleSchema = z.object({
     .array(CreateSaleItemSchema)
     .min(1, 'Должна быть хотя бы одна позиция'),
 
-  // Опциональная рассрочка (если нужна)
   installment: z
     .object({
       totalAmount: z.number().nonnegative(),

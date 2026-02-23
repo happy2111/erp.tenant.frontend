@@ -42,10 +42,10 @@ export function KassaSelector({ disabled = false }: Props) {
         onValueChange={setKassa}
         disabled={disabled || !currencyId}
       >
-        <SelectTrigger className="w-[140px] border-none bg-transparent shadow-none focus:ring-0 p-0 h-auto text-sm font-medium truncate">
+        <SelectTrigger className="w-[140px] border-none shadow-none focus:ring-0 p-0 h-auto text-sm font-medium truncate bg-transparent!">
           <SelectValue placeholder="Касса расхода" />
         </SelectTrigger>
-        <SelectContent className="rounded-xl">
+        <SelectContent>
           {filteredKassas.map((k) => (
             <SelectItem key={k.id} value={k.id}>
               {k.name} ({k.type})

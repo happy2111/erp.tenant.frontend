@@ -157,7 +157,7 @@ export function PurchasesCrud() {
   const permissions = {
     canCreate: true,
     canEdit: true,
-    canDelete: true, // часто лучше false — закупки удаляют редко
+    canDelete: true,
   };
 
   return (
@@ -200,7 +200,7 @@ export function PurchasesCrud() {
 
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>Создать закупку</Button>
+          <Button onClick={() => router.push('/purchases/create')}>Создать закупку</Button>
         </div>
       </div>
 

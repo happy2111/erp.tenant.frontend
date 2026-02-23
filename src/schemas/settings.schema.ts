@@ -1,11 +1,13 @@
-// src/schemas/settings.schema.ts
 import { z } from 'zod';
 
-// Предполагаемые значения ThemeType из бэкенда
 export const ThemeTypeValues = ['LIGHT', 'DARK', 'SYSTEM'] as const;
 export type ThemeType = typeof ThemeTypeValues[number];
+export const ThemeTypeLabels: Record<ThemeType, string> = {
+  LIGHT: 'Yorug‘',
+  DARK: 'Qorong‘u',
+  SYSTEM: 'Tizim',
+}
 
-// ─── Общие настройки организации ─────────────────────────────────────
 export const SettingsSchema = z.object({
   organizationId: z.string().uuid().optional().nullable(),
   language: z.string().optional(),
@@ -29,7 +31,6 @@ export const SettingsSchema = z.object({
 
 export type Settings = z.infer<typeof SettingsSchema>;
 
-// ─── Обновление настроек ─────────────────────────────────────────────
 export const UpdateSettingsSchema = z.object({
   baseCurrencyId: z.string().uuid().optional().nullable(),
   language: z.string().optional(),

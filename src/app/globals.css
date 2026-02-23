@@ -137,6 +137,10 @@
     border: 1.5px solid var(--border) !important; /* Увеличили толщину до 1.5px */
   }
 
+  .drawer-container {
+    @apply max-w-[450px] w-full mx-auto
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

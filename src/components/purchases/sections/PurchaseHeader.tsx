@@ -11,13 +11,12 @@ import { KassaSelector } from '../selectors/KassaSelector';
 
 export function PurchaseHeader() {
   const router = useRouter();
-  const { items, reset, currencyId } = usePurchaseStore();
+  const { items, reset, currencyId, kassaId, supplierId, initialPayment, notes } = usePurchaseStore();
 
   const handleReset = () => {
-    if (items.length === 0) return;
-    if (confirm('Сбросить всю закупку?')) {
+    if (confirm('Butun xaridni bekor qilish?')) {
       reset();
-      toast.info('Форма очищена');
+      toast.info('Forma tozalandi');
     }
   };
 
@@ -34,9 +33,9 @@ export function PurchaseHeader() {
           >
             <ArrowLeft className="size-5" />
           </Button>
-          <h1 className="text-lg sm:text-xl font-black tracking-tight">Новая закупка</h1>
+          <h1 className="text-lg sm:text-xl font-black tracking-tight">Yangi xarid</h1>
           <span className="hidden sm:inline text-sm text-muted-foreground">
-            {items.length} позиций
+            {items.length} ta mahsulot
           </span>
         </div>
 
@@ -54,16 +53,22 @@ export function PurchaseHeader() {
             size="sm"
             className="gap-1.5 text-muted-foreground hover:text-foreground"
             onClick={handleReset}
-            disabled={items.length === 0}
+            disabled={
+              items.length === 0 &&
+              !supplierId &&
+              !currencyId &&
+              !kassaId &&
+              !notes &&
+              initialPayment === 0
+            }
           >
             <RotateCcw className="size-4" />
-            <span className="hidden sm:inline">Сброс</span>
+            <span className="hidden sm:inline">Tozalash</span>
           </Button>
         </div>
       </div>
 
-      {/* Мобильные селекторы валюты и кассы */}
-      <div className="sm:hidden flex gap-2 mt-3 overflow-x-auto pb-1">
+      <div className="sm:hidden bg-blue-600 flex gap-2 mt-3 overflow-x-auto pb-1">
         <CurrencySelector />
         <KassaSelector disabled={!currencyId} />
       </div>

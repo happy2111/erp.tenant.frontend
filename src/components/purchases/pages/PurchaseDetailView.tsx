@@ -22,17 +22,17 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
+import {PurchaseStatusLabels} from "@/schemas/purchases.schema";
 
 export function PurchaseDetailView({ id }: { id: string }) {
   const router = useRouter();
-
   const { data: purchase, isLoading } = useQuery({
     queryKey: ['purchase', id],
     queryFn: () => PurchasesService.findOne(id),
   });
 
-  if (isLoading) return <div className="p-8 text-center animate-pulse font-black opacity-20 uppercase tracking-widest">Загрузка закупки...</div>;
-  if (!purchase) return <div className="p-8 text-center">Закупка не найдена</div>;
+  if (isLoading) return <div className="p-8 text-center animate-pulse font-black opacity-20 uppercase tracking-widest">Xarid yuklanmoqda...</div>;
+  if (!purchase) return <div className="p-8 text-center">Xarid topilmadi</div>;
 
   const statusStyles = {
     PAID: "bg-emerald-500/20 text-emerald-600 border-emerald-500/20",
@@ -43,7 +43,6 @@ export function PurchaseDetailView({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col h-full space-y-6 p-4 lg:p-8 bg-transparent max-w-[1400px] mx-auto">
-
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -58,32 +57,31 @@ export function PurchaseDetailView({ id }: { id: string }) {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-3xl font-black tracking-tighter uppercase italic">
-                Накладная #{purchase.invoiceNumber || 'Б/Н'}
+                Xarid #{purchase.invoiceNumber || 'B/R'}
               </h1>
               <Badge className={cn("rounded-lg border font-black text-[10px]", statusStyles[purchase.status])}>
-                {purchase.status}
+                {PurchaseStatusLabels[purchase.status]}
               </Badge>
             </div>
             <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest ml-1">
-              Дата закупки: {format(new Date(purchase.purchaseDate), 'dd.MM.yyyy HH:mm')}
+              Xarid sanasi: {format(new Date(purchase.purchaseDate), 'dd.MM.yyyy HH:mm')}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Button variant="outline" className="rounded-2xl font-bold text-xs uppercase border-border/50 bg-card/40 backdrop-blur-md">
-            <Printer className="size-4 mr-2" /> Печать
+            <Printer className="size-4 mr-2" /> Chop etish
           </Button>
           {purchase.status !== 'PAID' && (
             <Button className="rounded-2xl font-black text-xs uppercase shadow-lg shadow-primary/20">
-              Оплатить закупку
+              Xaridni to‘lash
             </Button>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         {/* LEFT COLUMN: Items & Payments */}
         <div className="lg:col-span-2 space-y-6">
 
@@ -91,18 +89,18 @@ export function PurchaseDetailView({ id }: { id: string }) {
           <Card className="rounded-[2.5rem] bg-card/40 backdrop-blur-xl border-border/40 overflow-hidden shadow-none">
             <div className="p-6 border-b border-border/20 bg-muted/20 flex items-center gap-2">
               <Package className="size-4 opacity-40" />
-              <h2 className="text-sm font-black uppercase tracking-widest opacity-60">Товары от поставщика</h2>
+              <h2 className="text-sm font-black uppercase tracking-widest opacity-60">Yetkazib beruvchidan mahsulotlar</h2>
             </div>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-border/10 text-[10px] uppercase font-black opacity-30">
-                      <th className="px-6 py-4">Товар / Партия</th>
-                      <th className="px-6 py-4 text-center">Кол-во</th>
-                      <th className="px-6 py-4 text-right">Цена зак.</th>
-                      <th className="px-6 py-4 text-right">Скидка</th>
-                      <th className="px-6 py-4 text-right">Итого</th>
+                      <th className="px-6 py-4">Mahsulot / Partiya</th>
+                      <th className="px-6 py-4 text-center">Miqdor</th>
+                      <th className="px-6 py-4 text-right">Xarid narxi</th>
+                      <th className="px-6 py-4 text-right">Chegirma</th>
+                      <th className="px-6 py-4 text-right">Jami</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
@@ -111,12 +109,12 @@ export function PurchaseDetailView({ id }: { id: string }) {
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
                             <span className="font-bold group-hover:text-primary transition-colors">
-                                {item.product_variant?.title}
+                              {item.product_variant?.title}
                             </span>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[9px] font-black opacity-30 uppercase">
-                                    SKU: {item.product_variant?.sku || 'N/A'}
-                                </span>
+                              <span className="text-[9px] font-black opacity-30 uppercase">
+                                SKU: {item.product_variant?.sku || 'N/A'}
+                              </span>
                               {item.batchNumber && (
                                 <Badge variant="outline" className="h-4 text-[8px] border-orange-500/20 text-orange-600 bg-orange-500/5 px-1">
                                   <Layers className="size-2 mr-1" /> {item.batchNumber}
@@ -125,8 +123,8 @@ export function PurchaseDetailView({ id }: { id: string }) {
                             </div>
                             {item.expiryDate && (
                               <span className="text-[9px] font-bold text-destructive/60 mt-1 flex items-center">
-                                    <Calendar className="size-2 mr-1" /> До {format(new Date(item.expiryDate), 'dd.MM.yyyy')}
-                                </span>
+                                <Calendar className="size-2 mr-1" /> {format(new Date(item.expiryDate), 'dd.MM.yyyy')} gacha
+                              </span>
                             )}
                           </div>
                         </td>
@@ -148,7 +146,7 @@ export function PurchaseDetailView({ id }: { id: string }) {
           <Card className="rounded-[2.5rem] bg-card/40 backdrop-blur-xl border-border/40 overflow-hidden shadow-none">
             <div className="p-6 border-b border-border/20 bg-muted/20 flex items-center gap-2">
               <History className="size-4 opacity-40" />
-              <h2 className="text-sm font-black uppercase tracking-widest opacity-60">История оплат поставщику</h2>
+              <h2 className="text-sm font-black uppercase tracking-widest opacity-60">Yetkazib beruvchiga to‘lovlar tarixi</h2>
             </div>
             <CardContent className="p-6 space-y-4">
               {purchase.payments && purchase.payments.length > 0 ? purchase.payments.map((p: any) => (
@@ -159,16 +157,16 @@ export function PurchaseDetailView({ id }: { id: string }) {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-black uppercase opacity-40 leading-none mb-1">
-                        {p.type === 'EXPENSE' ? 'РАСХОД' : 'ВОЗВРАТ'}
+                        {p.type === 'EXPENSE' ? 'XARAJAT' : 'QAYTARISH'}
                       </span>
-                      <span className="text-sm font-bold">{p.description || 'Оплата поставщику'}</span>
+                      <span className="text-sm font-bold">{p.description || 'Yetkazib beruvchiga to‘lov'}</span>
                       <span className="text-[9px] opacity-40">{format(new Date(p.createdAt), 'dd.MM.yyyy HH:mm')}</span>
                     </div>
                   </div>
                   <span className="font-black text-destructive">-{Number(p.amount).toLocaleString()} {purchase.currency?.symbol}</span>
                 </div>
               )) : (
-                <div className="text-center py-8 opacity-20 italic text-sm">Оплат по данной закупке не зафиксировано</div>
+                <div className="text-center py-8 opacity-20 italic text-sm">Ushbu xarid bo‘yicha to‘lovlar qayd etilmagan</div>
               )}
             </CardContent>
           </Card>
@@ -182,7 +180,7 @@ export function PurchaseDetailView({ id }: { id: string }) {
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent pointer-events-none" />
             <CardContent className="p-8 space-y-6 relative z-10">
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase opacity-60 tracking-[0.2em]">Итого к оплате</span>
+                <span className="text-[10px] font-black uppercase opacity-60 tracking-[0.2em]">To‘lash uchun jami</span>
                 <span className="text-5xl font-black tracking-tighter">
                   {purchase.totalAmount.toLocaleString()} <span className="text-2xl">{purchase.currency?.symbol}</span>
                 </span>
@@ -192,11 +190,11 @@ export function PurchaseDetailView({ id }: { id: string }) {
 
               <div className="flex justify-between items-center">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black uppercase opacity-60">Выплачено</span>
+                  <span className="text-[9px] font-black uppercase opacity-60">To‘langan</span>
                   <span className="text-xl font-bold text-emerald-400">{purchase.paidAmount.toLocaleString()}</span>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-black uppercase opacity-60">Долг</span>
+                  <span className="text-[9px] font-black uppercase opacity-60">Qarz</span>
                   <span className="text-xl font-bold text-orange-400">
                     {(purchase.totalAmount - purchase.paidAmount).toLocaleString()}
                   </span>
@@ -220,26 +218,26 @@ export function PurchaseDetailView({ id }: { id: string }) {
                 <LabelItem
                   href={`/suppliers/${purchase.supplier?.id}`}
                   icon={Truck}
-                  label="Поставщик"
-                  value={purchase.supplier ? `${purchase.supplier.firstName} ${purchase.supplier.lastName}` : 'Неизвестный поставщик'}
+                  label="Yetkazib beruvchi"
+                  value={purchase.supplier ? `${purchase.supplier.firstName} ${purchase.supplier.lastName}` : 'Noma’lum yetkazib beruvchi'}
                 />
                 <LabelItem
                   href={`/kassas/${purchase?.kassa?.id}`}
                   icon={Landmark}
-                  label="Касса списания"
-                  value={purchase.kassa?.name || 'Не указана'}
+                  label="Ayiriladigan kassa"
+                  value={purchase.kassa?.name || 'Ko‘rsatilmagan'}
                 />
                 <LabelItem
                   href={`/tenant-users/${purchase?.responsible?.id}`}
                   icon={Receipt}
-                  label="Закупщик"
+                  label="Xaridchi"
                   value={`${purchase.responsible?.profile?.firstName} ${purchase.responsible?.profile?.lastName}`}
                 />
               </div>
 
               {purchase.notes && (
                 <div className="mt-4 p-4 rounded-3xl bg-blue-500/5 border border-blue-500/10">
-                  <span className="text-[9px] font-black uppercase text-blue-600 block mb-1">Заметки к закупке</span>
+                  <span className="text-[9px] font-black uppercase text-blue-600 block mb-1">Xaridga izohlar</span>
                   <p className="text-xs italic opacity-70 leading-relaxed">{purchase.notes}</p>
                 </div>
               )}

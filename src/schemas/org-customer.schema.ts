@@ -3,6 +3,10 @@ import { GenderValues } from './tenant-user.schema';
 
 export const CustomerTypeValues = ['CLIENT', 'SUPPLIER'] as const;
 export type CustomerType = typeof CustomerTypeValues[number];
+export const CustomerTypeLabels: Record<CustomerType, string> = {
+  CLIENT: 'MIJOZ',
+  SUPPLIER: 'TA’MINOTCHI',
+}
 
 export const CreateOrgCustomerSchema = z.object({
   userId: z.string().uuid().optional().nullable(),

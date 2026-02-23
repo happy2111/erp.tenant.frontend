@@ -1,7 +1,5 @@
-// src/schemas/purchases.schema.ts
 import { z } from 'zod';
 
-// ─── Статусы закупки ─────────────────────────────────────────────────
 export const PurchaseStatusValues = [
   'DRAFT',
   'PARTIAL',
@@ -10,6 +8,15 @@ export const PurchaseStatusValues = [
 ] as const;
 
 export type PurchaseStatus = (typeof PurchaseStatusValues)[number];
+
+export const PurchaseStatusLabels: Record<PurchaseStatus, string> = {
+  DRAFT: 'QORALAMA',
+  PARTIAL: 'QISMAN',
+  PAID: 'TO\'LANGAN',
+  CANCELLED: 'BEKOR QILINGAN',
+}
+
+
 
 // ─── Позиция в закупке (одна строка накладной) ──────────────────────
 export const CreatePurchaseItemSchema = z.object({

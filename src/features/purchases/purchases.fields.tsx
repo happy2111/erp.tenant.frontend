@@ -49,10 +49,10 @@ export const purchaseFields: CrudField<Purchase>[] = [
     label: "Статус",
     render: (row) => {
       const statusMap: Record<string, { label: string; color: string }> = {
-        DRAFT: { label: "Черновик", color: "text-yellow-600" },
-        PARTIAL: { label: "Частично оплачено", color: "text-orange-600" },
-        PAID: { label: "Оплачено", color: "text-green-600" },
-        CANCELLED: { label: "Отменено", color: "text-red-600" },
+        DRAFT: { label: "QARZGA", color: "text-yellow-600" },
+        PARTIAL: { label: "QISMAN", color: "text-orange-600" },
+        PAID: { label: "TO\'LANGAN", color: "text-green-600" },
+        CANCELLED: { label: "BEKOR QILINGAN", color: "text-red-600" },
       };
       const s = statusMap[row.status] || { label: row.status, color: "" };
       return <span className={s.color}>{s.label}</span>;

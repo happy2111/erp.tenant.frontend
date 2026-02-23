@@ -51,6 +51,8 @@ export class ProductVariantImagesService {
       headers,
     });
 
+    console.log(JSON.stringify(response, null, 2));
+
     if (!response.ok) {
       throw new Error(`Ошибка загрузки: ${response.status} ${response.statusText}`);
     }

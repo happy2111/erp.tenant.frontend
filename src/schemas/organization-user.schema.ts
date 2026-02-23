@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// ─── DTO для создания привязки существующего пользователя ───────
 export const CreateOrganizationUserSchema = z.object({
   userId: z.string().uuid("Некорректный ID пользователя"),
   role: z.enum(["OWNER", "ADMIN", "MANAGER", "EMPLOYEE", "CASHIER"], {

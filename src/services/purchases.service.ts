@@ -24,7 +24,7 @@ export class PurchasesService {
       '/purchases/create',
       dto
     );
-    return PurchaseSchema.parse(res.data.data);
+    return res.data.data;
   }
 
   /**
