@@ -28,6 +28,7 @@ export class BrandsService {
 
   static async getByIdAdmin(id: string): Promise<Brand> {
     const res = await api.get<ApiResponse<Brand>>(`/brands/admin/${id}`);
+    // @ts-ignore
     const brandData = res.data.data.data || res.data.data;
 
     return BrandSchema.parse(brandData);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import {useForm, Controller, FieldValues} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PatternFormat } from "react-number-format";
 import { Switch } from "@/components/ui/switch";
@@ -18,14 +18,14 @@ import {
 import { CrudField } from "./types";
 import { useEffect } from "react";
 
-interface Props<T, Dto> {
+interface Props<T, Dto extends FieldValues> {
   fields: CrudField<T>[];
   schema: any;
   defaultValues?: Partial<Dto>;
   onSubmit: (dto: Dto) => Promise<void>;
 }
 
-export function CrudForm<T, Dto>({
+export function CrudForm<T, Dto extends FieldValues>({
                                    fields,
                                    schema,
                                    defaultValues,

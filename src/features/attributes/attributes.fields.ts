@@ -21,14 +21,4 @@ export const attributeFields: CrudField<Attribute>[] = [
     hiddenInForm: true,
     render: (row) => row.values?.length || 0,
   },
-  {
-    name: "createdAt",
-    label: "Создано",
-    hiddenInForm: true,
-    hiddenInCard: true,
-    render: (row) =>
-      row.createdAt
-        ? new Date(row.createdAt).toLocaleDateString("ru-RU")
-        : "—",
-  },
 ];

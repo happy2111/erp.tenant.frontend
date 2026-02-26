@@ -37,7 +37,6 @@ export default function CreateProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Состояния для поиска бренда
   const [brands, setBrands] = useState<Brand[]>([]);
   const [isBrandsLoading, setIsBrandsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

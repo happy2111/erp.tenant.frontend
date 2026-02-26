@@ -42,7 +42,8 @@ export function UserAccountSection({ user, onChange }: Props) {
 
       <CardContent className="space-y-4">
         <Input
-          label="Email"
+          type="email"
+          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />

@@ -53,7 +53,7 @@ export function CheckoutPanel({onSaleComplete}: CheckoutPanelProps) {
   const [initialPayment, setInitialPayment] = useState(0);
   const [insSettings, setInsSettings] = useState<InstallmentSetting>()
   const availbleMonth = insSettings?.plans.find((p) => p.months != null)
-  const [totalMonths, setTotalMonths] = useState();
+  const [totalMonths, setTotalMonths] = useState(1);
 
 
   useEffect(() => {
@@ -150,7 +150,7 @@ export function CheckoutPanel({onSaleComplete}: CheckoutPanelProps) {
                 size="icon"
                 variant="ghost"
                 className="size-6"
-                onClick={() => updateQuantity(item.productVariantId, item.quantity - 1, item.instanceId)}
+                onClick={() => updateQuantity(item.productVariantId, item.quantity - 1, item?.instanceId)}
               >
                 <Minus className="size-3" />
               </Button>

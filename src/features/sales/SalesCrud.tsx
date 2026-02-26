@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { SalesService } from "@/services/sales.service";
@@ -81,7 +86,7 @@ export function SalesCrud() {
         limit,
         status: statusFilter as any,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const sales = data?.items ?? [];
@@ -130,29 +135,34 @@ export function SalesCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateSaleDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateSaleDto) => {
+    await createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdateSaleDto) => {
+  const handleUpdate = async (dto: UpdateSaleDto) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+    await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+    await deleteMutation.mutateAsync(deleteId);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["saleDate", "totalAmount", "createdAt"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
+
 
   const permissions = {
     canCreate: true,

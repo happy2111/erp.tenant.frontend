@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { KassasService } from "@/services/kassas.service";
@@ -71,7 +76,7 @@ const router = useRouter();
         page,
         limit,
       }),
-    keepPreviousData: true,
+      placeholderData: keepPreviousData,
   });
 
   const kassas = data?.items ?? [];
@@ -121,29 +126,34 @@ const router = useRouter();
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateKassaDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateKassaDto) => {
+   await  createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdateKassaDto) => {
+  const handleUpdate = async  (dto: UpdateKassaDto) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+    await updateMutation.mutateAsync ({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+    await deleteMutation.mutateAsync(deleteId);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["name",  "createdAt" , "balance"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
+
 
   const permissions = {
     canCreate: true,

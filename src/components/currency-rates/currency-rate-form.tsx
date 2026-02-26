@@ -54,7 +54,7 @@ export function CurrencyRateForm({ onSubmit, isLoading }: Props) {
               ))}
             </SelectContent>
           </Select>
-          {errors.fromCurrencyId && <p className="text-[10px] text-destructive italic">{errors.fromCurrencyId.message}</p>}
+          {/*{errors.baseCurrency && <p className="text-[10px] text-destructive italic">{errors.baseCurrency.message}</p>}*/}
         </div>
 
         {/* Целевая валюта */}
@@ -72,7 +72,7 @@ export function CurrencyRateForm({ onSubmit, isLoading }: Props) {
               ))}
             </SelectContent>
           </Select>
-          {errors.toCurrencyId && <p className="text-[10px] text-destructive italic">{errors.toCurrencyId.message}</p>}
+          {/*{errors.toCurrencyId && <p className="text-[10px] text-destructive italic">{errors.toCurrencyId.message}</p>}*/}
         </div>
       </div>
 

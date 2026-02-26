@@ -1,4 +1,3 @@
-// src/services/product-batches.service.ts
 import api from '@/lib/axiosInstance';
 import {
   CreateProductBatchDto,
@@ -18,9 +17,7 @@ interface ApiResponse<T> {
 }
 
 export class ProductBatchesService {
-  /**
-   * Получить список всех партий (админ-панель, с пагинацией и фильтрами)
-   */
+
   static async getAllAdmin(
     filter: FilterProductBatchDto = {}
   ): Promise<{
@@ -45,9 +42,6 @@ export class ProductBatchesService {
     return ProductBatchesListResponseSchema.parse(res.data.data);
   }
 
-  /**
-   * Получить одну партию по ID
-   */
   static async getByIdAdmin(id: string): Promise<ProductBatch> {
     const res = await api.get<ApiResponse<ProductBatch>>(
       `/product-batches/admin/${id}`
@@ -55,9 +49,6 @@ export class ProductBatchesService {
     return ProductBatchSchema.parse(res.data.data);
   }
 
-  /**
-   * Создать новую партию
-   */
   static async create(
     dto: CreateProductBatchDto
   ): Promise<ProductBatch> {
@@ -68,9 +59,7 @@ export class ProductBatchesService {
     return res.data.data;
   }
 
-  /**
-   * Обновить существующую партию
-   */
+
   static async update(
     id: string,
     dto: UpdateProductBatchDto
@@ -82,17 +71,12 @@ export class ProductBatchesService {
     return res.data.data;
   }
 
-  /**
-   * Жёсткое удаление партии
-   * (только если по ней не было движений)
-   */
+
   static async hardDelete(id: string): Promise<void> {
     await api.delete(`/product-batches/remove/${id}/hard`);
   }
 
-  /**
-   * Получить все партии конкретного варианта товара
-   */
+
   static async getBatchesByVariant(
     variantId: string
   ): Promise<ProductBatch[]> {
@@ -102,9 +86,7 @@ export class ProductBatchesService {
     return BatchesByVariantResponseSchema.parse(res.data.data);
   }
 
-  /**
-   * Получить статистику по партиям конкретного варианта
-   */
+
   static async getStats(variantId: string): Promise<{
     totalBatches: number;
     activeBatches: number;
@@ -115,6 +97,6 @@ export class ProductBatchesService {
     const res = await api.get<ApiResponse<any>>(
       `/product-batches/stats/${variantId}`
     );
-    return BatchStatsSchema.parse(res.data.data);
+    return res.data.data
   }
 }

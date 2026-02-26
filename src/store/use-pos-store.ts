@@ -21,7 +21,7 @@ interface CartItem {
   price: number;
   quantity: number;
   total: number;
-  instanceId: string | null;
+  instanceId?: string;
 }
 interface PosState {
   items: CartItem[];
@@ -34,8 +34,8 @@ interface PosState {
   setCurrencyValues: (currency: Currency) => void;
 
   addItem: (variant: ProductVariant, selectedPrice?: number, instanceId?: string) => void;
-  removeItem: (variantId: string, instanceId: string | undefined) => void;
-  updateQuantity: (variantId: string, quantity: number, instanceId: string | undefined) => void;
+  removeItem: (variantId: string, instanceId?: string | undefined | null) => void;
+  updateQuantity: (variantId: string, quantity: number, instanceId?: string | undefined | null) => void;
   updatePrice: (variantId: string, price: number) => void;
 
   setInstallment: (data: InstallmentDraft | null) => void;
@@ -71,21 +71,23 @@ export const usePosStore = create<PosState>()(
       clearInstallment: () => set({ installment: null }),
 
 
+    // @ts-ignore
+
       addItem: (variant, selectedPrice, instanceId?: string) => set((state) => {
         const price = selectedPrice ?? variant.defaultPrice ?? 0;
-
-        // Если передан instanceId — создаем отдельный item
         if (instanceId) {
+          const newItem: CartItem = {
+            productVariantId: variant.id,
+            title: variant.title,
+            sku: variant.sku ?? null,
+            price,
+            quantity: 1,
+            total: price,
+            instanceId: instanceId,
+          };
+
           return {
-            items: [...state.items, {
-              productVariantId: variant.id,
-              title: variant.title,
-              sku: variant.sku,
-              price,
-              quantity: 1,
-              total: price,
-              instanceId,
-            }],
+            items: [...state.items, newItem],
           };
         }
 

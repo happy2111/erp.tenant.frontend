@@ -16,9 +16,7 @@ interface ApiResponse<T> {
 }
 
 export class ProductCategoriesService {
-  /**
-   * Получить список всех связей товар ↔ категория (админ-панель)
-   */
+
   static async getAllAdmin(
     query: GetProductCategoriesQueryDto = {}
   ): Promise<{ items: ProductCategory[]; total: number }> {
@@ -31,9 +29,7 @@ export class ProductCategoriesService {
     return ProductCategoriesListResponseSchema.parse(res.data.data);
   }
 
-  /**
-   * Получить одну связь по ID
-   */
+
   static async getByIdAdmin(id: string): Promise<ProductCategory> {
     const res = await api.get<ApiResponse<ProductCategory>>(
       `/product-categories/admin/${id}`
@@ -41,9 +37,6 @@ export class ProductCategoriesService {
     return ProductCategorySchema.parse(res.data.data);
   }
 
-  /**
-   * Добавить товар в категорию (создать связь)
-   */
   static async create(dto: CreateProductCategoryDto): Promise<ProductCategory> {
     const res = await api.post<ApiResponse<ProductCategory>>(
       '/product-categories/create',
@@ -52,18 +45,14 @@ export class ProductCategoriesService {
     return res.data.data;
   }
 
-  /**
-   * Удалить связь товар ↔ категория
-   */
+
   static async remove(dto: CreateProductCategoryDto): Promise<void> {
     await api.delete('/product-categories/remove', {
-      data: dto, // отправляем в body, т.к. метод DELETE с параметрами в теле
+      data: dto,
     });
   }
 
-  /**
-   * Получить все категории, в которых находится указанный товар
-   */
+
   static async getCategoriesByProduct(
     productId: string
   ): Promise<Array<{ id: string; category: { id: string; name: string } }>> {
@@ -73,9 +62,7 @@ export class ProductCategoriesService {
     return ProductCategoriesByProductSchema.parse(res.data.data);
   }
 
-  /**
-   * Получить все товары, которые находятся в указанной категории
-   */
+
   static async getProductsByCategory(
     categoryId: string
   ): Promise<Array<{ id: string; product: { id: string; name: string } }>> {

@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { TenantUserService } from "@/services/tenant-user.service"; // ← создадим ниже
 import {
   TenantUser,
@@ -68,7 +73,7 @@ export function TenantUserCrud() {
         sortField,
         order: sortOrder,
       } as GetTenantUsersQueryDto),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const users = data?.items ?? [];
@@ -102,31 +107,34 @@ export function TenantUserCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateTenantUserDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateTenantUserDto) => {
+   await createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdateTenantUserDto) => {
+  const handleUpdate = async (dto: UpdateTenantUserDto) => {
     if (!editItem) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+   await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+   await deleteMutation.mutateAsync(deleteId);
   };
 
-  const handleSort = (
-    field: "createdAt" | "email" | "profile.firstName" | "profile.lastName",
-  ) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["createdAt", "email" ,"profile.firstName" ,"profile.lastName"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
+
 
   const permissions = {
     canCreate: true,

@@ -37,7 +37,8 @@ export class AttributesService {
     const res = await api.get<ApiResponse<Attribute>>(
       `/attributes/admin/${id}`
     );
-    return AttributeSchema.parse(res.data.data.data || res.data.data);
+    // @ts-ignore
+    return AttributeSchema.parse(res.data.data?.data || res.data.data);
   }
 
   /**

@@ -34,11 +34,9 @@ import {
 export default function CreateProductVariantPage() {
   const router = useRouter();
 
-  // Состояния для Drawer
   const [productDrawerOpen, setProductDrawerOpen] = useState(false);
   const [currencyDrawerOpen, setCurrencyDrawerOpen] = useState(false);
 
-  // Выбранные объекты для отображения в UI
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(null);
 
@@ -49,7 +47,7 @@ export default function CreateProductVariantPage() {
     watch,
     formState: { errors },
   } = useForm<CreateProductVariantDto>({
-    resolver: zodResolver(CreateProductVariantSchema),
+    resolver: zodResolver(CreateProductVariantSchema) as any,
     defaultValues: {
       title: "",
       sku: "",

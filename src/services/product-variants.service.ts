@@ -39,6 +39,7 @@ export class ProductVariantsService {
     const res = await api.get<ApiResponse<ProductVariant>>(
       `/product-variants/admin/${id}`
     );
+    // @ts-ignore
     const variantData = res.data.data.data || res.data.data;
     return ProductVariantSchema.parse(variantData);
   }

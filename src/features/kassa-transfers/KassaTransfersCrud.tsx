@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { KassaTransfersService } from "@/services/kassa-transfers.service";
@@ -71,7 +76,7 @@ export function KassaTransfersCrud() {
         page,
         limit,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData
   });
 
   const transfers = data?.items ?? [];
@@ -94,25 +99,31 @@ export function KassaTransfersCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateKassaTransferDto) => {
+  const handleCreate = async (dto: CreateKassaTransferDto) => {
     // Приводим amount и rate к числу, если бэкенд ожидает number
     const payload = {
       ...dto,
-      amount: parseFloat(dto.amount),
-      rate: dto.rate ? parseFloat(dto.rate) : 1,
+      amount: parseFloat(String(dto.amount)),
+      rate: dto.rate ? parseFloat(String(dto.rate)) : 1,
     };
-    createMutation.mutate(payload as any);
+    await createMutation.mutateAsync(payload as any);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["createdAt", "amount"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
+
 
   const permissions = {
     canCreate: true,
@@ -199,7 +210,7 @@ export function KassaTransfersCrud() {
         <CrudForm
           fields={kassaTransferFields}
           schema={CreateKassaTransferSchema}
-          defaultValues={{ rate: "1" }}
+          defaultValues={{ rate: 1 }}
           onSubmit={handleCreate}
         />
       </CrudDialog>

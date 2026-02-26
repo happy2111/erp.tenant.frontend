@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { InstallmentsService } from "@/services/installments.service";
@@ -78,7 +83,7 @@ export function InstallmentsCrud() {
         limit,
         status: statusFilter as any,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const installments = data?.items ?? [];
@@ -98,24 +103,28 @@ export function InstallmentsCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateInstallmentDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateInstallmentDto) => {
+    await createMutation.mutateAsync(dto);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["dueDate" , "totalAmount" , "createdAt"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
 
   const permissions = {
     canCreate: true,
-    canEdit: false,   // редактирование рассрочек обычно запрещено
-    canDelete: false, // удаление рассрочек обычно запрещено
+    canEdit: false,
+    canDelete: false,
   };
 
   return (

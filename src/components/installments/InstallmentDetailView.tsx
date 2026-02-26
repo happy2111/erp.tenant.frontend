@@ -226,7 +226,8 @@ export function InstallmentDetailView({ id }: { id: string }) {
               </div>
 
               <div className="space-y-3">
-                <Link href={`/organizations/customers/${installment?.customer.id}`} className="flex items-center justify-between p-3 rounded-2xl bg-muted/30 border border-border/10 hover:bg-primary/5 transition-colors group">
+
+                <Link href={`${installment?.customer?.id ? `/organizations/customers/${installment?.customer.id}` : '/organizations/customers/'}/organizations/customers/`} className="flex items-center justify-between p-3 rounded-2xl bg-muted/30 border border-border/10 hover:bg-primary/5 transition-colors group">
                   <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 border border-border/10">
                     <Phone className="size-4 opacity-40" />
                     <span className="text-sm font-bold italic">{installment.customer?.phone}</span>

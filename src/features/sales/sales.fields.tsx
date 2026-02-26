@@ -73,11 +73,14 @@ export const saleFields: CrudField<Sale>[] = [
     label: "Создано",
     hiddenInForm: true,
     hiddenInCard: true,
-    render: (row) =>
-      new Date(row.createdAt).toLocaleDateString("ru-RU", {
+    render: (row) => {
+      if (!row.createdAt) return "—";
+
+      return new Date(row.createdAt).toLocaleDateString("uz-UZ", {
         day: "2-digit",
         month: "short",
         year: "numeric",
-      }),
+      });
+    },
   },
 ];

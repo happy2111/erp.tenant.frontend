@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { ProductInstancesService } from "@/services/product-instances.service";
@@ -76,7 +81,8 @@ export function ProductInstancesCrud() {
     queryKey: ["product-instances", debouncedSearch, page, limit, sortField, sortOrder, statusFilter],
     queryFn: () => {
       const filter: FindAllProductInstanceDto = {
-        search: debouncedSearch || undefined,
+        // TODO
+        // search: debouncedSearch || undefined,
         sortField,
         order: sortOrder,
         page,
@@ -85,7 +91,7 @@ export function ProductInstancesCrud() {
       };
       return ProductInstancesService.findAll(filter);
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const instances = data?.data ?? [];
@@ -128,29 +134,34 @@ export function ProductInstancesCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateProductInstanceDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateProductInstanceDto) => {
+   await createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdateProductInstanceDto) => {
+  const handleUpdate = async (dto: UpdateProductInstanceDto) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+   await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+   await deleteMutation.mutateAsync(deleteId);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["createdAt", "serialNumber"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
+
 
   const permissions = {
     canCreate: true,

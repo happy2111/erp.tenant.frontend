@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ProductsService } from '@/services/products.service';
-import { Product } from '@/schemas/products.schema';
+import {Product, ProductPriceSchema} from '@/schemas/products.schema';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit2, Loader2 } from 'lucide-react';
 import {ProductGallery} from "@/components/products/sections/product-gallery";
@@ -11,6 +11,7 @@ import {ProductInfo} from "@/components/products/sections/product-info";
 import {ProductPrices } from "@/components/products/sections/product-prices";
 import {ProductCategories} from "@/components/products/sections/product-categories";
 import {ProductVariants} from "@/components/products/sections/product-variants";
+import {ProductPrice} from "@/schemas/product-prices.schema";
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
@@ -37,6 +38,8 @@ export default function ProductDetailsPage() {
 
   if (!product) return null;
 
+  const safePrices = ProductPriceSchema.array().parse(product.prices || []);
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 relative overflow-hidden">
       {/* Background Decor */}
@@ -62,7 +65,7 @@ export default function ProductDetailsPage() {
           <div className="lg:col-span-7 space-y-6">
             <ProductInfo product={product} />
             <ProductCategories productId={id as string} initialCategories={product.categories}/>
-            <ProductPrices productId={id as string} initialPrices={product.prices || []} />
+            <ProductPrices productId={id as string} initialPrices={(product.prices as unknown as ProductPrice[]) || []} />
             <ProductVariants variants={product.variants} productId={product.id} variantImages={product?.variantImages} />
           </div>
         </div>

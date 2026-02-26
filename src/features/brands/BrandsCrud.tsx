@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { BrandsService } from "@/services/brands.service"; // ← подставь правильный путь
@@ -71,7 +76,7 @@ export function BrandsCrud() {
         sortField,
         order: sortOrder,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const brands = data?.items ?? [];
@@ -108,13 +113,13 @@ export function BrandsCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateBrandDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateBrandDto) => {
+    await createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdateBrandDto) => {
+  const handleUpdate = async (dto: UpdateBrandDto) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+    await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
   const handleDelete = () => {
@@ -122,12 +127,16 @@ export function BrandsCrud() {
     deleteMutation.mutate(deleteId);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => {
+    const validField = field as typeof sortField;
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["name" , "createdAt"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
@@ -222,7 +231,7 @@ export function BrandsCrud() {
           fields={brandFields}
           schema={editItem ? UpdateBrandSchema : CreateBrandSchema}
           defaultValues={editItem ?? {}}
-          onSubmit={editItem ? handleUpdate : handleCreate}
+          onSubmit={(editItem ? handleUpdate : handleCreate) as any}
         />
       </CrudDialog>
 

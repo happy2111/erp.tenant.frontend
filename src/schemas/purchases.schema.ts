@@ -22,14 +22,8 @@ export const PurchaseStatusLabels: Record<PurchaseStatus, string> = {
 export const CreatePurchaseItemSchema = z.object({
   productVariantId: z.string().uuid('Некорректный ID варианта товара'),
   quantity: z.number().int().positive('Количество должно быть > 0'),
-  price: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/, 'Некорректный формат цены'),
-  discount: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/)
-    .optional()
-    .default('0'),
+  price: z.number().positive(),
+  discount: z.coerce.number().nonnegative().default(0),
   batchNumber: z.string().max(64).optional().nullable(),
   expiryDate: z.string().datetime().optional().nullable(),
 });
@@ -48,11 +42,7 @@ export const CreatePurchaseSchema = z.object({
     .array(CreatePurchaseItemSchema)
     .min(1, 'Должна быть хотя бы одна позиция'),
 
-  initialPayment: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/)
-    .optional()
-    .nullable(),
+  initialPayment: z.coerce.number().nonnegative().optional().nullable(),
 });
 
 export type CreatePurchaseDto = z.infer<typeof CreatePurchaseSchema>;

@@ -14,7 +14,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useDebounce } from "use-debounce"; // Оптимально для проверки ввода
+import { useDebounce } from "use-debounce";
 import { TenantUserService } from "@/services/tenant-user.service";
 import {
   CheckUserExistenceResponse,
@@ -27,7 +27,7 @@ export function CreateAccountSection({ onChange, initialData }: { onChange: (v: 
   const router = useRouter();
   const [email, setEmail] = useState(initialData?.email || "");
   const [password, setPassword] = useState("");
-  const [isActive, setIsActive] = useState(initialData?.isActive || true);
+  const [isActive, setIsActive] = useState<boolean>(initialData?.isActive || true);
 
   // Состояния для API проверки
   const [debouncedEmail] = useDebounce(email, 600); // Ждем 600мс после ввода

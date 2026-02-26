@@ -9,11 +9,10 @@ import {
   UpdateOrgCustomerSchema
 } from "@/schemas/org-customer.schema";
 import { OrganizationCustomerService } from "@/services/org.customer.service";
-import { organizationCustomerFields } from "./organization-customer-fields"; // проверьте путь
-
+import { organizationCustomerFields } from "./organization-customer-fields";
 import { CrudDialog } from "@/components/crud/CrudDialog";
 import { CrudForm } from "@/components/crud/CrudForm";
-import { toast } from "sonner"; // Или ваш способ уведомлений
+import { toast } from "sonner";
 
 interface OrganizationCustomerDialogProps {
   open: boolean;
@@ -55,11 +54,11 @@ export function OrganizationCustomerDialog({
     },
   });
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     if (editItem?.id) {
-      updateMutation.mutate({ id: editItem.id, dto: values });
+      await updateMutation.mutateAsync({ id: editItem.id, dto: values });
     } else {
-      createMutation.mutate(values);
+      await createMutation.mutateAsync(values);
     }
   };
 
@@ -79,7 +78,7 @@ export function OrganizationCustomerDialog({
         }
         onSubmit={handleSubmit}
         // Можно добавить индикатор загрузки из мутаций
-        isLoading={createMutation.isPending || updateMutation.isPending}
+        // isLoading={createMutation.isPending || updateMutation.isPending}
       />
     </CrudDialog>
   );

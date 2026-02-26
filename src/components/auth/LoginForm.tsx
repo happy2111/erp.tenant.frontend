@@ -82,8 +82,8 @@ export function LoginForm() {
       } else {
         toast.error(result.error || "Kirishda xatolik yuz berdi");
       }
-    } catch (err) {
-      console.error("Full error:", err); // Посмотрите в консоль браузера!
+    } catch (err: any) { // Добавь : any сюда
+      console.error("Full error:", err);
 
       if (err.response?.status === 404) {
         toast.error("Endpoint topilmadi (404). API manzili xato.");

@@ -43,7 +43,7 @@ export default function PurchaseCreatePage() {
       </div>
 
       <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-background/95 backdrop-blur-lg border-t">
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-background via-background to-transparent">
           <PurchaseCheckoutPanel onSuccess={handlePurchaseCreated} />
         </div>
       </div>

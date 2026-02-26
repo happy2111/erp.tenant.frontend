@@ -22,6 +22,7 @@ export class InstallmentSettingsService {
     const res = await api.get<ApiResponse<InstallmentSetting>>(
       '/installment-settings/my'
     );
+    // @ts-ignore
     const actualData = res.data.data?.data || res.data.data;
     return InstallmentSettingSchema.parse(actualData);
   }
@@ -33,6 +34,7 @@ export class InstallmentSettingsService {
       '/installment-settings/my',
       dto
     );
+    // @ts-ignore
     const actualData = res.data.data?.data || res.data.data;
     return InstallmentSettingSchema.parse(actualData);
   }
@@ -42,6 +44,7 @@ export class InstallmentSettingsService {
       '/installment-settings/plans',
       dto
     );
+    // @ts-ignore
     const actualData = res.data.data?.data || res.data.data;
     return actualData;
   }
@@ -51,6 +54,7 @@ export class InstallmentSettingsService {
       `/installment-settings/plans/${planId}`,
       dto
     );
+    // @ts-ignore
     const actualData = res.data.data?.data || res.data.data;
     return actualData;
   }
@@ -60,13 +64,13 @@ export class InstallmentSettingsService {
   }
 
   static async upsertLimit(
-    currencyId: string,
     dto: UpsertInstallmentLimitDto
   ): Promise<InstallmentLimit> {
     const res = await api.post<ApiResponse<InstallmentLimit>>(
-      `/installment-settings/limits?currencyId=${currencyId}`,
+      `/installment-settings/limits?currencyId=${dto.currencyId}`,
       dto
     );
+    // @ts-ignore
     const actualData = res.data.data?.data || res.data.data;
     return actualData;
   }

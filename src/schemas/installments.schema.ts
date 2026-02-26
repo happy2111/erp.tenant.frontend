@@ -21,9 +21,8 @@ export type CreateInstallmentDto = z.infer<typeof CreateInstallmentSchema>;
 export const CreateInstallmentPaymentSchema = z.object({
   installmentId: z.string().uuid('Некорректный ID рассрочки'),
   amount: z
-    .coerce
     .number({
-      invalid_type_error: 'Сумма должна быть числом',
+      message: 'Сумма должна быть числом',
     })
     .positive('Сумма должна быть положительной')
     .refine(

@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { currencyService } from "@/services/currency.service"; // ← путь к твоему сервису
@@ -69,7 +74,7 @@ export function CurrencyCrud() {
           c.symbol.includes(term)
       );
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   // ─── Мутации ───
@@ -100,18 +105,18 @@ export function CurrencyCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateCurrencyDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateCurrencyDto) => {
+   await createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdateCurrencyDto) => {
+  const handleUpdate = async (dto: UpdateCurrencyDto) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+    await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+    await deleteMutation.mutateAsync(deleteId);
   };
 
   const permissions = {

@@ -16,6 +16,7 @@ import {
   CreatePhonesSection
 } from "@/components/tenant-user/sections/CreatePhonesSection";
 import ProtectedRoute from "@/components/auth/protected-route";
+import {CreateTenantUserDto, Phone} from "@/schemas/tenant-user.schema";
 
 
 export default function TenantUserCreatePage() {
@@ -23,7 +24,7 @@ export default function TenantUserCreatePage() {
 
   const [account, setAccount] = useState({});
   const [profile, setProfile] = useState({});
-  const [phones, setPhones] = useState([]);
+  const [phones, setPhones] = useState<Phone[]>([]);
 
   const mutation = useMutation({
     mutationFn: TenantUserService.create,
@@ -38,7 +39,8 @@ export default function TenantUserCreatePage() {
       ...account,
       profile,
       phone_numbers: phones,
-    });
+    } as unknown as CreateTenantUserDto);
+    // TODO типизируй !!!
   };
 
   return (

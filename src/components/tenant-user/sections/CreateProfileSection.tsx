@@ -12,7 +12,39 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import {TenantUser} from "@/schemas/tenant-user.schema";
-export function CreateProfileSection({ onChange, initialData }: { onChange: (v: any) => void, initialData: TenantUser | undefined}) {
+type ProfileInitialData = {
+  profile?: {
+    firstName?: string;
+    lastName?: string;
+    patronymic?: string;
+    gender?: string;
+    // ... остальные поля опционально
+    [key: string]: any;
+  }
+}
+
+type ProfileFields = {
+  firstName: string;
+  lastName: string;
+  patronymic: string;
+  gender: string;
+  dateOfBirth: string;
+  passportSeries: string;
+  passportNumber: string;
+  issuedBy: string;
+  issuedDate: string;
+  expiryDate: string;
+  country: string;
+  region: string;
+  city: string;
+  district: string;
+  address: string;
+  registration: string;
+};
+
+export function CreateProfileSection({ onChange, initialData }:
+                                     { onChange: (v: any) => void,
+                                       initialData?: TenantUser | ProfileInitialData | undefined}) {
   const [state, setState] = useState({
     // Основное
     firstName: initialData?.profile?.firstName || "",
