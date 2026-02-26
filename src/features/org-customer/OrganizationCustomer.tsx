@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { OrganizationCustomerService } from "@/services/org.customer.service";
@@ -74,7 +79,7 @@ export function OrganizationCustomerCrud() {
         sortBy: sortField,
         sortOrder,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const customers = data?.items ?? [];
@@ -112,25 +117,30 @@ export function OrganizationCustomerCrud() {
     createMutation.mutate(dto);
   };
 
-  const handleUpdate = (dto: UpdateOrgCustomerDto) => {
+  const handleUpdate = async (dto: UpdateOrgCustomerDto) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+    await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+    await deleteMutation.mutateAsync(deleteId);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["createdAt" , "firstName" , "lastName" , "type"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
+
 
   const permissions = {
     canCreate: true,

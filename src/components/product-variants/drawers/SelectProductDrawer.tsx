@@ -15,8 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Loader2, Package, Check, X } from "lucide-react";
-import { Product } from "@/schemas/products.schema"; // Исправленный путь к схеме
+import {Search, Loader2, Package, Check, X, Plus} from "lucide-react";
+import { Product } from "@/schemas/products.schema";
+import {useRouter} from "next/navigation"; // Исправленный путь к схеме
 
 interface Props {
   open: boolean;
@@ -42,6 +43,7 @@ export function ProductSelectDrawer({ open, onOpenChange, onSelect }: Props) {
   // Хелпер для очистки поиска
   const clearSearch = () => setSearch("");
 
+  const router = useRouter()
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[85vh] bg-background/80 backdrop-blur-2xl border-t border-border/50">
@@ -56,23 +58,27 @@ export function ProductSelectDrawer({ open, onOpenChange, onSelect }: Props) {
               </DrawerDescription>
             </div>
 
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <Input
-                placeholder="Nomi yoki kodi bo'yicha..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-11 pr-10 h-12 rounded-xl bg-muted/30 border-border/40 focus:bg-background/50 transition-all"
-              />
-              {search && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="size-4" />
-                </button>
-              )}
-            </div>
+           <div className='flex gap-2 items-center w-full'>
+             <div className="relative w-full group">
+               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+               <Input
+                 placeholder="Nomi yoki kodi bo'yicha..."
+                 value={search}
+                 onChange={(e) => setSearch(e.target.value)}
+                 className="pl-11 pr-10 h-12 rounded-xl bg-muted/30 border-border/40 focus:bg-background/50 transition-all"
+               />
+               {search && (
+                 <button
+                   onClick={clearSearch}
+                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                 >
+                   <X className="size-4" />
+                 </button>
+               )}
+             </div>
+             <Button onClick={() => router.push('/products/create')} className='h-10 w-10 rounded-full' ><Plus className='size-4 '/></Button>
+
+           </div>
           </DrawerHeader>
 
           <ScrollArea className="px-4 h-[400px]">

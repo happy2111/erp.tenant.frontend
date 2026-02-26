@@ -121,7 +121,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
   };
 
   const totalVariantStock = variant?.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;
-  const hasInstancesInStock = instancesData?.data?.length > 0;
+  const hasInstancesInStock = (instancesData?.data?.length ?? 0) > 0;
 
   const isOutOfStock = totalVariantStock <= 0 && !hasInstancesInStock;
   const selectedInstanceStock = selectedInstanceId ? 1 : totalVariantStock;
@@ -258,7 +258,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
                     onClick={() => setQuantity(quantity + 1)}
                     disabled={
                       selectedInstanceId !== null ||
-                      quantity >= (hasInstancesInStock ? instancesData?.data.length : totalVariantStock)
+                      quantity >= (hasInstancesInStock ? (instancesData?.data?.length ?? 0) : totalVariantStock)
                     }
                   >
                     <Plus className="size-4" />

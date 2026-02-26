@@ -83,7 +83,7 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
       // alert(v)
       setIsRequired(v);
       AttributesService.update(attributeId, {isRequired: v});
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message);
     }
   };

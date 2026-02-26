@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { OrganizationService } from "@/services/organization.service";
 import {
   OrganizationWithUserRole,
@@ -66,7 +71,7 @@ export function OrganizationCrud() {
         sortField,
         order: sortOrder,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const organizations = data?.items ?? [];
@@ -100,31 +105,34 @@ export function OrganizationCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateOrganizationDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateOrganizationDto) => {
+    await createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdateOrganizationDto) => {
+  const handleUpdate = async (dto: UpdateOrganizationDto) => {
     if (!editItem) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+   await  updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+    await deleteMutation.mutateAsync(deleteId);
   };
 
-  const handleSort = (field: "name" | "email" | "phone" | "createdAt") => {
-    if (sortField === field) {
-      // Если уже сортируем по этой колонке — меняем направление
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      // Новая колонка — начинаем с asc
-      setSortField(field);
-      setSortOrder("asc");
+      if (["name" , "email", "phone" , "createdAt"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
-    setPage(1); // при смене сортировки сбрасываем на первую страницу
+    setPage(1);
   };
+
 
   const permissions = {
     canCreate: true,

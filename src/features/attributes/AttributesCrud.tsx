@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { AttributesService } from "@/services/attributes.service";
@@ -60,7 +65,6 @@ export function AttributesCrud() {
     localStorage.setItem("attributes-view-mode", view);
   }, [view]);
 
-  // ─── Запрос списка характеристик ───
   const { data, isLoading, error } = useQuery({
     queryKey: ["attributes", debouncedSearch, page, limit, sortField, sortOrder],
     queryFn: () =>
@@ -71,7 +75,7 @@ export function AttributesCrud() {
         sortField,
         order: sortOrder,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const attributes = data?.items ?? [];
@@ -109,13 +113,13 @@ export function AttributesCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreateAttributeDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateAttributeDto) => {
+    await createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdateAttributeDto) => {
+  const handleUpdate = async (dto: UpdateAttributeDto) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+    await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
   const handleDelete = () => {
@@ -123,12 +127,16 @@ export function AttributesCrud() {
     deleteMutation.mutate(deleteId);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["name", "key", "createdAt"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
@@ -219,7 +227,7 @@ export function AttributesCrud() {
           fields={attributeFields}
           schema={editItem ? UpdateAttributeSchema : CreateAttributeSchema}
           defaultValues={editItem ?? {}}
-          onSubmit={editItem ? handleUpdate : handleCreate}
+          onSubmit={(editItem ? handleUpdate : handleCreate) as any}
         />
       </CrudDialog>
 

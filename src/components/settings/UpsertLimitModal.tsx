@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { currencyService, Currency } from "@/services/currency.service";
+import { currencyService } from "@/services/currency.service";
+import {Currency} from "@/schemas/currency.schema";
 
 interface UpsertLimitModalProps {
   isOpen: boolean;
@@ -25,10 +26,25 @@ export function UpsertLimitModal({ isOpen, onClose, onSubmit, isLoading, initial
   const [maxEnabled, setMaxEnabled] = useState(false);
 
 
-  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<UpsertInstallmentLimitDto & { currencyId: string }>({
-    resolver: zodResolver(UpsertInstallmentLimitSchema),
-    defaultValues: initialData || { currencyId: "", minInitialPayment: 0, maxAmount: 0 },
+  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<UpsertInstallmentLimitDto>({
+    resolver: zodResolver(UpsertInstallmentLimitSchema) as any,
+    defaultValues: {
+      currencyId: initialData?.currencyId || "",
+      minInitialPayment: initialData?.minInitialPayment ?? null,
+      maxAmount: initialData?.maxAmount ?? null,
+    },
   });
+
+
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        currencyId: initialData?.currencyId || "",
+        minInitialPayment: initialData?.minInitialPayment ?? null,
+        maxAmount: initialData?.maxAmount ?? null,
+      });
+    }
+  }, [initialData, isOpen, reset]);
 
   useEffect(() => {
     currencyService.findAll().then(setCurrencies);

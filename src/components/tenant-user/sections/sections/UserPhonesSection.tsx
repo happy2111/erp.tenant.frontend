@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Star } from "lucide-react";
+import {Phone} from "@/schemas/tenant-user.schema";
 
-import type { UserPhone } from "../types";
+
+type UserPhone =  Phone & {
+  id: string;
+}
 
 interface Props {
   phones: UserPhone[];
@@ -62,7 +66,7 @@ export function UserPhonesSection({ phones, onChange }: Props) {
       ...prev,
       {
         phone: newPhone,
-        note: newNote || null,
+        note: newNote || undefined,
         isPrimary: isFirst,
       },
     ]);

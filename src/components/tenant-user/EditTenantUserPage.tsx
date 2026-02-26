@@ -92,14 +92,12 @@ export default function EditTenantUserPage({id}: { id: string}) {
             onChange={(val) => setFormData((prev: any) => ({ ...prev, ...val }))}
           />
           <EditPhonesSection
-            // Данные телефонов (phonesToAdd, и т.д.) — на верхнем уровне
             initialPhones={user?.data?.phone_numbers}
-            onChange={(val) => setFormData((prev: any) => ({ ...prev, ...val }))}
+            onChange={(val: any) => setFormData((prev: any) => ({ ...prev, ...val }))}
           />
         </div>
         <div className="md:col-span-2">
           <CreateProfileSection
-            // Данные профиля — ОБЯЗАТЕЛЬНО вкладываем в ключ profile
             onChange={(val) => setFormData((prev: any) => ({ ...prev, profile: val }))}
             initialData={user?.data}
           />

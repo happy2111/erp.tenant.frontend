@@ -48,7 +48,7 @@ export function AddInstallmentPaymentModal({
     resolver: zodResolver(CreateInstallmentPaymentSchema),
     defaultValues: {
       installmentId,
-      amount: monthlyPayment.toFixed(2),
+      amount: Number(monthlyPayment.toFixed(2)),
       paymentMethod: 'cash',
       kassaId: '',
     }
@@ -132,7 +132,7 @@ export function AddInstallmentPaymentModal({
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => setValue('amount', remainingAmount.toFixed(2))}
+                  onClick={() => setValue('amount', Number(remainingAmount.toFixed(2)))}
                   className="absolute right-2 top-2 h-9 rounded-xl text-[10px] font-black uppercase bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors"
                 >
                   Butun qoldiq

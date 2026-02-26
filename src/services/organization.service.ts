@@ -39,8 +39,16 @@ export class OrganizationService {
    */
   static async getAllAdmin(
     query: GetOrganizationsQueryDto = {}
-  ): Promise<Organization[]> {
-    const res = await api.get<ApiResponse<Organization[]>>("/organization/admin/all", {
+  ): Promise<{ items: Organization[]; total: number; page: number; limit: number; totalPages: number; }> {
+    const res = await api.get<
+      ApiResponse<{
+        items: any[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      }>
+      >("/organization/admin/all", {
       params: query,
     });
     return res.data.data;

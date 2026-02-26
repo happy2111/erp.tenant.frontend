@@ -5,13 +5,14 @@ export const CreateKassaTransferSchema = z.object({
   fromKassaId: z.string().uuid('Некорректный ID кассы-источника'),
   toKassaId: z.string().uuid('Некорректный ID кассы-получателя'),
   amount: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/, 'Некорректный формат суммы'),
+    .coerce
+    .number({ message: 'Сумма должна быть числом' })
+    .positive('Сумма должна быть положительной'),
   rate: z
-    .string()
-    .regex(/^\d+(\.\d{1,6})?$/, 'Некорректный формат курса')
-    .optional()
-    .default('1'),
+    .coerce
+    .number({ message: 'Курс должен быть числом' })
+    .positive('Курс должен быть положительной')
+    .default(1),
   description: z.string().max(500).optional().nullable(),
 });
 

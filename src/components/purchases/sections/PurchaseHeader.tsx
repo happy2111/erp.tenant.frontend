@@ -33,7 +33,7 @@ export function PurchaseHeader() {
           >
             <ArrowLeft className="size-5" />
           </Button>
-          <h1 className="text-lg sm:text-xl font-black tracking-tight">Yangi xarid</h1>
+          <h1 className="text-lg sm:text-xl hidden sm:inline font-black tracking-tight">Yangi xarid</h1>
           <span className="hidden sm:inline text-sm text-muted-foreground">
             {items.length} ta mahsulot
           </span>
@@ -68,7 +68,7 @@ export function PurchaseHeader() {
         </div>
       </div>
 
-      <div className="sm:hidden bg-blue-600 flex gap-2 mt-3 overflow-x-auto pb-1">
+      <div className="sm:hidden flex gap-2 mt-3 overflow-x-auto pb-1">
         <CurrencySelector />
         <KassaSelector disabled={!currencyId} />
       </div>

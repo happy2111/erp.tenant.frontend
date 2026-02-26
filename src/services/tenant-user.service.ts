@@ -46,7 +46,7 @@ export class TenantUserService {
   }
 
   static async checkExistence(identifier: string): Promise<CheckUserExistenceResponse> {
-    const res = await api.get<ApiResponse<typeof CheckUserExistenceResponseSchema>>(
+    const res = await api.get<ApiResponse<CheckUserExistenceResponse>>(
       "/tenant-user/check-existence",
       { params: { identifier } },
     );

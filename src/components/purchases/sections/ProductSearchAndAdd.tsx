@@ -9,6 +9,7 @@ import { Search, Plus, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {AddToPurchaseModal} from "@/components/purchases/sections/AddToPurchaseModal";
+import Link from "next/link";
 
 export function ProductSearchAndAdd() {
   const [search, setSearch] = useState('');
@@ -109,16 +110,17 @@ export function ProductSearchAndAdd() {
           </div>
         )}
 
-        <button
+        <Link
+          href='/product-variants/create'
           className="p-6 rounded-[2.5rem] border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 group min-h-[160px]"
         >
-          <div className="size-12 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+          <div className="size-12 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-sm">
             <Plus size={24} />
           </div>
           <span className="text-[10px] font-black uppercase opacity-40 group-hover:opacity-100 tracking-tighter">
             Yangi variant yaratish
           </span>
-        </button>
+        </Link>
       </div>
 
 

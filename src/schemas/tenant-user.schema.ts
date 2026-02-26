@@ -69,6 +69,13 @@ export const GetTenantUsersQuerySchema = z.object({
   limit: z.number().min(1).max(100).optional().nullable(),
 });
 
+export type Phone = {
+  phone: string;
+  note?: string;
+  isPrimary: boolean;
+};
+
+
 // ─── Типы ────────────────────────────────────────────────────────
 export type CreateTenantUserDto = z.infer<typeof CreateTenantUserSchema>;
 export type UpdateTenantUserDto = z.infer<typeof UpdateTenantUserSchema>;

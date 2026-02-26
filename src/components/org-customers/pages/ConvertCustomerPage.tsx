@@ -184,19 +184,16 @@ export default function ConvertCustomerToUserPage({ id }: { id: string }) {
           />
         </div>
 
-        {/* Правая колонка — профиль */}
         <div className="md:col-span-2">
           <CreateProfileSection
             onChange={(profileData) =>
               setFormData((prev) => ({ ...prev, profile: profileData }))
             }
-            // Предзаполняем данными из клиента
             initialData={{
               profile: {
                 firstName: customer.firstName,
                 lastName: customer.lastName,
                 patronymic: customer.patronymic || undefined,
-                // остальные поля остаются пустыми → пользователь сам заполнит
               },
             }}
           />

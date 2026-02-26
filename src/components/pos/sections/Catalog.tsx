@@ -201,7 +201,7 @@ export function PosCatalog() {
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4
               no-scrollbar
           ">
-            {variantsWithInstances.map(v => {
+            {variantsWithInstances.map((v, index) => {
               const instancesInStock = v.product_instance?.filter(i => i.currentStatus === 'IN_STOCK').length || 0;
               const totalStock = v.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;
               const displayStock = instancesInStock > 0 ? instancesInStock : totalStock;
@@ -213,7 +213,7 @@ export function PosCatalog() {
                 stockCount: displayStock,
                 price: v.defaultPrice ? `${Number(v.defaultPrice).toLocaleString()} ${v.currency?.symbol || ''}` : '---',
                 onClick: () => setSelectedVariant(v),
-                key: v?.product_instance[0]?.id || v.id
+                key: index || v.id
               });
             })}
           </div>

@@ -44,10 +44,13 @@ export function CreateKassaTransferForm({ onSuccess }: { onSuccess?: () => void 
     watch,
     formState: { errors, isSubmitting }
   } = useForm<CreateKassaTransferDto>({
-    resolver: zodResolver(extendedSchema),
+    resolver: zodResolver(extendedSchema) as any,
     defaultValues: {
-      rate: '1',
-      amount: '',
+      fromKassaId: '',
+      toKassaId: '',
+      rate: 1,
+      amount: undefined as any,
+      description: '',
     }
   });
 

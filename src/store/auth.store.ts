@@ -25,7 +25,6 @@ interface TenantAuthState {
   removeApiKeyFromStorage: () => Promise<void>;
 }
 
-const service = new TenantAuthService();
 
 export const useTenantAuthStore = create<TenantAuthState>((set, get) => ({
   user: null,
@@ -66,7 +65,7 @@ export const useTenantAuthStore = create<TenantAuthState>((set, get) => ({
       tenantLoginSchema.parse(dto);
 
       set({ loading: true, error: null });
-      const data = await service.login(dto);
+      const data = await TenantAuthService.login(dto);
 
       set({
         accessToken: data.accessToken,
@@ -98,7 +97,7 @@ export const useTenantAuthStore = create<TenantAuthState>((set, get) => ({
       await get().removeTokenFromStorage()
       await get().removeApiKeyFromStorage();
 
-      await service.logout();
+      await TenantAuthService.logout();
     } catch (err: any) {
       toast.error(err?.message || "Logout failed");
     } finally {
@@ -109,7 +108,7 @@ export const useTenantAuthStore = create<TenantAuthState>((set, get) => ({
   refresh: async () => {
     try {
       set({ loading: true });
-      const data = await service.refresh();
+      const data = await TenantAuthService.refresh();
 
       set({
         accessToken: data.accessToken,

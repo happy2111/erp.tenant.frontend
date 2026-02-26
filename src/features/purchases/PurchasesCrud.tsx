@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { PurchasesService } from "@/services/purchases.service";
@@ -81,13 +86,13 @@ export function PurchasesCrud() {
         limit,
         status: statusFilter as any,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const purchases = data?.items ?? [];
   const total = data?.total ?? 0;
 
-  // ─── Мутации ───
+  // ─── Мутации ───A
   const createMutation = useMutation({
     mutationFn: PurchasesService.create,
     onSuccess: () => {
@@ -130,29 +135,34 @@ export function PurchasesCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: CreatePurchaseDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreatePurchaseDto) => {
+    await createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdatePurchaseDto) => {
+  const handleUpdate = async (dto: UpdatePurchaseDto) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+    await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+    await deleteMutation.mutateAsync(deleteId);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => { // Меняем тип аргумента на string
+    const validField = field as typeof sortField; // Приводим к нужному типу для логики
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["purchaseDate" , "totalAmount" , "createdAt"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
+
 
   const permissions = {
     canCreate: true,
@@ -270,10 +280,28 @@ export function PurchasesCrud() {
           fields={purchaseFields}
           schema={editItem ? UpdatePurchaseSchema : CreatePurchaseSchema}
           defaultValues={
-            editItem ?? {
-              status: "DRAFT" as const,
-              items: [], // обычно добавляют на детальной странице
-            }
+            editItem
+              ? {
+                supplierId: editItem.supplierId,
+                status: editItem.status,
+                currencyId: editItem.currencyId,
+                kassaId: editItem.kassaId,
+                items: editItem.items?.map(item => ({
+                  productVariantId: item.productVariantId,
+                  quantity: item.quantity,
+                  price: item.price,
+                  discount: item.discount ?? 0,
+                  batchNumber: item.batchNumber,
+                  // Convert Date object to ISO string for the Zod schema
+                  expiryDate: item.expiryDate instanceof Date
+                    ? item.expiryDate.toISOString()
+                    : item.expiryDate,
+                })) || [],
+              }
+              : {
+                status: "DRAFT" as const,
+                items: [],
+              }
           }
           onSubmit={editItem ? handleUpdate : handleCreate}
         />

@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  CreateTenantUserPhoneSchema,
+  CreateTenantUserProfileSchema
+} from "@/schemas/tenant-user.schema";
 
 export const PriceTypeValues = ['CASH', 'INSTALLMENT', 'WHOLESALE', 'ONLINE', 'SPECIAL'] as const;
 export const CustomerTypeValues = ['CLIENT', 'SUPPLIER'] as const;
@@ -59,6 +63,9 @@ export const MinimalCurrencySchema = z.object({
   name: z.string(),
   symbol: z.string().optional().nullable(),
 });
+
+export type ProfileDto = z.infer<typeof CreateTenantUserProfileSchema>;
+export type PhoneDto = z.infer<typeof CreateTenantUserPhoneSchema>;
 
 export const MinimalOrganizationSchema = z.object({
   id: z.string().uuid(),

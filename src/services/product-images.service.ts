@@ -1,4 +1,3 @@
-// src/services/product-images.service.ts
 import api from '@/lib/axiosInstance';
 import {
   CreateProductImageDto,
@@ -14,13 +13,6 @@ interface ApiResponse<T> {
 }
 
 export class ProductImagesService {
-  /**
-   * Получить presigned URL для загрузки изображения товара
-   *
-   * @param productId - ID товара
-   * @param dto - { filename, isPrimary? }
-   * @returns { imageId, uploadUrl, key }
-   */
   static async getPresignedUrl(
     productId: string,
     dto: CreateProductImageDto
@@ -37,13 +29,6 @@ export class ProductImagesService {
     return PresignedUploadResponseSchema.parse(res.data.data);
   }
 
-  /**
-   * Загрузить файл по presigned URL (обычно вызывается на клиенте после getPresignedUrl)
-   *
-   * @param uploadUrl - presigned URL от сервера
-   * @param file - File объект из <input type="file">
-   * @param contentType - mime-тип файла (опционально)
-   */
   static async uploadToPresignedUrl(
     uploadUrl: string,
     file: File,
@@ -64,10 +49,7 @@ export class ProductImagesService {
     }
   }
 
-  /**
-   * Получить список всех изображений товара
-   * (с публичными URL-ами)
-   */
+
   static async listProductImages(productId: string): Promise<ProductImage[]> {
     const res = await api.get<ApiResponse<any[]>>(
       `/products/images/${productId}`
@@ -76,36 +58,25 @@ export class ProductImagesService {
     return ProductImagesListSchema.parse(res.data.data);
   }
 
-  /**
-   * Удалить изображение по его ID
-   */
+
   static async deleteImage(imageId: string): Promise<void> {
     await api.delete(`/products/images/${imageId}`);
   }
 
-  /**
-   * Удобный комбинированный метод: запрос URL → загрузка → возврат готового изображения
-   *
-   * @returns готовый объект изображения с url
-   */
+
   static async uploadImage(
     productId: string,
     file: File,
     isPrimary: boolean = false
   ): Promise<ProductImage> {
-    // 1. Получаем presigned URL
     const { uploadUrl, imageId, key } = await this.getPresignedUrl(productId, {
       filename: file.name,
       isPrimary,
     });
-
-    // 2. Загружаем файл
     await this.uploadToPresignedUrl(uploadUrl, file, file.type);
 
-    // 3. Получаем обновлённый список (или можно сразу сформировать объект)
     const images = await this.listProductImages(productId);
 
-    // Находим только что загруженное изображение
     const uploadedImage = images.find(img => img.id === imageId);
 
     if (!uploadedImage) {

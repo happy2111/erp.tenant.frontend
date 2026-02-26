@@ -18,7 +18,7 @@ export class StocksService {
    * Получить список всех остатков (админ-панель, с пагинацией и фильтрами)
    */
   static async getAllAdmin(
-    filter: StockFilterDto = {}
+    filter: StockFilterDto | object = {}
   ): Promise<{
     data: Stock[];
     total: number;
@@ -54,7 +54,7 @@ export class StocksService {
     const res = await api.get<ApiResponse<any>>(
       `/stocks/variant/${variantId}`
     );
-    return StockByVariantResponseSchema.parse(res.data.data);
+    return res.data.data
   }
 
   /**

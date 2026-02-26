@@ -116,18 +116,18 @@ export function OrganizationUserCrud() {
     setCreateOpen(true); // После выбора в Drawer открываем форму параметров (роль/позиция)
   };
 
-  const handleCreate = (dto: CreateOrganizationUserDto) => {
-    createMutation.mutate(dto);
+  const handleCreate = async (dto: CreateOrganizationUserDto) => {
+    await createMutation.mutateAsync(dto);
   };
 
-  const handleUpdate = (dto: UpdateOrganizationUserDto) => {
+  const handleUpdate = async (dto: UpdateOrganizationUserDto) => {
     if (!editItem) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+    await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+    await deleteMutation.mutateAsync(deleteId);
   };
 
   const handleSort = (field: string) => {

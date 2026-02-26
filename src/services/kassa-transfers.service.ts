@@ -1,4 +1,3 @@
-// src/services/kassa-transfers.service.ts
 import api from '@/lib/axiosInstance';
 import {
   CreateKassaTransferDto,

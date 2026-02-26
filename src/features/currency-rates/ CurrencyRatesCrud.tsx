@@ -135,16 +135,16 @@ export function CurrencyRatesCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = (dto: any) => {
-    createMutation.mutate({
+  const handleCreate = async (dto: any) => {
+    await createMutation.mutateAsync({
       ...dto,
       rate: parseFloat(dto.rate),
     });
   };
 
-  const handleUpdate = (dto: any) => {
+  const handleUpdate = async (dto: any) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({
+    await updateMutation.mutateAsync({
       id: editItem.id,
       dto: {
         ...dto,
@@ -153,9 +153,9 @@ export function CurrencyRatesCrud() {
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+    await deleteMutation.mutateAsync(deleteId);
   };
 
   const handleSort = (field: string) => {

@@ -16,16 +16,12 @@ import {
 import { useEffect, useState } from "react";
 import { TenantUserService } from "@/services/tenant-user.service";
 import { toast } from "sonner";
-import { CheckUserExistenceResponse } from "@/schemas/tenant-user.schema";
+import {CheckUserExistenceResponse, Phone} from "@/schemas/tenant-user.schema";
 import { useRouter } from "next/navigation";
 import { PatternFormat } from "react-number-format";
 import {cn} from "@/lib/utils";
 
-type Phone = {
-  phone: string;
-  note?: string;
-  isPrimary: boolean;
-};
+
 
 export function CreatePhonesSection({ onChange }: { onChange: (v: Phone[]) => void }) {
   const router = useRouter();
@@ -62,12 +58,17 @@ export function CreatePhonesSection({ onChange }: { onChange: (v: Phone[]) => vo
         setExistingUser(data);
         toast.warning("Foydalanuvchi mavjud");
       }
-    } catch (error: unknown) {
-      if (error?.response?.status === 404) {
-        confirmAddPhone(cleanPhone);
-      } else {
-        toast.error("Tekshirishda xatolik");
+    } catch (error: any) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response: { status: number } };
+
+        if (axiosError.response.status === 404) {
+          confirmAddPhone(cleanPhone);
+          return;
+        }
       }
+
+      toast.error("Tekshirishda xatolik");
     } finally {
       setIsChecking(false);
     }

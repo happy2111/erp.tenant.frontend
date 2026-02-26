@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { CategoriesService } from "@/services/categories.service";
@@ -69,7 +74,7 @@ export function CategoriesCrud() {
         page,
         limit,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const categories = data?.items ?? [];
@@ -127,22 +132,26 @@ export function CategoriesCrud() {
     createMutation.mutate(dto);
   };
 
-  const handleUpdate = (dto: UpdateCategoryDto) => {
+  const handleUpdate = async (dto: UpdateCategoryDto) => {
     if (!editItem?.id) return;
-    updateMutation.mutate({ id: editItem.id, dto });
+    await updateMutation.mutateAsync({ id: editItem.id, dto });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    deleteMutation.mutate(deleteId);
+    await deleteMutation.mutateAsync(deleteId);
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
+  const handleSort = (field: string) => {
+    const validField = field as typeof sortField;
+
+    if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setSortField(field);
-      setSortOrder("asc");
+      if (["name", "key", "createdAt"].includes(validField)) {
+        setSortField(validField);
+        setSortOrder("asc");
+      }
     }
     setPage(1);
   };
@@ -237,7 +246,7 @@ export function CategoriesCrud() {
           fields={categoryFields}
           schema={editItem ? UpdateCategorySchema : CreateCategorySchema}
           defaultValues={editItem ?? {}}
-          onSubmit={editItem ? handleUpdate : handleCreate}
+          onSubmit={(editItem ? handleUpdate : handleCreate) as any}
         />
       </CrudDialog>
 

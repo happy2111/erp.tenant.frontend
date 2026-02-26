@@ -24,6 +24,7 @@ export type CrudField<T> = {
   render?: (row: T) => React.ReactNode;
   renderForm?: (field: any) => React.ReactNode;
   helperText?: string;
+  isTitle?: boolean;
 };
 
 

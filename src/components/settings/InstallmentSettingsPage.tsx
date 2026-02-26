@@ -45,7 +45,7 @@ export function InstallmentSettingsPage() {
 
   const upsertLimitMutation = useMutation({
     mutationFn: ({ currencyId, minInitialPayment, maxAmount }: UpsertInstallmentLimitDto & { currencyId: string }) =>
-      InstallmentSettingsService.upsertLimit(currencyId, { minInitialPayment, maxAmount }),
+      InstallmentSettingsService.upsertLimit({currencyId, minInitialPayment, maxAmount }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['installment-settings'] });
       toast.success('Limit muvaffaqiyatli saqlandi');
@@ -318,9 +318,9 @@ export function InstallmentSettingsPage() {
       <UpsertLimitModal
         isOpen={isLimitModalOpen}
         onClose={() => setIsLimitModalOpen(false)}
-        initialData={editingLimit ?? undefined}
+        initialData={editingLimit as any}
         onSubmit={(data) => upsertLimitMutation.mutate(data)}
-        isLoading={upsertLimitMutation.isLoading}
+        isLoading={upsertLimitMutation.isPending}
       />
 
 

@@ -27,7 +27,7 @@ export class CategoriesService {
       params: query,
     });
 
-    return CategoriesListResponseSchema.parse(res.data.data);
+    return res.data.data
   }
 
   /**
