@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { currencyService } from "@/services/currency.service"; // ← путь к твоему сервису
+import { currencyService } from "@/services/currency.service";
 import {
   Currency,
   CreateCurrencyDto,
@@ -28,6 +28,7 @@ import { CrudDialog } from "@/components/crud/CrudDialog";
 import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
+import {Plus} from "lucide-react";
 
 export function CurrencyCrud() {
   const queryClient = useQueryClient();
@@ -137,7 +138,7 @@ export function CurrencyCrud() {
         />
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>Добавить валюту</Button>
+          <Button onClick={() => setCreateOpen(true)}><Plus className={'size-4'}/></Button>
         </div>
       </div>
 

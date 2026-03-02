@@ -42,6 +42,13 @@ export function getLocaleFromPathname() {
   return match?.[1] ?? "ru";
 }
 
+export const isActive = (itemUrl: string, pathname: string) => {
+  // const current = pathname.split("/")[1];
+  // const target = itemUrl.split("/")[1];
+  // return current === target;
+  return pathname === itemUrl;
+};
+
 export const printMe = () =>  console.log(`%c
           _____                _____          
          /\\    \\              |\\    \\         

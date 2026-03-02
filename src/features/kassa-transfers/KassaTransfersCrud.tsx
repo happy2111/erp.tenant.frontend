@@ -144,7 +144,7 @@ export function KassaTransfersCrud() {
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
           <Button onClick={() => setIsTransferOpen(true)}>
-            Перевод между кассами
+            Kassalar o&apos;rtasida pul o&apos;tkazmasi
           </Button>
         </div>
       </div>

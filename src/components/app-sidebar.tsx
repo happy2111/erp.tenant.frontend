@@ -1,13 +1,6 @@
 "use client"
 
 import * as React from "react"
-import {
-  Boxes,
-  Building, Contact, Euro, List, Package, Plus, Settings2, Tag, User, UserStar,
-  Cuboid, Layers, Landmark, ArrowLeftRight, ChartLine, CalendarCheck,
-  CreditCard, ShoppingCart,
-  LayoutTemplate,
-} from "lucide-react"
 
 import {NavProjects} from "@/components/nav-projects"
 import {NavUser} from "@/components/nav-user"
@@ -34,7 +27,7 @@ export interface SidebarItem {
   url: string
   icon: LucideIcon
   actions?: SidebarAction[]
-  isActive?: boolean; // Для подсветки активного пункта
+  isActive?: boolean;
 }
 
 export interface SidebarGroup {
@@ -64,10 +57,6 @@ export function AppSidebar({ groups, ...props }: AppSidebarProps) {
           />
         ))}
       </SidebarContent>
-      {/*<SidebarContent>*/}
-      {/*  <NavMain items={data.navMain} />*/}
-      {/*  <NavProjects projects={data.projects} />*/}
-      {/*</SidebarContent>*/}
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>
