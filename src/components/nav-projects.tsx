@@ -18,8 +18,9 @@ import {
   useSidebar
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { usePathname } from 'next/navigation';
+import {usePathname, useRouter} from 'next/navigation';
 import {isActive} from "@/lib/utils";
+import {Button} from "@/components/ui/button";
 
 
 export function NavProjects({
@@ -33,6 +34,7 @@ export function NavProjects({
 
   const pathname = usePathname();
 
+  const router = useRouter();
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -88,10 +90,10 @@ export function NavProjects({
                       asChild
                       className="h-10 rounded-lg cursor-pointer focus:bg-primary/10"
                     >
-                      <Link
-                        href={action.url}
+                      <button
                         className="flex items-center gap-3 w-full"
                         onClick={() => {
+                          router.push(action.url)
                           if (isMobile) setOpenMobile(false)
                         }}
                       >
@@ -103,7 +105,7 @@ export function NavProjects({
                         <span className="text-sm font-medium">
                           {action.label}
                         </span>
-                      </Link>
+                      </button>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

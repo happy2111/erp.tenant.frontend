@@ -8,11 +8,10 @@ import { Progress } from '@/components/ui/progress';
 export default function Home() {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
-  const REDIRECT_TIME = 2; // секунды
+  const REDIRECT_TIME = 2;
 
-  // Эффект 1: Только для анимации прогресс-бара
   useEffect(() => {
-    const intervalTime = 100; // мс
+    const intervalTime = 100;
     const step = 100 / (REDIRECT_TIME * (1000 / intervalTime));
 
     const timer = setInterval(() => {
@@ -28,7 +27,6 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // Эффект 2: Выполняем редирект только когда прогресс реально достиг 100
   useEffect(() => {
     if (progress >= 100) {
       router.replace('/dashboard');
@@ -37,7 +35,6 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-background p-4 overflow-hidden">
-      {/* Декоративные сферы */}
       <div className="absolute top-1/3 -right-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/3 -left-20 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
 

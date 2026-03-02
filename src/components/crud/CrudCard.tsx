@@ -16,10 +16,6 @@ interface Props<T extends { id: string }> {
   onDelete?: (id: string) => void;
 }
 
-
-
-
-
 export function CrudCard<
   T extends {
     id: string;
