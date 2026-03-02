@@ -30,6 +30,7 @@ import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import {useRouter} from "next/navigation";
+import {Plus} from "lucide-react";
 
 export function AttributesCrud() {
   const router = useRouter()
@@ -158,7 +159,7 @@ export function AttributesCrud() {
         />
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>Добавить характеристику</Button>
+          <Button onClick={() => setCreateOpen(true)}><Plus/></Button>
         </div>
       </div>
 

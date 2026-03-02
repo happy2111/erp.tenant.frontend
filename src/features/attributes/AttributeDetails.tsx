@@ -46,7 +46,7 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
     queryFn: () => AttributesService.getByIdAdmin(attributeId),
   });
 
-  const [isRequired, setIsRequired] = useState(attribute?.isRequired || false);
+  const [isRequired, setIsRequired] = useState<boolean>(attribute?.isRequired ?? false);
 
   // 2. Мутации для CRUD значений
   const createMutation = useMutation({

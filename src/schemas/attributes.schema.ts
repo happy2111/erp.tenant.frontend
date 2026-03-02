@@ -59,7 +59,7 @@ export const AttributeSchema = z.object({
   id: z.string().uuid(),
   key: z.string(),
   name: z.string(),
-  isRequired: z.boolean().optional(),
+  isRequired: z.boolean(),
   values: z.array(AttributeValueSchema).default([]),
 });
 

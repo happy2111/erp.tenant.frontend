@@ -29,6 +29,7 @@ import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import { toast } from "sonner";
+import {Plus} from "lucide-react";
 
 export function CategoriesCrud() {
   const queryClient = useQueryClient();
@@ -175,7 +176,7 @@ export function CategoriesCrud() {
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
           <Button onClick={() => setCreateOpen(true)}>
-            Добавить категорию
+            <Plus className={'size-4'}/>
           </Button>
         </div>
       </div>

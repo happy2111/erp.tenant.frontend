@@ -220,7 +220,7 @@ export function CurrencyRatesCrud() {
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
           <Button onClick={() => setCreateOpen(true)} className="rounded-xl h-10 font-bold uppercase text-[10px] tracking-widest">
-            <Plus className="size-4 mr-2" /> Yangi kurs
+            <Plus className="size-4" />
           </Button>
         </div>
       </div>

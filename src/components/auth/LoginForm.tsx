@@ -22,7 +22,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTenantAuthStore } from '@/store/tenant-auth.store';
 import { cn } from '@/lib/utils';
 
-// Схема валидации
 const formSchema = z.object({
   loginType: z.enum(['email', 'phone']),
   email: z.string().email("To'g'ri email kiriting").optional().or(z.literal('')),
@@ -99,7 +98,6 @@ export function LoginForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-        {/* Переключатель типов входа */}
         <Tabs
           defaultValue="email"
           className="w-full"

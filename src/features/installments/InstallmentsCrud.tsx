@@ -36,6 +36,7 @@ import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import { toast } from "sonner";
 import {useRouter} from "next/navigation";
+import {Plus} from "lucide-react";
 
 export function InstallmentsCrud() {
   const queryClient = useQueryClient();
@@ -167,7 +168,7 @@ export function InstallmentsCrud() {
 
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>Создать рассрочку</Button>
+          <Button onClick={() => setCreateOpen(true)}><Plus className={'size-4'}/></Button>
         </div>
       </div>
 

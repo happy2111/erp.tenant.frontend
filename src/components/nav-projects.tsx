@@ -18,6 +18,9 @@ import {
   useSidebar
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { usePathname } from 'next/navigation';
+import {isActive} from "@/lib/utils";
+
 
 export function NavProjects({
                               label,
@@ -27,6 +30,8 @@ export function NavProjects({
   projects: SidebarItem[]
 }) {
   const { isMobile, setOpenMobile } = useSidebar()
+
+  const pathname = usePathname();
 
 
   return (
@@ -41,11 +46,11 @@ export function NavProjects({
             {/* Основной пункт */}
             <SidebarMenuButton
               asChild
-              className="h-12 px-3 rounded-xl transition-all hover:bg-sidebar-accent hover:translate-x-1"
+              className={`h-12 px-3 rounded-xl transition-all hover:bg-sidebar-accent hover:translate-x-1 ${isActive(item.url, pathname) && "translate-x-2 bg-sidebar-ring"}`}
             >
               <Link
                 href={item.url}
-                className="flex items-center"
+                className={`flex items-center `}
                 onClick={() => {
                   if (isMobile) setOpenMobile(false)
                 }}

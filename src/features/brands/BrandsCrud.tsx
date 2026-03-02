@@ -30,6 +30,7 @@ import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import {useRouter} from "next/navigation";
+import {Plus} from "lucide-react";
 
 export function BrandsCrud() {
   const router = useRouter()
@@ -159,7 +160,7 @@ export function BrandsCrud() {
         />
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>Добавить бренд</Button>
+          <Button onClick={() => setCreateOpen(true)}><Plus className={'size-4'}/></Button>
         </div>
       </div>
 

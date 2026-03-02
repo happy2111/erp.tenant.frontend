@@ -31,6 +31,7 @@ import { CrudViewMode } from "@/components/crud/types";
 import { toast } from "sonner";
 import { CreateKassaForm } from "@/components/kassas/create-kassa-form";
 import {useRouter} from "next/navigation";
+import {Plus} from "lucide-react";
 
 export function KassasCrud() {
   const queryClient = useQueryClient();
@@ -173,7 +174,7 @@ const router = useRouter();
         />
         <div className="flex items-center gap-3">
           <CrudViewToggle value={view} onChange={setView} />
-          <Button onClick={() => setCreateOpen(true)}>Добавить кассу</Button>
+          <Button onClick={() => setCreateOpen(true)}><Plus className={'size-4'}/></Button>
         </div>
       </div>
 

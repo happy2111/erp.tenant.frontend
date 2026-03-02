@@ -43,12 +43,12 @@ const sidebarGroups = [
     items: [
       {name: "POS", url: "/pos", icon: LayoutTemplate},
       {
-        name: "Savdo",
+        name: "Savdolar",
         url: "/sales",
         icon: ShoppingCart,
       },
       {
-        name: "Xarid",
+        name: "Xaridlar",
         url: "/purchases",
         icon: CreditCard,
         actions: [
