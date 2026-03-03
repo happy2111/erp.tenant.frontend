@@ -25,6 +25,7 @@ import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import {useEffect, useState} from "react";
 import {Plus} from "lucide-react";
+import {toast} from "sonner";
 
 export function OrganizationCrud() {
   const queryClient = useQueryClient();
@@ -102,6 +103,15 @@ export function OrganizationCrud() {
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
       setDeleteId(null);
     },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
+    }
   });
 
   // ─── Handlers ───

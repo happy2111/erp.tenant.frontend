@@ -127,10 +127,13 @@ export function SalesCrud() {
       toast.success("Продажа удалена");
     },
     onError: (err: any) => {
-      toast.error(
-        err.response?.data?.message ||
-        "Не удалось удалить продажу (возможно, уже оплачена или есть платежи)"
-      );
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
     },
   });
 

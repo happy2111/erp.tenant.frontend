@@ -25,6 +25,7 @@ import { CrudViewMode } from "@/components/crud/types";
 import { useEffect, useState } from "react";
 import {useRouter} from "next/navigation";
 import {Plus} from "lucide-react";
+import {toast} from "sonner";
 
 export function TenantUserCrud() {
   const router = useRouter()
@@ -104,6 +105,15 @@ export function TenantUserCrud() {
       queryClient.invalidateQueries({ queryKey: ["tenant-users"] });
       setDeleteId(null);
     },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
+    }
   });
 
   // ─── Handlers ───

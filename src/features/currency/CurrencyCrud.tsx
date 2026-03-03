@@ -29,6 +29,7 @@ import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import {Plus} from "lucide-react";
+import {toast} from "sonner";
 
 export function CurrencyCrud() {
   const queryClient = useQueryClient();
@@ -103,6 +104,15 @@ export function CurrencyCrud() {
       queryClient.invalidateQueries({ queryKey: ["currencies"] });
       setDeleteId(null);
     },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
+    }
   });
 
   // ─── Handlers ───

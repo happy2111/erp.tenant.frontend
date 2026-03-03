@@ -37,6 +37,15 @@ export default function ProductInstanceDetailPage({id}: {id: string}) {
     onSuccess: () => {
       toast.success("O'chirildi");
       router.back();
+    },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
     }
   });
 

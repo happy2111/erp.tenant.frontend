@@ -31,6 +31,7 @@ import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
 import {useRouter} from "next/navigation";
 import {Plus} from "lucide-react";
+import {toast} from "sonner";
 
 export function AttributesCrud() {
   const router = useRouter()
@@ -108,7 +109,12 @@ export function AttributesCrud() {
       setDeleteId(null);
     },
     onError: (err: any) => {
-      // Можно показать более понятное сообщение
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
       console.error("Ошибка удаления характеристики:", err);
     },
   });

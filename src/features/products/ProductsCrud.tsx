@@ -126,10 +126,13 @@ export function ProductsCrud() {
       toast.success("Товар удалён");
     },
     onError: (err: any) => {
-      const msg =
-        err.response?.data?.message ||
-        "Не удалось удалить товар (возможно, есть связанные варианты/цены/изображения)";
-      toast.error(msg);
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
     },
   });
 

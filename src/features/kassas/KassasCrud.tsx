@@ -119,10 +119,13 @@ const router = useRouter();
       toast.success("Касса удалена");
     },
     onError: (err: any) => {
-      const msg =
-        err.response?.data?.message ||
-        "Не удалось удалить кассу (возможно, есть операции или баланс)";
-      toast.error(msg);
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
     },
   });
 

@@ -69,6 +69,16 @@ export function ProductVariantAttributes({ variantId }: { variantId: string }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["variant-attributes", variantId] });
       toast.success("O'chirildi");
+    },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
+
     }
   });
 

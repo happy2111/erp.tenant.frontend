@@ -123,8 +123,13 @@ export function CategoriesCrud() {
       toast.success("Категория удалена");
     },
     onError: (err: any) => {
-      const msg = err.response?.data?.message || "Не удалось удалить категорию";
-      toast.error(msg);
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
     },
   });
 

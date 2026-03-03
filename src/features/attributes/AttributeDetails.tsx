@@ -75,7 +75,15 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
       queryClient.invalidateQueries({ queryKey: ["attributes", attributeId] });
       toast.success("Qiymat o&apos;chirildi");
     },
-    onError: () => toast.error("O&apos;chirishda xatolik (qiymat ishlatilayotgan bo&apos;lishi mumkin)")
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
+    }
   });
 
   const hadleCheckUpdate = (v: boolean) => {

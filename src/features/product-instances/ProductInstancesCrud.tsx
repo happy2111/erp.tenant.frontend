@@ -129,7 +129,13 @@ export function ProductInstancesCrud() {
       toast.success("Экземпляр удалён");
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Не удалось удалить экземпляр");
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
     },
   });
 

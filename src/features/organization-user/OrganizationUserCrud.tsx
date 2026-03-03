@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { CreateOrgUserDrawer } from "@/components/organization-user/drawers/CreateOrgUserDrawer";
 import {Plus, UserCheck} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {toast} from "sonner";
 
 export function OrganizationUserCrud() {
   const router = useRouter();
@@ -107,6 +108,15 @@ export function OrganizationUserCrud() {
       queryClient.invalidateQueries({ queryKey: ["organization-users"] });
       setDeleteId(null);
     },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
+    }
   });
 
   // ─── Handlers ───

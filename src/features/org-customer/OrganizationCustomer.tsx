@@ -33,6 +33,7 @@ import {useRouter} from "next/navigation";
 import {
   OrganizationCustomerDialog
 } from "@/features/org-customer/OrganizationCustomerDialog";
+import {toast} from "sonner";
 
 export function OrganizationCustomerCrud() {
   const router = useRouter();
@@ -110,6 +111,15 @@ export function OrganizationCustomerCrud() {
       queryClient.invalidateQueries({ queryKey: ["org-customers"] });
       setDeleteId(null);
     },
+    onError: (err: any) => {
+      const errorMessage =
+        err?.response?.data?.message?.message ||
+        err?.response?.data?.message ||
+        "Ошибка удаления";
+
+      toast.error(errorMessage);
+      console.error("Ошибка удаления характеристики:", err);
+    }
   });
 
   // ─── Handlers ───
