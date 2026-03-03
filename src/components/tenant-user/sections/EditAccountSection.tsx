@@ -115,6 +115,7 @@ export function EditAccountSection({
             </div>
             <Input
               type="email"
+              autoComplete="new-email"
               placeholder="user@example.uz"
               className="pl-10 bg-background/50 border-border/60 focus-visible:ring-primary"
               value={email}
@@ -137,6 +138,7 @@ export function EditAccountSection({
             </div>
             <Input
               type="password"
+              autoComplete="new-password"
               placeholder="O'zgartirmaslik uchun bo'sh qoldiring"
               className="pl-10 bg-background/50 border-border/60 focus-visible:ring-primary"
               value={password}

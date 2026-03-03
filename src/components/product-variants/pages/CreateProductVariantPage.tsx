@@ -1,10 +1,9 @@
 "use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Package,
@@ -14,31 +13,46 @@ import {
   Barcode,
   Hash,
   Type,
-  DollarSign
+  DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CreateProductVariantSchema, CreateProductVariantDto } from "@/schemas/product-variants.schema";
 import { ProductVariantsService } from "@/services/product-variants.service";
+import { ProductsService } from "@/services/products.service";
 import { Product } from "@/schemas/products.schema";
 import { Currency } from "@/schemas/currency.schema";
 import {
-  ProductSelectDrawer
+  ProductSelectDrawer,
 } from "@/components/product-variants/drawers/SelectProductDrawer";
 import {
-  CurrencySelectDrawer
+  CurrencySelectDrawer,
 } from "@/components/product-variants/drawers/СurrencySelectDrawer";
 
 export default function CreateProductVariantPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [productDrawerOpen, setProductDrawerOpen] = useState(false);
   const [currencyDrawerOpen, setCurrencyDrawerOpen] = useState(false);
-
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(null);
+
+  const preselectedProductId = searchParams.get("productId");
+
+  // Загружаем продукт по ID из URL, если он есть
+  const {
+    isLoading: isLoadingProduct,
+    data: preloadedProduct,
+    isSuccess: isProductLoaded,
+  } = useQuery({
+    queryKey: ["product", preselectedProductId],
+    queryFn: () => ProductsService.getByIdAdmin(preselectedProductId!),
+    enabled: !!preselectedProductId,
+    retry: 1,
+    staleTime: 3 * 60 * 1000, // 3 минуты кэш
+  });
 
   const {
     register,
@@ -53,10 +67,11 @@ export default function CreateProductVariantPage() {
       sku: "",
       barcode: "",
       defaultPrice: undefined,
-      productId: "",
+      productId: preselectedProductId || "",
       currencyId: null,
     },
   });
+  const isProductPreselected = !!preselectedProductId && isProductLoaded && !!selectedProduct;
 
   const createMutation = useMutation({
     mutationFn: (data: CreateProductVariantDto) => ProductVariantsService.create(data),
@@ -71,10 +86,30 @@ export default function CreateProductVariantPage() {
     createMutation.mutate(data);
   };
 
+  // 1. Автоматическая установка при успешной загрузке из URL
+  useEffect(() => {
+    if (preloadedProduct) {
+      setSelectedProduct(preloadedProduct);
+      setValue("productId", preloadedProduct.id, {
+        shouldValidate: true,
+        shouldDirty: true
+      });
+    }
+  }, [preloadedProduct, setValue]);
+
+// 2. Синхронизация при любом изменении selectedProduct (в т.ч. из drawer)
+  useEffect(() => {
+    if (selectedProduct?.id) {
+      setValue("productId", selectedProduct.id, {
+        shouldValidate: true,
+        shouldDirty: true
+      });
+    }
+  }, [selectedProduct, setValue]);
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 size-[500px] bg-primary/5 rounded-full blur-[120px] -z-10" />
-
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -83,41 +118,62 @@ export default function CreateProductVariantPage() {
           </Button>
           <div>
             <h1 className="text-3xl font-black tracking-tighter italic uppercase">Yangi Variant</h1>
-            <p className="text-xs uppercase tracking-widest opacity-60 font-medium">Mahsulot uchun yangi model qo'shish</p>
+            <p className="text-xs uppercase tracking-widest opacity-60 font-medium">
+              Mahsulot uchun yangi model qo'shish
+            </p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-[2.5rem] p-6 md:p-8 shadow-xl space-y-6">
-
             {/* 1. Выбор продукта (Обязательно) */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 ml-1">Asosiy Mahsulot *</label>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setProductDrawerOpen(true)}
-                className={`w-full h-14 justify-between rounded-2xl border-border/50 bg-background/30 px-6 ${errors.productId ? 'border-destructive/50' : ''}`}
-              >
-                <div className="flex items-center gap-3">
-                  <Package className="size-5 text-primary" />
-                  {selectedProduct ? (
-                    <div className="text-left">
-                      <p className="font-bold text-sm leading-none">{selectedProduct.name}</p>
-                      <p className="text-[10px] opacity-50 font-mono mt-1">{selectedProduct.code}</p>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground font-medium">Mahsulotni tanlang</span>
-                  )}
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 ml-1">
+                Asosiy Mahsulot *
+              </label>
+
+              {isLoadingProduct ? (
+                <div className="h-14 flex items-center justify-center">
+                  <Loader2 className="animate-spin size-5 text-primary" />
                 </div>
-                <ChevronRight className="size-4 opacity-30" />
-              </Button>
-              {errors.productId && <p className="text-destructive text-[10px] font-bold uppercase ml-1">{errors.productId.message}</p>}
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isProductPreselected}
+                  onClick={() => !isProductPreselected && setProductDrawerOpen(true)}
+                  className={`w-full h-14 justify-between rounded-2xl border-border/50 bg-background/30 px-6 ${
+                    errors.productId ? "border-destructive/50" : ""
+                  } ${isProductPreselected ? "opacity-80 cursor-not-allowed" : ""}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Package className="size-5 text-primary" />
+                    {selectedProduct ? (
+                      <div className="text-left">
+                        <p className="font-bold text-sm leading-none">{selectedProduct.name}</p>
+                        <p className="text-[10px] opacity-50 font-mono mt-1">{selectedProduct.code}</p>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground font-medium">Mahsulotni tanlang</span>
+                    )}
+                  </div>
+                  {!isProductPreselected && <ChevronRight className="size-4 opacity-30" />}
+                </Button>
+              )}
+
+              {errors.productId && (
+                <p className="text-destructive text-[10px] font-bold uppercase ml-1">
+                  {errors.productId.message}
+                </p>
+              )}
             </div>
 
+            {/* Остальные поля остаются без изменений */}
             {/* 2. Заголовок варианта */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 ml-1">Variant nomi *</label>
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 ml-1">
+                Variant nomi *
+              </label>
               <div className="relative group">
                 <Type className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
@@ -126,7 +182,11 @@ export default function CreateProductVariantPage() {
                   className="pl-11 h-12 rounded-xl bg-background/50 border-border/50"
                 />
               </div>
-              {errors.title && <p className="text-destructive text-[10px] font-bold uppercase ml-1">{errors.title.message}</p>}
+              {errors.title && (
+                <p className="text-destructive text-[10px] font-bold uppercase ml-1">
+                  {errors.title.message}
+                </p>
+              )}
             </div>
 
             {/* 3. SKU и Barcode */}
@@ -139,7 +199,9 @@ export default function CreateProductVariantPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 ml-1">Barcode</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 ml-1">
+                  Barcode
+                </label>
                 <div className="relative group">
                   <Barcode className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input {...register("barcode")} placeholder="47800..." className="pl-11 h-12 rounded-xl" />
@@ -157,7 +219,7 @@ export default function CreateProductVariantPage() {
                     type="number"
                     step="0.01"
                     {...register("defaultPrice", {
-                      setValueAs: (v) => (v === "" ? undefined : parseFloat(v))
+                      setValueAs: (v) => (v === "" ? undefined : parseFloat(v)),
                     })}
                     placeholder="0.00"
                     className="pl-11 h-12 rounded-xl"
@@ -165,7 +227,9 @@ export default function CreateProductVariantPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 ml-1">Valyuta</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 ml-1">
+                  Valyuta
+                </label>
                 <Button
                   type="button"
                   variant="outline"
@@ -196,8 +260,8 @@ export default function CreateProductVariantPage() {
             </Button>
             <Button
               type="submit"
-              disabled={createMutation.isPending}
-              className="flex-1 h-16 rounded-2xl bg-primary font-black uppercase text-[11px] "
+              disabled={createMutation.isPending || isLoadingProduct}
+              className="flex-1 h-16 rounded-2xl bg-primary font-black uppercase text-[11px]"
             >
               {createMutation.isPending ? <Loader2 className="animate-spin size-5" /> : "Saqlash"}
             </Button>
@@ -215,7 +279,6 @@ export default function CreateProductVariantPage() {
           setProductDrawerOpen(false);
         }}
       />
-
       <CurrencySelectDrawer
         open={currencyDrawerOpen}
         onOpenChange={setCurrencyDrawerOpen}

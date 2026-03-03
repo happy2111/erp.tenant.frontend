@@ -30,7 +30,7 @@ export default function TenantUserCreatePage() {
     mutationFn: TenantUserService.create,
     onSuccess: (user) => {
       console.log(user);
-      router.push(`/tenant-users/${user.data.id}`)
+      router.replace(`/tenant-users/${user.data.id}`)
     },
   });
 

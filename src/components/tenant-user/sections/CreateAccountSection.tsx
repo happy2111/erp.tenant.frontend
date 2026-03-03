@@ -87,6 +87,7 @@ export function CreateAccountSection({ onChange, initialData }: { onChange: (v: 
           </div>
           <Input
             type="email"
+            autoComplete="new-email"
             placeholder="Email (ixtiyoriy)"
             className="pl-10 bg-background/50 border-border/60 focus-visible:ring-primary"
             value={email}
@@ -106,6 +107,7 @@ export function CreateAccountSection({ onChange, initialData }: { onChange: (v: 
             placeholder="Parol *"
             className="bg-background/50 border-border/60 focus-visible:ring-primary"
             value={password}
+            autoComplete="new-password"
             onChange={(e) => setPassword(e.target.value)}
             // required
           />
