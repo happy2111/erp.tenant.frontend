@@ -52,7 +52,7 @@ export function MainSettingsPage() {
       </div>
 
       <div className="grid gap-6">
-        <Card className="rounded-[2.5rem] border-none bg-card shadow-sm overflow-hidden">
+        <Card className="rounded-3xl border-none bg-card shadow-sm overflow-hidden">
           <CardContent className="p-8 space-y-8">
 
             {/* Группа: Внешний вид */}
@@ -140,7 +140,7 @@ export function MainSettingsPage() {
         </Card>
 
         {/* Инфо-блок */}
-        <div className="p-6 bg-muted/30 rounded-[2rem] flex flex-col md:flex-row justify-between items-center gap-4 border border-dashed border-muted">
+        <div className="p-6 bg-muted/30 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-4 border border-dashed border-muted">
           <div className="text-center md:text-left">
             <p className="text-[9px] font-black uppercase opacity-40">Tashkilot ID</p>
             <code className="text-[11px] font-mono break-all">{settings?.organizationId}</code>

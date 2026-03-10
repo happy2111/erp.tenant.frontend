@@ -108,7 +108,7 @@ export function InstallmentSettingsPage() {
   return (
     <div className="space-y-10 pb-20 relative">
       {/* Шапка */}
-      <div className="flex flex-wrap gap-2 justify-between items-center bg-card p-6 rounded-[2.5rem] border border-border/40 shadow-sm">
+      <div className="flex flex-wrap gap-2 justify-between items-center bg-card p-6 rounded-3xl border border-border/40 shadow-sm">
         <div className="flex items-center gap-4">
           <div className={cn(
             "size-3 rounded-full animate-pulse",
@@ -144,7 +144,7 @@ export function InstallmentSettingsPage() {
 
         {/* Блок 1: Глобальные лимиты и штрафы */}
         <form onSubmit={handleGlobalUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="rounded-[2.5rem] border-none bg-card shadow-sm">
+          <Card className="rounded-3xl border-none bg-card shadow-sm">
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ export function InstallmentSettingsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {settings?.plans.map((plan) => (
-              <div key={plan.id} className="p-6 rounded-[2.5rem] bg-card border border-border/50 flex justify-between items-center group hover:bg-muted/30 transition-all border-b-4 border-b-primary/10">
+              <div key={plan.id} className="p-6 rounded-3xl bg-card border border-border/50 flex justify-between items-center group hover:bg-muted/30 transition-all border-b-4 border-b-primary/10">
                 <div>
                   <p className="text-[10px] font-black uppercase opacity-40">To‘lov muddati</p>
                   <p className="text-3xl font-black ">{plan.months} <span className="text-xs not- opacity-40">oy</span></p>
@@ -229,7 +229,7 @@ export function InstallmentSettingsPage() {
 
             <button
               onClick={() => isActive && setIsModalOpen(true)}
-              className="p-6 rounded-[2.5rem] border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 group min-h-[120px]"
+              className="p-6 rounded-3xl border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 group min-h-[120px]"
             >
               <div className="size-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                 <Plus size={20} />
@@ -259,7 +259,7 @@ export function InstallmentSettingsPage() {
               settings.installment_limits.map((limit) => (
                 <div
                   key={limit.id}
-                  className="p-6 rounded-[2.5rem] bg-card border border-border/50 flex justify-between items-center group hover:bg-muted/30 transition-all border-b-4 border-b-primary/10"
+                  className="p-6 rounded-3xl bg-card border border-border/50 flex justify-between items-center group hover:bg-muted/30 transition-all border-b-4 border-b-primary/10"
                 >
                   <div>
                     {limit.minInitialPayment != null && (
@@ -301,7 +301,7 @@ export function InstallmentSettingsPage() {
 
             <button
               onClick={handleCreateLimit}
-              className="p-6 rounded-[2.5rem] border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 group min-h-[120px]"
+              className="p-6 rounded-3xl border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 group min-h-[120px]"
             >
               <div className="size-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                 <Plus size={20} />

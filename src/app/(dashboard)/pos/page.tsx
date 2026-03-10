@@ -17,7 +17,7 @@ const Page = () => {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col h-screen overflow-hidden bg-background">
+      <div className="flex flex-col  h-[85vh] overflow-hidden bg-background">
         <PosHeader />
 
         <main className="flex flex-1 overflow-hidden relative">
