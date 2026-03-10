@@ -65,11 +65,12 @@ export function PosCatalog() {
         "group p-0 relative overflow-hidden cursor-pointer transition-all duration-300",
         "rounded-4xl bg-card/40 backdrop-blur-xl border-border/50 shadow-none hover:bg-card/60",
         "active:scale-[0.97] border",
+        "relative"
       )}
     >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-      <div className="relative h-32 w-full overflow-hidden bg-muted/30">
+      <div className="relative h-44 w-full overflow-hidden bg-muted/30">
         {image ? (
           <img src={image} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
         ) : (
@@ -79,9 +80,9 @@ export function PosCatalog() {
         )}
 
         {!isProduct && stockCount !== undefined && (
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-8 left-3">
             <Badge className={cn(
-              "backdrop-blur-md border-none text-[10px] font-black h-6 px-2 rounded-lg",
+              "backdrop-blur-md border-none text-[10px] font-black h-4 px-1 rounded-lg",
               stockCount > 0
                 ? "bg-emerald-500/80 text-white"
                 : "bg-destructive/80 text-white"
@@ -91,37 +92,32 @@ export function PosCatalog() {
           </div>
         )}
 
+          {price !== undefined && (
+            <div className="absolute top-3 left-3">
+              <Badge className={cn(
+                "backdrop-blur-md border-none font-black h-4 px-1 rounded-lg",
+                  "bg-emerald-500/80 text-white",
+              )}>
+                <div className="flex flex-col">
+                  <span className="text-primary font-black text-[10px]! ">{price}</span>
+                </div>
+              </Badge>
+            </div>
+          )}
+
         {isProduct && (
-          <div className="absolute bottom-3 left-3 bg-primary/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] text-primary-foreground font-bold uppercase tracking-widest">
+          <div className="absolute top-3 left-3 bg-primary/80 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] text-primary-foreground font-bold uppercase tracking-widest">
             Mahsulot
           </div>
         )}
       </div>
 
-      <CardContent className="pb-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] m-0 font-black opacity-30 uppercase truncate">{subtitle}</span>
-          <h3 className="font-bold text-sm leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
-            {title}
-          </h3>
-        </div>
-
-        <div className="flex items-center justify-between pt-2 border-t border-border/40">
-          {price !== undefined ? (
-            <div className="flex flex-col">
-              <span className="text-[9px] font-bold opacity-40 uppercase">Narx</span>
-              <span className="text-primary font-black text-sm">{price}</span>
-            </div>
-          ) : (
-            <span className="text-[10px] font-black opacity-40 uppercase italic">Ochish</span>
-          )}
-
-          <div className="size-8 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-sm">
-            {!isProduct ? (
-              <Plus className="size-4 stroke-[3px]" />
-            ) : (
-              <ArrowRight className="size-4 stroke-[3px]" />
-            )}
+      <CardContent className="w-full absolute bottom-0 p-0! bg-secondary/70">
+        <div className="flex items-center justify-between w-full! px-2 pb-2 border-t border-border/40">
+          <div className="flex flex-col gap-1 min-w-0">
+            <h3 className="font-bold text-sm text-center leading-tight group-hover:text-primary transition-colors">
+              {title}
+            </h3>
           </div>
         </div>
       </CardContent>
@@ -180,7 +176,7 @@ export function PosCatalog() {
 
 
         <TabsContent value="variants" className="m-0 mb-[20vh]">
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-4">
             {variantsWithoutInstances.map(v => {
               const stockAmount = v.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;
 
@@ -235,7 +231,7 @@ export function PosCatalog() {
               <Button variant="ghost" size="sm" onClick={() => setSelectedProductId(null)} className="rounded-xl">
                 <ArrowLeft className="mr-2 size-4" /> Orqaga
               </Button>
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-4">
                 {variantsWithoutInstances.map(v => {
                   const stockAmount = v.stocks?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0;
                   return renderCard({
