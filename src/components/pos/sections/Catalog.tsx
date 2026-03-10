@@ -99,7 +99,7 @@ export function PosCatalog() {
                   "bg-emerald-500/80 text-white",
               )}>
                 <div className="flex flex-col">
-                  <span className="text-primary font-black text-[10px]! ">{price}</span>
+                  <span className="text-primary font-black text-[10px]!">{price}</span>
                 </div>
               </Badge>
             </div>
@@ -113,7 +113,7 @@ export function PosCatalog() {
       </div>
 
       <CardContent className="w-full absolute bottom-0 p-0! bg-secondary/70">
-        <div className="flex items-center justify-between w-full! px-2 pb-2 border-t border-border/40">
+        <div className="flex items-center justify-center w-full! px-3 py-2 border-t border-border/40">
           <div className="flex flex-col gap-1 min-w-0">
             <h3 className="font-bold text-sm text-center leading-tight group-hover:text-primary transition-colors">
               {title}
