@@ -33,7 +33,7 @@ export function ThemeSettingsBlock({
   return (
     <div className="space-y-4">
       <div>
-        <Label className="font-black text-lg uppercase italic tracking-tighter">Mavzu sozlamalari</Label>
+        <Label className="font-black text-lg uppercase  tracking-tighter">Mavzu sozlamalari</Label>
         <p className="text-xs text-muted-foreground">Ilova ko‘rinishini o‘zingizga moslang</p>
       </div>
 
@@ -47,7 +47,7 @@ export function ThemeSettingsBlock({
               className={cn(
                 "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all duration-200",
                 isActive
-                  ? "border-primary bg-primary/5 text-primary scale-[1.02]"
+                  ? "border-primary/20 bg-primary/5 text-primary scale-[1.02]"
                   : "border-muted bg-card hover:border-muted-foreground/30 opacity-60 hover:opacity-100"
               )}
             >
