@@ -4,6 +4,7 @@ import {Toaster} from "@/components/ui/sonner";
 import {ThemeProvider} from "@/components/theme-provider";
 import {Providers} from "@/app/providers";
 import QueryProvider from "@/providers/QueryProvider";
+import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
   title: "ERP",
@@ -29,6 +30,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <NextTopLoader shadow="none" color="var(--primary)" showSpinner={false} />
             {children}
             <Toaster
               position={'top-right'}

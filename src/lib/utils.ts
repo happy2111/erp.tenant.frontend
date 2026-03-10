@@ -5,7 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-
 export function toErrorMessage(payload: any): string {
   if (!payload) return "Server error";
 
