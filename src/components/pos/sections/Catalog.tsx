@@ -24,15 +24,21 @@ export function PosCatalog() {
   const [activeTab, setActiveTab] = useState('variants');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [filters, setFilters] = useState<Record<string, string[]>>({});
   const currencyId = usePosStore(s => s.currencyId);
 
-  const { data: variants } = useQuery({
-    queryKey: ['pos-variants', search, selectedProductId],
+  const { data: variants, isLoading } = useQuery({
+    queryKey: ['pos-variants', search, selectedProductId, filters], // Добавили filters сюда
     queryFn: async () => {
       if (selectedProductId) {
         return await ProductVariantsService.getVariantsByProduct(selectedProductId);
       }
-      return ProductVariantsService.getAllAdmin({ search, limit: 50 }).then(r => r.items);
+
+      return ProductVariantsService.getAllAdmin({
+        search,
+        limit: 50,
+        attributes: filters
+      }).then(r => r.items);
     }
   });
   const { data: products } = useQuery({
@@ -41,9 +47,12 @@ export function PosCatalog() {
     enabled: activeTab === 'products' && !selectedProductId
   });
 
-  const handleApplyFilters = (filters: Record<string, string[]>) => {
-    console.log("Фильтры для отправки на бэкенд:", filters);
-    // Здесь вызывай свой fetch товаров с параметрами фильтрации
+  const handleApplyFilters = (newFilters: Record<string, string[]>) => {
+    setFilters(newFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
   };
 
   const variantsWithoutInstances = variants?.filter(
@@ -142,7 +151,7 @@ export function PosCatalog() {
         />
         <PosFilter
           onApply={handleApplyFilters}
-          onClear={() => console.log('Filters cleared')}
+          onClear={handleClearFilters}
         />
       </div>
 

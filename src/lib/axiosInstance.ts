@@ -2,6 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import { useTenantAuthStore } from '@/store/tenant-auth.store';
 import { toErrorMessage } from "@/lib/utils";
+import * as qs from 'qs';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -10,6 +11,12 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
+  paramsSerializer: (params) => {
+    return qs.stringify(params, {
+      arrayFormat: 'brackets',
+      encode: false
+    });
+  },
   headers: {
     'Content-Type': 'application/json',
   },

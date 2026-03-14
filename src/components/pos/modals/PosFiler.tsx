@@ -22,7 +22,6 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {FunnelPlus, Eraser, Check, X} from "lucide-react";
 import { AttributesService } from "@/services/attributes.service";
-import {DialogClose} from "@/components/ui/dialog";
 
 interface ProductFilterDialogProps {
   onApply: (selectedAttributes: Record<string, string[]>) => void;
