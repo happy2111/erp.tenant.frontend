@@ -10,13 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Search, Plus, Image as ImageIcon, Layers, Package, ArrowLeft,
-  ArrowRight
+  ArrowRight, FunnelPlus
 } from 'lucide-react';
 import { usePosStore } from '@/store/use-pos-store';
 import { ProductVariant } from "@/schemas/product-variants.schema";
 import { AddToCartModal } from "@/components/pos/modals/AddToCartModal";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {PosFilter} from "@/components/pos/modals/PosFiler";
 
 export function PosCatalog() {
   const [search, setSearch] = useState('');
@@ -39,6 +40,11 @@ export function PosCatalog() {
     queryFn: () => ProductsService.getAllAdmin({ search, limit: 50 }).then(r => r.items),
     enabled: activeTab === 'products' && !selectedProductId
   });
+
+  const handleApplyFilters = (filters: Record<string, string[]>) => {
+    console.log("Фильтры для отправки на бэкенд:", filters);
+    // Здесь вызывай свой fetch товаров с параметрами фильтрации
+  };
 
   const variantsWithoutInstances = variants?.filter(
     v => !v.product_instance || v.product_instance.length === 0
@@ -126,13 +132,17 @@ export function PosCatalog() {
 
   return (
     <div className="flex flex-col h-full space-y-4 py-5 lg:p-6 bg-transparent">
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 opacity-40" />
+      <div className="relative flex">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-primary opacity-40 z-1" />
         <Input
-          className="h-14 pl-12 rounded-3xl bg-card/30 backdrop-blur-lg border-border/50 focus-visible:ring-primary/20 shadow-none text-base"
+          className="h-12 pl-12 rounded-3xl bg-card/30 backdrop-blur-lg border-border/50 focus-visible:ring-primary/20 shadow-none text-base"
           placeholder="Mahsulot qidirish..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+        />
+        <PosFilter
+          onApply={handleApplyFilters}
+          onClear={() => console.log('Filters cleared')}
         />
       </div>
 
