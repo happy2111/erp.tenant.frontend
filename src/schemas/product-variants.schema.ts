@@ -4,7 +4,6 @@ import {ProductSchema} from "@/schemas/products.schema";
 import {StockSchema} from "@/schemas/stocks.schema";
 import {ProductInstanceSchema} from "@/schemas/product-instances.schema";
 
-// ─── Создание варианта товара ────────────────────────────────────────
 export const CreateProductVariantSchema = z.object({
   productId: z.string().uuid('Некорректный ID товара'),
   sku: z.string().max(64).optional().nullable(),
@@ -16,15 +15,19 @@ export const CreateProductVariantSchema = z.object({
 
 export type CreateProductVariantDto = z.infer<typeof CreateProductVariantSchema>;
 
-// ─── Обновление варианта товара ──────────────────────────────────────
 export const UpdateProductVariantSchema = CreateProductVariantSchema.partial();
 
 export type UpdateProductVariantDto = z.infer<typeof UpdateProductVariantSchema>;
 
-// ─── Параметры запроса списка вариантов ──────────────────────────────
 export const GetProductVariantsQuerySchema = z.object({
   search: z.string().optional().catch(''),
   productId: z.string().uuid().optional().catch(undefined),
+  attributes: z
+    .record(
+      z.string(),
+      z.union([z.string(), z.array(z.string())])
+    )
+    .optional(),
   sortField: z.string().optional().catch('title'),
   order: z.enum(['asc', 'desc']).catch('desc').optional(),
   page: z.coerce.number().min(1).catch(1).optional(),
@@ -33,7 +36,6 @@ export const GetProductVariantsQuerySchema = z.object({
 
 export type GetProductVariantQueryDto = z.infer<typeof GetProductVariantsQuerySchema>;
 
-// ─── Атрибут варианта (упрощённый, как возвращает бэкенд) ────────────
 export const VariantAttributeSchema = z.object({
   key: z.string(),
   name: z.string(),
@@ -42,7 +44,6 @@ export const VariantAttributeSchema = z.object({
 
 export type VariantAttribute = z.infer<typeof VariantAttributeSchema>;
 
-// ─── Вариант товара (ответ от сервера) ───────────────────────────────
 export const ProductVariantSchema = z.object({
   id: z.string().uuid(),
   productId: z.string().uuid(),
