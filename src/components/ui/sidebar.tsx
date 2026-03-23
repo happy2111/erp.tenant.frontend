@@ -273,9 +273,8 @@ function SidebarTrigger({
       variant="ghost"
       size="icon"
       className={cn(
-        "size-7 sm:size-7",
-        "p-3 sm:p-0",
-        "before:absolute  before:-inset-3 before:content-['']",
+        "size-12",
+        "before:absolute  before:-inset-3  before:content-['']",
         className)}
       onClick={(event) => {
         onClick?.(event)
@@ -283,7 +282,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      <PanelLeftIcon className='size-7'/>
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

@@ -1,5 +1,9 @@
 import React, {ReactNode} from 'react'
-import {SidebarInset, SidebarTrigger} from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarTrigger,
+  useSidebar
+} from "@/components/ui/sidebar";
 import {useBreadcrumbs} from "@/hooks/useBreadcrumbs";
 import {Separator} from "@radix-ui/react-separator";
 import {
@@ -8,16 +12,19 @@ import {
   BreadcrumbList, BreadcrumbPage
 } from "@/components/ui/breadcrumb";
 import {cn} from "@/lib/utils";
+import {useSidebarGesture} from "@/hooks/useSidebarGesture";
 
 const MineSidebarInsets = ({children}: { children: ReactNode }) => {
   const breadcrumbs = useBreadcrumbs()
+  const { toggleSidebar } = useSidebar()
 
+  useSidebarGesture(toggleSidebar)
 
   return (
     <SidebarInset className="sm:border sm:rounded-2xl sm:m-4 sm:overflow-y-scroll">
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1 scale-125" />
+        <div className="flex items-center gap-2 px-4 relative">
+          <SidebarTrigger className="-ml-1 " />
           <Separator
             orientation="vertical"
             className="mr-2 data-[orientation=vertical]:h-4"
