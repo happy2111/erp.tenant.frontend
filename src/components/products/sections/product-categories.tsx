@@ -8,9 +8,18 @@ import { Plus, X, Hash, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CategoryAddDrawer } from '../drawers/category-add-drawer';
 
+interface CategoryLink {
+  id: string;
+  categoryId: string;
+  category?: {
+    id: string;
+    name: string;
+  };
+}
+
 interface Props {
   productId: string;
-  initialCategories: any[];
+  initialCategories: CategoryLink[];
 }
 
 export function ProductCategories({ productId, initialCategories }: Props) {
@@ -31,7 +40,7 @@ export function ProductCategories({ productId, initialCategories }: Props) {
     }
   };
 
-  const handleSuccess = (newLink: any) => {
+  const handleSuccess = (newLink: CategoryLink) => {
     setLinks((prev) => [...prev, newLink]);
     setIsDrawerOpen(false);
   };

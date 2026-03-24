@@ -44,7 +44,8 @@ export function CategoryAddDrawer({ productId, open, onOpenChange, onSuccess, ex
         categoryId: category.id
       });
       toast.success(`${category.name} biriktirildi`);
-      onSuccess(result);
+      console.log(result);
+      onSuccess({id: category.id, category: { id: category.id, name: category.name }});
     } catch (e) {
       toast.error("Biriktirishda xatolik");
     } finally {

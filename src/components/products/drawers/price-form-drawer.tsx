@@ -101,14 +101,12 @@ function PriceFormDialog({
           "sm:max-w-[550px]"
         )}
       >
-        {/* Close button */}
         <DialogClose asChild>
           <Button className="absolute bg-primary top-4 right-4 h-10 w-10 rounded-full z-50">
             <X className="size-5 text-primary-foreground" />
           </Button>
         </DialogClose>
 
-        {/* Glow line */}
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
         {/* Scrollable content */}
