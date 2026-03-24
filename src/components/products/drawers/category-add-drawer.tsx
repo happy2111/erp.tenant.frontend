@@ -54,15 +54,15 @@ export function CategoryAddDrawer({ productId, open, onOpenChange, onSuccess, ex
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="bg-background/80 backdrop-blur-2xl border-t border-border/50 max-h-[85vh]">
+      <DrawerContent className="bg-background/80 backdrop-blur-2xl border-t border-border/50 h-[85vh]">
         <div className="mx-auto w-full max-w-md flex flex-col h-full">
           <DrawerHeader>
             <DrawerTitle className="text-2xl font-black tracking-tighter italic uppercase">
-              Kategoriyaga qo'shish
+              Kategoriyaga qo&apos;shish
             </DrawerTitle>
           </DrawerHeader>
 
-          <div className="p-4 space-y-4 flex flex-col h-full overflow-hidden">
+          <div className="p-4 space-y-4 flex flex-col flex-1 overflow-hidden">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 opacity-30" />
               <Input
@@ -73,7 +73,7 @@ export function CategoryAddDrawer({ productId, open, onOpenChange, onSuccess, ex
               />
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2 min-h-[300px]">
+            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
               {loading && categories.length === 0 ? (
                 <div className="flex justify-center py-10"><Loader2 className="animate-spin opacity-20" /></div>
               ) : categories.map((cat) => {

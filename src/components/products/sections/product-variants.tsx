@@ -111,7 +111,7 @@ export function ProductVariants({ variants, productId, variantImages }: Props) {
                 </div>
 
                 {/* Arrow */}
-                <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center md:opacity-0 group-hover:opacity-100 transition-all transform md:translate-x-2 group-hover:translate-x-0">
                   <ChevronRight className="size-4 text-primary" />
                 </div>
               </div>

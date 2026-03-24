@@ -10,7 +10,7 @@ import { CategoryAddDrawer } from '../drawers/category-add-drawer';
 
 interface Props {
   productId: string;
-  initialCategories: any[]; // массив связей с категориями
+  initialCategories: any[];
 }
 
 export function ProductCategories({ productId, initialCategories }: Props) {
@@ -54,7 +54,7 @@ export function ProductCategories({ productId, initialCategories }: Props) {
 
       <div className="flex flex-wrap gap-2 min-h-[40px]">
         {links.length > 0 ? links.map((link) => {
-          const cat = link.category || link; // подстраховка для разных структур ответа
+          const cat = link.category || link;
           return (
             <div
               key={cat.id}
