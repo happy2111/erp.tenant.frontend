@@ -19,7 +19,7 @@ interface CategoryLink {
 
 interface Props {
   productId: string;
-  initialCategories: CategoryLink[];
+  initialCategories: any[];
 }
 
 export function ProductCategories({ productId, initialCategories }: Props) {
