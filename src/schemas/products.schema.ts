@@ -23,6 +23,7 @@ export type UpdateProductDto = z.infer<typeof UpdateProductSchema>;
 // ─── Параметры запроса списка товаров ────────────────────────────────
 export const GetProductsQuerySchema = z.object({
   search: z.string().optional().catch(''),
+  categoryId: z.uuid().optional(),
   sortField: z.string().optional().catch('name'),
   order: z.enum(['asc', 'desc']).catch('desc').optional(),
   page: z.coerce.number().min(1).catch(1).optional(),

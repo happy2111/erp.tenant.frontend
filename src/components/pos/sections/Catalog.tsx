@@ -18,12 +18,14 @@ import { AddToCartModal } from "@/components/pos/modals/AddToCartModal";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {PosFilter} from "@/components/pos/modals/PosFiler";
+import {CategoriesService} from "@/services/categories.service";
 
 export function PosCatalog() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('variants');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const currencyId = usePosStore(s => s.currencyId);
 
@@ -41,10 +43,23 @@ export function PosCatalog() {
       }).then(r => r.items);
     }
   });
+
   const { data: products } = useQuery({
     queryKey: ['pos-products', search],
     queryFn: () => ProductsService.getAllAdmin({ search, limit: 50 }).then(r => r.items),
     enabled: activeTab === 'products' && !selectedProductId
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ['pos-categories', search],
+    queryFn: () => CategoriesService.getAllAdmin({ search, limit: 50 }).then(r => r.items),
+    enabled: activeTab === 'categories' && !selectedCategoryId
+  });
+
+  const { data: categoryProducts } = useQuery({
+    queryKey: ['pos-category-products', selectedCategoryId],
+    queryFn: () => ProductsService.getAllAdmin({ categoryId: selectedCategoryId!, limit: 50 }).then(r => r.items),
+    enabled: !!selectedCategoryId
   });
 
   const handleApplyFilters = (newFilters: Record<string, string[]>) => {
@@ -154,7 +169,7 @@ export function PosCatalog() {
         />
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSelectedProductId(null); }} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSelectedProductId(null); setSelectedCategoryId(null); }} className="space-y-6">
         <TabsList
           className="
               flex
@@ -178,7 +193,7 @@ export function PosCatalog() {
           </TabsTrigger>
 
           <TabsTrigger
-            value="variants"
+            value="categories"
             className="shrink-0 rounded-xl px-6 font-bold text-xs uppercase tracking-tighter"
           >
             Kategoriya
@@ -199,6 +214,47 @@ export function PosCatalog() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="categories" className="m-0 mb-[20vh]">
+          {!selectedCategoryId ? (
+            // Список категорий
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              {categories?.map(c => renderCard({
+                title: c.name,
+                subtitle: `${c._count?.products || 0} mahsulot`,
+                isProduct: true, // Используем стиль продукта (без цен и остатков)
+                onClick: () => setSelectedCategoryId(c.id),
+                key: c.id,
+              }))}
+            </div>
+          ) : (
+            // Продукты внутри выбранной категории
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setSelectedCategoryId(null)} className="rounded-xl">
+                  <ArrowLeft className="mr-2 size-4" /> Orqaga (Kategoriyalar)
+                </Button>
+                <Badge variant="outline" className="rounded-lg h-8 px-4">
+                  {categories?.find(c => c.id === selectedCategoryId)?.name}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {categoryProducts?.map(p => renderCard({
+                  title: p.name,
+                  subtitle: p.code || 'PRD',
+                  isProduct: true,
+                  // При клике на продукт в категории, перекидываем пользователя на вкладку продуктов
+                  // и открываем варианты этого продукта
+                  onClick: () => {
+                    setSelectedProductId(p.id);
+                    setActiveTab('products');
+                  },
+                  key: p.id,
+                }))}
+              </div>
+            </div>
+          )}
+        </TabsContent>
 
         <TabsContent value="variants" className="m-0 mb-[20vh]">
           <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-4">
