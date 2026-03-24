@@ -20,8 +20,8 @@ export type CustomerType = typeof CustomerTypeValues[number];
 
 // ─── Создание цены ───────────────────────────────────────────────────
 export const CreateProductPriceSchema = z.object({
-  productId: z.string().uuid('Некорректный ID товара'),
-  organizationId: z.string().uuid().optional(),
+  productId: z.uuid('Некорректный ID товара'),
+  organizationId: z.uuid().optional(),
   priceType: z.enum(PriceTypeValues),
   amount: z
     .string()

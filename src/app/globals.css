@@ -133,6 +133,11 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     background-color: var(--sidebar) !important;
   }
+
+  [data-vaul-drawer]::after {
+    display: none !important;
+  }
+
   .bg-card {
     border: 1.5px solid var(--border) !important; /* Увеличили толщину до 1.5px */
   }
@@ -140,6 +145,8 @@
   .drawer-container {
     @apply max-w-[450px] w-full mx-auto
   }
+
+
 
   * {
     @apply border-border outline-ring/50;

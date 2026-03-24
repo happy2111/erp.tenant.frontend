@@ -28,7 +28,7 @@ export function PosCatalog() {
   const currencyId = usePosStore(s => s.currencyId);
 
   const { data: variants, isLoading } = useQuery({
-    queryKey: ['pos-variants', search, selectedProductId, filters], // Добавили filters сюда
+    queryKey: ['pos-variants', search, selectedProductId, filters],
     queryFn: async () => {
       if (selectedProductId) {
         return await ProductVariantsService.getVariantsByProduct(selectedProductId);
@@ -65,7 +65,6 @@ export function PosCatalog() {
 
   const renderCard = ({
                         title,
-                        subtitle,
                         image,
                         stockCount,
                         onClick,
@@ -176,6 +175,13 @@ export function PosCatalog() {
             className="shrink-0 rounded-xl px-6 font-bold text-xs uppercase tracking-tighter"
           >
             Variantlar
+          </TabsTrigger>
+
+          <TabsTrigger
+            value="variants"
+            className="shrink-0 rounded-xl px-6 font-bold text-xs uppercase tracking-tighter"
+          >
+            Kategoriya
           </TabsTrigger>
 
           <TabsTrigger

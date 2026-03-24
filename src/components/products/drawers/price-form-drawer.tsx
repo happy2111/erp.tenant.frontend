@@ -102,7 +102,6 @@ function PriceFormDrawer({
           </DrawerHeader>
 
           <div className="p-4 space-y-6">
-            {/* Amount & Currency Grid */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50 px-1">Summa</label>
@@ -127,7 +126,6 @@ function PriceFormDrawer({
               </div>
             </div>
 
-            {/* Price Type Selector */}
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest opacity-50 px-1">Narx turi</label>
               <div className="flex flex-wrap gap-2">
@@ -145,41 +143,6 @@ function PriceFormDrawer({
                 ))}
               </div>
             </div>
-
-            {/* Organization Selector (Simulated Search) */}
-            {/*<div className="space-y-2">*/}
-            {/*  <label className="text-[10px] font-black uppercase tracking-widest opacity-50 px-1">*/}
-            {/*    Tashkilot (Ixtiyoriy)*/}
-            {/*  </label>*/}
-
-            {/*  <Select*/}
-            {/*    value={watch('organizationId') ?? 'ALL'}*/}
-            {/*    onValueChange={(value) => {*/}
-            {/*      if (value === 'ALL') {*/}
-            {/*        setValue('organizationId', undefined);*/}
-            {/*      } else {*/}
-            {/*        setValue('organizationId', value);*/}
-            {/*      }*/}
-            {/*    }}*/}
-            {/*  >*/}
-            {/*    <SelectTrigger className="w-full h-12 rounded-xl bg-card/40 backdrop-blur-xl border border-border/40 px-4 text-xs font-bold focus:ring-2 ring-primary/20">*/}
-            {/*      <SelectValue placeholder="Barcha tashkilotlar uchun" />*/}
-            {/*    </SelectTrigger>*/}
-
-            {/*    <SelectContent>*/}
-            {/*      <SelectItem value="ALL">*/}
-            {/*        Barcha tashkilotlar uchun*/}
-            {/*      </SelectItem>*/}
-
-            {/*      {orgs.map((o) => (*/}
-            {/*        <SelectItem key={o.id} value={o.id}>*/}
-            {/*          {o.name}*/}
-            {/*        </SelectItem>*/}
-            {/*      ))}*/}
-            {/*    </SelectContent>*/}
-            {/*  </Select>*/}
-            {/*</div>*/}
-
           </div>
 
             <DrawerFooter className="pb-8">
