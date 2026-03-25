@@ -85,6 +85,7 @@ export function PosCatalog() {
                         onClick,
                         price,
                         isProduct = false,
+                        isCategory = false,
                         key,
                       }: any) => (
     <Card
@@ -139,6 +140,13 @@ export function PosCatalog() {
             Mahsulot
           </div>
         )}
+
+        {isCategory && (
+          <div className="absolute top-3 left-3 bg-primary/80 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] text-primary-foreground font-bold uppercase tracking-widest">
+            Kategoriya
+          </div>
+          )
+        }
       </div>
 
       <CardContent className="w-full absolute bottom-0 p-0! bg-secondary/70">
@@ -216,18 +224,16 @@ export function PosCatalog() {
 
         <TabsContent value="categories" className="m-0 mb-[20vh]">
           {!selectedCategoryId ? (
-            // Список категорий
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
               {categories?.map(c => renderCard({
                 title: c.name,
                 subtitle: `${c._count?.products || 0} mahsulot`,
-                isProduct: true, // Используем стиль продукта (без цен и остатков)
+                isCategory: true,
                 onClick: () => setSelectedCategoryId(c.id),
                 key: c.id,
               }))}
             </div>
           ) : (
-            // Продукты внутри выбранной категории
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setSelectedCategoryId(null)} className="rounded-xl">
@@ -243,8 +249,6 @@ export function PosCatalog() {
                   title: p.name,
                   subtitle: p.code || 'PRD',
                   isProduct: true,
-                  // При клике на продукт в категории, перекидываем пользователя на вкладку продуктов
-                  // и открываем варианты этого продукта
                   onClick: () => {
                     setSelectedProductId(p.id);
                     setActiveTab('products');

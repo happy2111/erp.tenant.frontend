@@ -42,12 +42,10 @@ export default function ProductDetailsPage() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 relative overflow-hidden">
-      {/* Background Decor */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px] -z-10" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-[120px] -z-10" />
 
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header Actions */}
         <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
           <Button variant="ghost" onClick={() => router.back()} className="rounded-xl group">
             <ArrowLeft className="mr-2 size-4 group-hover:-translate-x-1 transition-transform" />
@@ -56,12 +54,10 @@ export default function ProductDetailsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Gallery */}
           <div className="lg:col-span-5 space-y-6">
             <ProductGallery productId={product.id} initialImages={product.images} />
           </div>
 
-          {/* Right Column: Main Info & Stats */}
           <div className="lg:col-span-7 space-y-6">
             <ProductInfo product={product} />
             <ProductCategories productId={id as string} initialCategories={product.categories}/>
