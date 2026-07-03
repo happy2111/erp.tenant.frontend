@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Search, User, X, UserPlus, CheckCircle2 } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 import {useRouter} from "next/navigation";
+import { cn } from '@/lib/utils';
 
-export function CustomerSelector() {
+export function CustomerSelector({ className }: { className?: string }) {
   const { customerId, setCustomer } = usePosStore();
   const [search, setSearch] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -29,18 +30,26 @@ export function CustomerSelector() {
     enabled: isOpen,
   });
 
-  // Получаем данные выбранного клиента для отображения в Header
-  const selectedCustomer = data?.items.find(c => c.id === customerId);
+  const { data: selectedCustomerData } = useQuery({
+    queryKey: ['pos-customer', customerId],
+    queryFn: () => OrganizationCustomerService.getByIdAdmin(customerId!),
+    enabled: !!customerId,
+  });
+
+  const selectedCustomer =
+    data?.items.find(c => c.id === customerId) ?? selectedCustomerData;
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <Button
           variant="outline"
-          className="py-4 h-14 border border-border/50 rounded-2xl
-            bg-background/50 backdrop-blur-md dark:bg-input/20
-            shadow-sm
-             px-4 flex items-center gap-2 hover:bg-muted"
+          className={cn(
+            "py-4 h-14 border border-border/50 rounded-2xl",
+            "bg-background/50 backdrop-blur-md dark:bg-input/20",
+            "shadow-sm px-4 flex items-center gap-2 hover:bg-muted",
+            className
+          )}
         >
           <User className="size-4 opacity-50" />
           <div className="flex flex-col items-start leading-tight">
@@ -54,7 +63,7 @@ export function CustomerSelector() {
         </Button>
       </DrawerTrigger>
 
-      <DrawerContent className="h-[100dvh] mb-5 pb-5">
+      <DrawerContent elevated className="h-[100dvh] mb-5 pb-5">
         <div className="mx-auto w-full max-w-md px-4 flex flex-col h-full">
           <DrawerHeader>
             <DrawerTitle className="text-center text-2xl font-black">Mijoz qidirish</DrawerTitle>
