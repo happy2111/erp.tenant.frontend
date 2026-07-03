@@ -143,7 +143,7 @@ const DashboardLayoutComponent = ({ children }: DashboardLayoutProps) => {
   return (
     <ProtectedRoute>
       <SidebarProvider>
-        <div className="flex h-screen w-screen bg-sidebar">
+        <div className="flex h-dvh w-full bg-sidebar">
           <AppSidebar groups={sidebarGroups}/>
           <MineSidebarInsets>
             {children}

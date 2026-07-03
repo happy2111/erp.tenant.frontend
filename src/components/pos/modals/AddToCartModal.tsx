@@ -150,7 +150,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
               <div className="space-y-2 flex-1">
                 <DialogTitle className="text-3xl text-left flex items-center gap-2 font-black tracking-tight leading-tight">
                   {variant.title}
-                  <Link href={`/product-variants/${variant.id}`} className='text-blue-500' target='_blank'>
+                  <Link href={`/product-variants/${variant.id}`} className='text-blue-500'>
                     <ExternalLink />
                   </Link>
                 </DialogTitle>

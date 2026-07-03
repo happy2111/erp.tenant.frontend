@@ -17,7 +17,7 @@ const Page = () => {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col  h-[85vh] overflow-hidden bg-background">
+      <div className="flex flex-col h-full min-h-0 overflow-hidden bg-background">
         <PosHeader />
 
         <main className="flex flex-1 overflow-hidden relative">
@@ -29,7 +29,7 @@ const Page = () => {
             <CheckoutPanel onSaleComplete={handleSaleComplete} />
           </aside>
 
-          <div className="lg:hidden overflow-x-scroll h-[80vh]">
+          <div className="lg:hidden overflow-x-scroll min-h-0">
             <CheckoutPanel onSaleComplete={handleSaleComplete} />
           </div>
         </main>

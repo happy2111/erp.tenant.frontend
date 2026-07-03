@@ -119,7 +119,7 @@ export function AddToPurchaseModal({ variant, isOpen, onClose }: Props) {
                   <span className="text-[10px] font-black uppercase opacity-40 italic tracking-widest">Omborga qabul qilish</span>
                   <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter leading-none flex items-center gap-2">
                     {variant.title}
-                    <Link href={`/product-variants/${variant.id}`} target='_blank' className="opacity-20 hover:opacity-100 hover:text-primary transition-all">
+                    <Link href={`/product-variants/${variant.id}`} className="opacity-20 hover:opacity-100 hover:text-primary transition-all">
                       <ExternalLink size={18} />
                     </Link>
                   </DialogTitle>
