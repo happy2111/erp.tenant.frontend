@@ -16,7 +16,8 @@ import { LayoutTemplate } from 'lucide-react';
 export function PosSetupModal() {
   const [open, setOpen] = useState(true);
   const { currencyId, kassaId, customerId } = usePosStore();
-  const isComplete = Boolean(currencyId);
+  // const isComplete = Boolean(currencyId);
+  const isComplete = true;
 
   return (
     <Dialog
