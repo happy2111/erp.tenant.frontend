@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import {
   Trash2, Plus, Minus, CreditCard,
-  ShoppingCart, ChevronUp, X, Hourglass, Wallet, Package, AlertCircle
+  ShoppingCart, ChevronUp, Package, AlertCircle, Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -35,10 +35,10 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
     kassaId,
     notes,
     setNotes,
-    status,
-    setStatus,
-    initialPayment,
-    setInitialPayment,
+    confirmNow,
+    setConfirmNow,
+    payFromKassa,
+    setPayFromKassa,
     getGrandTotal,
     reset,
     currency
@@ -46,63 +46,139 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  // Ручной курс: нужен, когда курса на дату накладной нет в справочнике
+  const [manualRate, setManualRate] = useState('');
 
   const grandTotal = getGrandTotal();
   const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
+  const needsKassa = confirmNow && payFromKassa;
 
   const handleCreatePurchase = async () => {
     if (!supplierId) return toast.error('Ta\'minotchini tanlang');
     if (!currencyId) return toast.error('Valyutani tanlang');
     if (items.length === 0) return toast.error('Savat bo‘sh');
-    if ((status === 'PAID' || status === 'PARTIAL') && !kassaId) {
+    if (needsKassa && !kassaId) {
       return toast.error('To‘lov uchun kassani tanlang');
     }
 
     setIsSubmitting(true);
     try {
-      const dto = {
+      // Шаг 1 — документ всегда создаётся черновиком
+      const purchase = await PurchasesService.create({
         supplierId,
         currencyId,
-        kassaId: (status === 'PAID' || status === 'PARTIAL') ? kassaId : undefined,
-        status: status,
+        kassaId: kassaId || undefined,
         notes: notes || undefined,
-        initialPayment: status === 'PARTIAL' ? initialPayment : undefined,
         items: items.map((item) => ({
           productVariantId: item.productVariantId,
           quantity: item.quantity,
           price: item.price,
           discount: item.discount,
           batchNumber: item.batchNumber,
-          expiryDate: item.expiryDate ? new Date(item.expiryDate).toISOString() : undefined,
+          expiryDate: item.expiryDate
+            ? new Date(item.expiryDate).toISOString()
+            : undefined,
         })),
-      };
+      });
 
-      await PurchasesService.create(dto);
-      toast.success('Xarid muvaffaqiyatli yakunlandi');
+      // Шаг 2 — проведение: тут появляются партии и растёт остаток
+      if (confirmNow) {
+        await PurchasesService.confirmPurchase(purchase.id, {
+          kassaId: payFromKassa ? kassaId : undefined,
+          exchangeRate: manualRate ? Number(manualRate) : undefined,
+        });
+        toast.success(
+          payFromKassa
+            ? 'Xarid o‘tkazildi va to‘landi'
+            : 'Tovar omborga qabul qilindi (to‘lov kutilmoqda)'
+        );
+      } else {
+        toast.success('Qoralama saqlandi');
+      }
+
       reset();
+      setManualRate('');
       setIsDrawerOpen(false);
       onSuccess?.();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message?.message || 'Xatolik yuz berdi');
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string | { message?: string } } } })
+          ?.response?.data?.message;
+      toast.error(
+        (typeof message === 'string' ? message : message?.message) ||
+        'Xatolik yuz berdi'
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const StatusToggle = () => (
+  // Черновик / приход без оплаты / приход с оплатой
+  const ModeToggle = () => (
     <div className="flex p-1 bg-muted/40 rounded-2xl border border-white/5 mb-4">
-      {(['DRAFT', 'PARTIAL', 'PAID'] as const).map((mode) => (
-        <button
-          key={mode}
-          onClick={() => setStatus(mode)}
-          className={cn(
-            "flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-tighter transition-all",
-            status === mode ? "bg-background shadow-sm text-primary" : "opacity-40"
-          )}
-        >
-          {mode === 'DRAFT' ? "Qarzga" : mode === 'PARTIAL' ? "Qisman" : "To'liq"}
-        </button>
-      ))}
+      {([
+        { key: 'draft', label: 'Qoralama' },
+        { key: 'receive', label: 'Qabul' },
+        { key: 'pay', label: 'Qabul + to‘lov' },
+      ] as const).map((mode) => {
+        const active =
+          (mode.key === 'draft' && !confirmNow) ||
+          (mode.key === 'receive' && confirmNow && !payFromKassa) ||
+          (mode.key === 'pay' && confirmNow && payFromKassa);
+
+        return (
+          <button
+            key={mode.key}
+            onClick={() => {
+              setConfirmNow(mode.key !== 'draft');
+              setPayFromKassa(mode.key === 'pay');
+            }}
+            className={cn(
+              "flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-tighter transition-all",
+              active ? "bg-background shadow-sm text-primary" : "opacity-40"
+            )}
+          >
+            {mode.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  // Что именно произойдёт при нажатии кнопки — иначе разница между
+  // тремя режимами не читается
+  const ModeHint = () => (
+    <div className="flex items-start gap-2 p-3 rounded-2xl bg-muted/30 text-[10px] font-bold leading-relaxed opacity-70">
+      <Info className="size-3.5 shrink-0 mt-0.5" />
+      <span>
+        {!confirmNow
+          ? 'Hujjat saqlanadi, ombor va kassa o‘zgarmaydi. Keyinroq o‘tkazasiz.'
+          : payFromKassa
+            ? 'Tovar partiyalar bilan omborga kiradi, summa kassadan yechiladi.'
+            : 'Tovar partiyalar bilan omborga kiradi, to‘lov keyinroq.'}
+      </span>
+    </div>
+  );
+
+  // Курс фиксируется в момент проведения — потом его уже не пересчитать.
+  // Это элемент, а не компонент: вложенный компонент пересоздавался бы на
+  // каждый рендер и поле теряло бы фокус после первого символа.
+  const rateInput = (
+    <div className="space-y-2">
+      <label className="text-[9px] font-black uppercase opacity-40 ml-1 italic">
+        Kurs (ixtiyoriy)
+      </label>
+      <Input
+        type="number"
+        inputMode="decimal"
+        placeholder="Kurslar spravochnigidan olinadi"
+        className="rounded-xl bg-background border-2 border-primary/20 h-12 font-bold"
+        value={manualRate}
+        onChange={(e) => setManualRate(e.target.value)}
+      />
+      <p className="text-[9px] opacity-40 font-bold ml-1">
+        Bo‘sh qoldirsangiz — hujjat sanasidagi kurs olinadi
+      </p>
     </div>
   );
 
@@ -123,7 +199,7 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
               <p className="text-xs font-bold truncate">{item.title}</p>
               <div className="flex flex-col mt-1">
                 <div className="flex items-center gap-2">
-                  {/* Чистая цена за единицу */}
+                  {/* Чистая цена за единицу — она же станет себестоимостью партии */}
                   <span className="text-[11px] font-black text-primary">
                   {((item.price - item.discount)).toLocaleString()}
                 </span>
@@ -178,6 +254,12 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
     </div>
   );
 
+  const submitLabel = !confirmNow
+    ? 'Qoralama saqlash'
+    : payFromKassa
+      ? 'O‘tkazish va to‘lash'
+      : 'Omborga qabul qilish';
+
   return (
     <>
       {/* --- DESKTOP --- */}
@@ -196,26 +278,14 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
         </ScrollArea>
 
         <div className="p-6 bg-muted/20 border-t space-y-4 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
-          <StatusToggle />
+          <ModeToggle />
 
           <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar space-y-4">
-            {status === 'PARTIAL' && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-bottom-1">
-                <label className="text-[9px] font-black uppercase opacity-40 ml-1 italic">Hozirgi to&apos;lov</label>
-               <div className={'relative'}>
-                 <Input
-                   type="number"
-                   placeholder="Summani kiriting..."
-                   className="rounded-xl bg-background border-2 border-primary/20 h-12 font-black text-lg"
-                   value={initialPayment}
-                   onChange={(e) => setInitialPayment(Number(e.target.value))}
-                 />
-                 <span className={'absolute top-1/2 -translate-y-1/2 right-10'}>{currency?.symbol}</span>
-               </div>
-              </div>
-            )}
+            <ModeHint />
 
-            {(status === 'PAID' || status === 'PARTIAL') && !kassaId && (
+            {confirmNow && rateInput}
+
+            {needsKassa && !kassaId && (
               <div className="flex items-center gap-2 p-3 rounded-2xl bg-destructive/10 text-destructive text-[10px] font-bold">
                 <AlertCircle className="size-4" />
                 Kassani tanlash majburiy
@@ -243,13 +313,13 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
             <Button
               className={cn(
                 "w-full h-14 rounded-2xl text-sm font-black uppercase transition-all",
-                status === 'PAID' ? "bg-emerald-600 hover:bg-emerald-700" :
-                  status === 'PARTIAL' ? "bg-orange-600 hover:bg-orange-700" : ""
+                confirmNow && payFromKassa ? "bg-emerald-600 hover:bg-emerald-700" :
+                  confirmNow ? "bg-violet-600 hover:bg-violet-700" : ""
               )}
               onClick={handleCreatePurchase}
               disabled={isSubmitting || items.length === 0}
             >
-              {isSubmitting ? "Yuklanmoqda..." : "Yakunlash"}
+              {isSubmitting ? "Yuklanmoqda..." : submitLabel}
             </Button>
           </div>
         </div>
@@ -291,16 +361,16 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
               <div className="flex-1 overflow-y-auto space-y-6 pb-24 pr-1">
                 <CartList />
                 <div className="h-px bg-muted" />
-                <StatusToggle />
+                <ModeToggle />
+                <ModeHint />
 
-                {status === 'PARTIAL' && (
-                  <Input
-                    type="number"
-                    placeholder="Hozirgi to'lov summasi"
-                    className="h-14 rounded-2xl bg-muted/40 border-none font-bold"
-                    value={initialPayment}
-                    onChange={(e) => setInitialPayment(Number(e.target.value))}
-                  />
+                {confirmNow && rateInput}
+
+                {needsKassa && !kassaId && (
+                  <div className="flex items-center gap-2 p-3 rounded-2xl bg-destructive/10 text-destructive text-[10px] font-bold">
+                    <AlertCircle className="size-4" />
+                    Kassani tanlash majburiy
+                  </div>
                 )}
 
                 <Textarea
@@ -317,7 +387,7 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
                   onClick={handleCreatePurchase}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "..." : `Saqlash: ${grandTotal.toLocaleString()}`}
+                  {isSubmitting ? "..." : `${submitLabel}: ${grandTotal.toLocaleString()}`}
                 </Button>
               </div>
             </div>

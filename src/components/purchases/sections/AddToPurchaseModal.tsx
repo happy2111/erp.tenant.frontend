@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { ProductVariant } from '@/schemas/product-variants.schema';
 import { usePurchaseStore } from '@/store/use-purchase-store';
+import { PurchasesService } from '@/services/purchases.service';
+import { format } from 'date-fns';
 import {
   Dialog, DialogClose,
   DialogContent,
@@ -22,7 +25,8 @@ import {
   Calendar,
   Barcode,
   Tag, // Используем иконку ценника вместо процента
-  TrendingDown
+  TrendingDown,
+  History
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from "next/link";
@@ -59,6 +63,13 @@ export function AddToPurchaseModal({ variant, isOpen, onClose }: Props) {
   const [discount, setDiscount] = useState<number>(0);
   const [batchNumber, setBatchNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
+
+  // «В прошлый раз брали по столько» — чтобы не вбивать цену вслепую
+  const { data: history } = useQuery({
+    queryKey: ['variant-price-history', variant?.id],
+    queryFn: () => PurchasesService.getPriceHistory(variant!.id, { limit: 3 }),
+    enabled: isOpen && !!variant,
+  });
 
   useEffect(() => {
     if (variant && isOpen) {
@@ -199,6 +210,39 @@ export function AddToPurchaseModal({ variant, isOpen, onClose }: Props) {
                 </div>
               </div>
             </div>
+
+            {/* ИСТОРИЯ ЗАКУПОЧНЫХ ЦЕН */}
+            {history && history.length > 0 && (
+              <div className="space-y-3">
+                <Label className="text-[11px] font-black uppercase opacity-40 italic flex items-center gap-2">
+                  <History size={13} /> Oldin qanchaga olingan
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {history.map((h) => (
+                    <button
+                      key={`${h.purchaseId}-${h.batchNumber ?? ''}`}
+                      type="button"
+                      onClick={() => {
+                        setPrice(h.price);
+                        setDiscount(h.discount);
+                      }}
+                      className="px-4 py-2.5 rounded-2xl bg-muted/40 border border-border/40 hover:border-primary/40 transition-colors text-left"
+                    >
+                      <span className="block font-black text-sm">
+                        {h.costPrice.toLocaleString()}
+                        <span className="text-[9px] opacity-40 ml-1">
+                          {h.currency?.symbol}
+                        </span>
+                      </span>
+                      <span className="block text-[9px] font-bold opacity-40 uppercase">
+                        {format(new Date(h.purchaseDate), 'dd.MM.yy')}
+                        {h.supplier?.firstName ? ` · ${h.supplier.firstName}` : ''}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* ПАРТИЯ И СРОК */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

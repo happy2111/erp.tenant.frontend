@@ -11,10 +11,7 @@ import { useEffect, useState } from "react";
 import { PurchasesService } from "@/services/purchases.service";
 import {
   Purchase,
-  CreatePurchaseDto,
-  UpdatePurchaseDto,
-  CreatePurchaseSchema,
-  UpdatePurchaseSchema,
+  PurchaseStatusLabels,
   PurchaseStatusValues,
 } from "@/schemas/purchases.schema";
 
@@ -32,10 +29,11 @@ import {
 } from "@/components/ui/select";
 import { CrudRenderer } from "@/components/crud/CrudRenderer";
 import { CrudViewToggle } from "@/components/crud/CrudViewToggle";
-import { CrudDialog } from "@/components/crud/CrudDialog";
-import { CrudForm } from "@/components/crud/CrudForm";
 import { ConfirmDialog } from "@/components/crud/ConfirmDialog";
 import { CrudViewMode } from "@/components/crud/types";
+import {
+  PurchaseEditDialog
+} from "@/components/purchases/dialogs/PurchaseEditDialog";
 import { toast } from "sonner";
 import {useRouter} from "next/navigation";
 
@@ -92,33 +90,7 @@ export function PurchasesCrud() {
   const purchases = data?.items ?? [];
   const total = data?.total ?? 0;
 
-  // ─── Мутации ───A
-  const createMutation = useMutation({
-    mutationFn: PurchasesService.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["purchases"] });
-      setCreateOpen(false);
-      toast.success("Закупка создана (в статусе Черновик)");
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Не удалось создать закупку");
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdatePurchaseDto }) =>
-      PurchasesService.update(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["purchases"] });
-      setEditItem(null);
-      setCreateOpen(false);
-      toast.success("Закупка обновлена");
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Ошибка обновления закупки");
-    },
-  });
-
+  // ─── Мутации ───
   const deleteMutation = useMutation({
     mutationFn: PurchasesService.remove,
     onSuccess: () => {
@@ -138,15 +110,6 @@ export function PurchasesCrud() {
   });
 
   // ─── Handlers ───
-  const handleCreate = async (dto: CreatePurchaseDto) => {
-    await createMutation.mutateAsync(dto);
-  };
-
-  const handleUpdate = async (dto: UpdatePurchaseDto) => {
-    if (!editItem?.id) return;
-    await updateMutation.mutateAsync({ id: editItem.id, dto });
-  };
-
   const handleDelete = async () => {
     if (!deleteId) return;
     await deleteMutation.mutateAsync(deleteId);
@@ -197,13 +160,7 @@ export function PurchasesCrud() {
                 <SelectItem value="all">Все статусы</SelectItem>
                 {PurchaseStatusValues.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {s === "DRAFT"
-                      ? "Черновик"
-                      : s === "PARTIAL"
-                        ? "Частично оплачено"
-                        : s === "PAID"
-                          ? "Оплачено"
-                          : "Отменено"}
+                    {PurchaseStatusLabels[s]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -270,52 +227,26 @@ export function PurchasesCrud() {
         </>
       )}
 
-      {/* Диалог создания / редактирования */}
-      <CrudDialog
-        open={createOpen}
-        onOpenChange={(open) => {
-          setCreateOpen(open);
-          if (!open) setEditItem(null);
-        }}
-        title={editItem ? "Редактировать закупку" : "Новая закупка"}
-      >
-        <CrudForm
-          fields={purchaseFields}
-          schema={editItem ? UpdatePurchaseSchema : CreatePurchaseSchema}
-          defaultValues={
-            editItem
-              ? {
-                supplierId: editItem.supplierId,
-                status: editItem.status,
-                currencyId: editItem.currencyId,
-                kassaId: editItem.kassaId,
-                items: editItem.items?.map(item => ({
-                  productVariantId: item.productVariantId,
-                  quantity: item.quantity,
-                  price: item.price,
-                  discount: item.discount ?? 0,
-                  batchNumber: item.batchNumber,
-                  // Convert Date object to ISO string for the Zod schema
-                  expiryDate: item.expiryDate instanceof Date
-                    ? item.expiryDate.toISOString()
-                    : item.expiryDate,
-                })) || [],
-              }
-              : {
-                status: "DRAFT" as const,
-                items: [],
-              }
-          }
-          onSubmit={editItem ? handleUpdate : handleCreate}
+      {/* Правка шапки черновика. Позиции меняются только пересозданием
+          документа, статус — через провести / оплатить / отменить */}
+      {editItem && (
+        <PurchaseEditDialog
+          key={editItem.id}
+          purchase={editItem}
+          open={createOpen}
+          onOpenChange={(open) => {
+            setCreateOpen(open);
+            if (!open) setEditItem(null);
+          }}
         />
-      </CrudDialog>
+      )}
 
       {/* Подтверждение удаления */}
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         title="Удалить закупку?"
-        description="Это действие нельзя отменить. Удаление возможно только если закупка не оплачена и не имеет платежей."
+        description="Удалить можно только черновик. Проведённую закупку нужно отменять — тогда партии удалятся, товар снимется со склада, а деньги вернутся в кассу."
         onConfirm={handleDelete}
       />
     </div>

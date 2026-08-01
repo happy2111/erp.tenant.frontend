@@ -21,6 +21,9 @@ import {
 import {
   ProductVariantStock
 } from "@/components/product-variants/sections/product-variant-stock";
+import {
+  ProductVariantCost
+} from "@/components/product-variants/sections/product-variant-cost";
 import ProductBreadcrumbHeader
   from "@/components/products/ProductBreadcrumbHeader";
 
@@ -107,6 +110,8 @@ export default function ProductVariantDetailPage({variantId}: {variantId: string
               {variant.product_instance?.length === 0 && (
                 <>
                   <ProductVariantStock variantId={variant.id} />
+
+                  <ProductVariantCost variantId={variant.id} />
 
                   <ProductVariantBatches variantId={variant.id} />
                 </>

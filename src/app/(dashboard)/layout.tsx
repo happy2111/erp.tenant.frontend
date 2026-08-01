@@ -23,6 +23,7 @@ import {cn} from "@/lib/utils";
 import * as React from "react";
 import {
   ArrowLeftRight,
+  Boxes,
   Building,
   CalendarCheck, ChartLine, Cog, Contact,
   CreditCard, Cuboid, Euro, Landmark, Layers,
@@ -54,6 +55,11 @@ const sidebarGroups = [
         actions: [
           { label: "Xarid qo'shish", url: "/purchases/create", icon: Plus },
         ],
+      },
+      {
+        name: "Partiyalar",
+        url: "/purchases/batches",
+        icon: Boxes,
       },
       {
         name: "Bo'lib to'lashlar",

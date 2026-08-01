@@ -20,10 +20,15 @@ interface PurchaseState {
   currencyId: string | null;
   kassaId: string | null;
   notes: string;
-  status: 'DRAFT' | 'PAID' | 'PARTIAL';
-  setStatus: (status: 'DRAFT' | 'PAID' | 'PARTIAL') => void;
-  setInitialPayment: (amount: number) => void;
-  initialPayment: number;
+  /**
+   * Провести ли документ сразу после создания. Закупка всегда создаётся
+   * черновиком, приход товара — отдельный вызов confirm.
+   */
+  confirmNow: boolean;
+  setConfirmNow: (value: boolean) => void;
+  /** Оплатить ли из кассы при проведении. Без кассы статус будет CONFIRMED */
+  payFromKassa: boolean;
+  setPayFromKassa: (value: boolean) => void;
   currency: Currency | null;
   setCurrencyData: (currency: Currency) => void;
 
@@ -55,8 +60,8 @@ export const usePurchaseStore = create<PurchaseState>()(
       currencyId: null,
       kassaId: null,
       notes: '',
-      status: 'DRAFT',
-      initialPayment: 0,
+      confirmNow: true,
+      payFromKassa: false,
       currency: null,
 
       setCurrencyData: (currency: Currency) => set({ currency }),
@@ -98,8 +103,8 @@ export const usePurchaseStore = create<PurchaseState>()(
           };
         }),
 
-      setStatus: (status) => set({ status }),
-      setInitialPayment: (initialPayment) => set({ initialPayment }),
+      setConfirmNow: (confirmNow) => set({ confirmNow }),
+      setPayFromKassa: (payFromKassa) => set({ payFromKassa }),
 
       updateQuantity: (id, qty) =>
         set((state) => ({
@@ -184,11 +189,26 @@ export const usePurchaseStore = create<PurchaseState>()(
           currencyId: null,
           kassaId: null,
           notes: '',
-          status: 'DRAFT',
-          initialPayment: 0,
+          confirmNow: true,
+          payFromKassa: false,
           currency: null
         }),
     }),
-    { name: 'purchase-draft-storage' }
+    {
+      name: 'purchase-draft-storage',
+      // v2 — из корзины убраны status и initialPayment: закупка создаётся
+      // черновиком, оплата задаётся при проведении. Старый черновик в
+      // localStorage дотащил бы неактуальные поля в форму.
+      version: 2,
+      migrate: (persisted, version) => {
+        if (version < 2) {
+          const state = (persisted ?? {}) as Record<string, unknown>;
+          delete state.status;
+          delete state.initialPayment;
+          return { ...state, confirmNow: true, payFromKassa: false };
+        }
+        return persisted as PurchaseState;
+      },
+    }
   )
 );
