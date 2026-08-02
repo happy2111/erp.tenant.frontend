@@ -169,8 +169,22 @@ export function PurchaseDetailView({ id }: { id: string }) {
                     </tr>
                   </thead>
                   <tbody className="text-sm">
-                    {purchase.items.map((item) => (
-                      <tr key={item.id} className="border-b border-border/5 group hover:bg-primary/5 transition-colors">
+                    {purchase.items.map((item) => {
+                      const variantId = item.product_variant?.id ?? item.productVariantId;
+                      return (
+                      <tr
+                        key={item.id}
+                        role="link"
+                        tabIndex={0}
+                        onClick={() => router.push(`/product-variants/${variantId}`)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            router.push(`/product-variants/${variantId}`);
+                          }
+                        }}
+                        className="border-b border-border/5 group hover:bg-primary/5 transition-colors cursor-pointer"
+                      >
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
                             <span className="font-bold group-hover:text-primary transition-colors">
@@ -200,7 +214,8 @@ export function PurchaseDetailView({ id }: { id: string }) {
                           {item.total.toLocaleString()} {purchase.currency?.symbol}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
