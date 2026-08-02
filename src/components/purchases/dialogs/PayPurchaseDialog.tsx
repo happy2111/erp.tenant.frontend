@@ -178,11 +178,12 @@ export function PayPurchaseDialog({ purchase, open, onOpenChange }: Props) {
                 bo‘lishi kerak
               </p>
             )}
-            {/* Баланс кассы бэкенд при оплате не проверяет — предупреждаем сами */}
-            {notEnoughMoney && (
-              <p className="text-[10px] font-bold text-orange-600 flex items-center gap-1.5">
+            {/* Тот же отказ придёт с бэкенда — показываем до отправки */}
+            {notEnoughMoney && selectedKassa && (
+              <p className="text-[10px] font-bold text-destructive flex items-center gap-1.5">
                 <AlertTriangle className="size-3" />
-                Kassada yetarli mablag‘ yo‘q — balans minusga tushadi
+                {selectedKassa.name} kassasida{' '}
+                {Number(selectedKassa.balance).toLocaleString()} bor — yetmaydi
               </p>
             )}
           </div>
@@ -211,7 +212,9 @@ export function PayPurchaseDialog({ purchase, open, onOpenChange }: Props) {
             <Button
               className="flex-[2] h-13 rounded-2xl font-black uppercase text-xs bg-emerald-600 hover:bg-emerald-700"
               onClick={() => mutation.mutate()}
-              disabled={mutation.isPending || !kassaId || !amountValid}
+              disabled={
+                mutation.isPending || !kassaId || !amountValid || notEnoughMoney
+              }
             >
               {mutation.isPending ? (
                 <Loader2 className="animate-spin size-4" />
