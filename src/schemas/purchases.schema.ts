@@ -118,11 +118,11 @@ export const GetPurchaseQuerySchema = z.object({
 export type GetPurchaseQueryDto = z.infer<typeof GetPurchaseQuerySchema>;
 
 // ─── Оплата по закупке ───────────────────────────────────────────────
+// amount именно число: бэкенд валидирует @IsNumber(), а глобальный
+// ValidationPipe идёт без enableImplicitConversion — строка вернёт 400.
 export const PayPurchaseSchema = z.object({
   kassaId: z.string().uuid('Некорректный ID кассы'),
-  amount: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/, 'Некорректный формат суммы'),
+  amount: z.number().positive('Сумма должна быть больше нуля'),
   note: z.string().max(500).optional().nullable(),
 });
 

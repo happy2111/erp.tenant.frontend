@@ -21,7 +21,8 @@ import {
   Undo2,
   Boxes,
   ArrowLeftRight,
-  AlertTriangle
+  AlertTriangle,
+  Wallet
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -39,11 +40,15 @@ import {
 import {
   CancelPurchaseDialog
 } from "@/components/purchases/dialogs/CancelPurchaseDialog";
+import {
+  PayPurchaseDialog
+} from "@/components/purchases/dialogs/PayPurchaseDialog";
 
 export function PurchaseDetailView({ id }: { id: string }) {
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
 
   const { data: purchase, isLoading } = useQuery({
     queryKey: ['purchase', id],
@@ -57,6 +62,10 @@ export function PurchaseDetailView({ id }: { id: string }) {
   const isCancelled = purchase.status === 'CANCELLED';
   // Отменить можно всё проведённое: партии ещё живы, деньги вернутся в кассу
   const canCancel = !isDraft && !isCancelled;
+  const remaining = purchase.totalAmount - purchase.paidAmount;
+  // CONFIRMED — товар принят, но не оплачен; PARTIAL — оплачен частично.
+  // Черновик платить нельзя: сначала проведение
+  const canPay = !isDraft && !isCancelled && remaining > 0;
   const batches = purchase.product_batches ?? [];
 
   return (
@@ -101,6 +110,15 @@ export function PurchaseDetailView({ id }: { id: string }) {
               onClick={() => setConfirmOpen(true)}
             >
               <PackageCheck className="size-4 mr-2" /> O‘tkazish
+            </Button>
+          )}
+
+          {canPay && (
+            <Button
+              className="rounded-2xl font-black text-xs uppercase bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20"
+              onClick={() => setPayOpen(true)}
+            >
+              <Wallet className="size-4 mr-2" /> To‘lash
             </Button>
           )}
 
@@ -414,6 +432,14 @@ export function PurchaseDetailView({ id }: { id: string }) {
         purchase={purchase}
         open={cancelOpen}
         onOpenChange={setCancelOpen}
+      />
+      {/* key по остатку: диалог держит сумму в локальном состоянии, после
+          частичной оплаты его надо перемонтировать с новым долгом */}
+      <PayPurchaseDialog
+        key={`pay-${remaining}`}
+        purchase={purchase}
+        open={payOpen}
+        onOpenChange={setPayOpen}
       />
     </div>
   );
