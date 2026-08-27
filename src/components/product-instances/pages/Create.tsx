@@ -28,6 +28,7 @@ import {
 import {
   ProductSelectDrawer
 } from "@/components/product-variants/drawers/SelectProductDrawer";
+import { PRODUCT_LABELS } from "@/lib/product-labels";
 
 export default function CreateProductInstancePage() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function CreateProductInstancePage() {
       currentStatus: 'IN_STOCK'
     }),
     onSuccess: (data) => {
-      toast.success("Mahsulot nusxasi muvaffaqiyatli yaratildi");
+      toast.success(`${PRODUCT_LABELS.instance.singular} muvaffaqiyatli yaratildi`);
       router.push(`/product-variants/${selectedVariantId}`);
     },
     onError: (error: any) => {
@@ -86,10 +87,10 @@ export default function CreateProductInstancePage() {
               <Cuboid className="size-8 text-primary" />
             </div>
             <CardTitle className="text-3xl font-black italic uppercase tracking-tighter">
-              Yangi Namuna
+              Yangi {PRODUCT_LABELS.instance.short}
             </CardTitle>
             <p className="text-[10px] uppercase tracking-[0.3em] opacity-40 font-bold mt-2">
-              Instance yaratish (IMEI / Serial Number)
+              {PRODUCT_LABELS.instance.short} yaratish (IMEI / Serial Number)
             </p>
           </CardHeader>
 
@@ -117,14 +118,16 @@ export default function CreateProductInstancePage() {
 
               {/* Выбор Варианта (появляется после выбора товара) */}
               <div className={`space-y-2 transition-all duration-500 ${selectedProduct ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
-                <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">Variant (Rang, Xotira va h.k.)</label>
+                <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">
+                  {PRODUCT_LABELS.variant.short} (Rang, Xotira va h.k.)
+                </label>
                 <Select
                   value={selectedVariantId}
                   onValueChange={setSelectedVariantId}
                   disabled={!selectedProduct || isVariantsLoading}
                 >
                   <SelectTrigger className="h-14 rounded-2xl bg-muted/30 border-border/50">
-                    <SelectValue placeholder={isVariantsLoading ? "Yuklanmoqda..." : "Variantni tanlang"} />
+                    <SelectValue placeholder={isVariantsLoading ? "Yuklanmoqda..." : `${PRODUCT_LABELS.variant.short}ni tanlang`} />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
                     {variants?.map((variant) => (

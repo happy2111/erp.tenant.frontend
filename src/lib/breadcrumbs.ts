@@ -1,3 +1,5 @@
+import { PRODUCT_LABELS } from "@/lib/product-labels";
+
 export const BREADCRUMB_LABELS: Record<string, string> = {
   dashboard: "Boshqaruv paneli",
 
@@ -7,11 +9,11 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   "convert-to-user": "Foydalanuvchiga aylantirish",
 
   products: "Mahsulotlar",
-  "product-variants": "Mahsulot variantlari",
-  "product-instances": "Mahsulot nusxalari",
+  "product-variants": PRODUCT_LABELS.variant.plural,
+  "product-instances": PRODUCT_LABELS.instance.plural,
 
   categories: "Kategoriyalar",
-  attributes: "Xususiyatlar",
+  attributes: PRODUCT_LABELS.attributes.page,
   kassas: "Kassalar",
   "kassa-transfers": "Kassa o‘tkazmalari",
 

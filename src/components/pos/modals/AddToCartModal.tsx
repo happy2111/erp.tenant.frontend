@@ -32,6 +32,7 @@ import {
 import { cn } from '@/lib/utils';
 import Link from "next/link";
 import { ProductInstancesService } from "@/services/product-instances.service";
+import { PRODUCT_LABELS } from "@/lib/product-labels";
 
 interface Props {
   variant: ProductVariant | null;
@@ -195,7 +196,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
                   ))
                 ) : (
                   <Badge variant="outline" className="rounded-lg border-primary/20 bg-primary/5 text-primary text-[10px] font-bold">
-                    Mavjud namunalar yo‘q
+                    Mavjud {PRODUCT_LABELS.instance.shortPlural.toLowerCase()} yo‘q
                   </Badge>
                 )}
               </div>
@@ -330,7 +331,7 @@ export function AddToCartModal({ variant, isOpen, onClose }: Props) {
               ) : isOutOfStock ? (
                 "Mavjud emas"
               ) : requiresInstanceSelection ? (
-                "Namunani tanlang"
+                `${PRODUCT_LABELS.instance.short}ni tanlang`
               ) : price <= 0 ? (
                 "Narx kiriting"
               ) : (

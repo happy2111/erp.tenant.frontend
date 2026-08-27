@@ -40,8 +40,9 @@ export function ProductVariantAttributes({ variantId }: { variantId: string }) {
 
   // 2. Загружаем список всех доступных атрибутов (для создания новых)
   const { data: allAttributes } = useQuery({
-    queryKey: ["all-attributes-list"],
-    queryFn: () => AttributesService.getAllAdmin({ limit: 100 }),
+    queryKey: ["all-attributes-list", "variant"],
+    queryFn: () =>
+      AttributesService.getAllAdmin({ limit: 100, isForVariant: true }),
     enabled: isDialogOpen,
   });
 

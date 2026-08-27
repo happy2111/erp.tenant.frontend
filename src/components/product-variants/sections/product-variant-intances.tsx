@@ -16,6 +16,7 @@ import {
   History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PRODUCT_LABELS } from "@/lib/product-labels";
 
 const statusMap = {
   IN_STOCK: { label: "Omborda", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
@@ -41,7 +42,7 @@ export function ProductVariantInstances({ variantId }: { variantId: string }) {
           </div>
           <div>
             <CardTitle className="text-xs font-black uppercase tracking-[0.2em] opacity-60">
-              Nusxalar
+              {PRODUCT_LABELS.instance.shortPlural}
             </CardTitle>
             <p className="text-[10px] text-muted-foreground font-bold uppercase opacity-40">
               Jami: {data?.total || 0} dona
@@ -117,7 +118,7 @@ export function ProductVariantInstances({ variantId }: { variantId: string }) {
           ) : (
             <div className="text-center py-12 border-2 border-dashed border-border/20 rounded-[2rem]">
               <p className="text-[10px] font-black uppercase tracking-widest opacity-20 italic">
-                Hozircha nusxalar mavjud emas
+                Hozircha {PRODUCT_LABELS.instance.shortPlural.toLowerCase()} mavjud emas
               </p>
             </div>
           )}
