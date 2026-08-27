@@ -78,6 +78,12 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
           expiryDate: item.expiryDate
             ? new Date(item.expiryDate).toISOString()
             : undefined,
+          instances: item.instances?.map((inst) => ({
+            serialNumber: inst.serialNumber,
+            price: inst.price,
+            discount: inst.discount,
+            attributeValueIds: inst.attributeValueIds,
+          })),
         })),
       });
 
@@ -190,66 +196,107 @@ export function PurchaseCheckoutPanel({ onSuccess }: Props) {
           <p className="text-[10px] font-bold uppercase">Savat bo‘sh</p>
         </div>
       ) : (
-        items.map(item => (
-          <div
-            key={item.productVariantId}
-            className="flex justify-between items-center gap-3 bg-muted/20 p-3 rounded-2xl border border-transparent"
-          >
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate">{item.title}</p>
-              <div className="flex flex-col mt-1">
-                <div className="flex items-center gap-2">
-                  {/* Чистая цена за единицу — она же станет себестоимостью партии */}
-                  <span className="text-[11px] font-black text-primary">
-                  {((item.price - item.discount)).toLocaleString()}
-                </span>
-
-                  {/* Если есть скидка, показываем старую цену */}
-                  {item.discount > 0 && (
-                    <span className="text-[9px] text-muted-foreground line-through opacity-60">
-                    {item.price.toLocaleString()}
-                  </span>
-                  )}
+        items.map((item) => {
+          const isNamuna = !!item.instances?.length;
+          return (
+            <div
+              key={item.productVariantId}
+              className="bg-muted/20 p-3 rounded-2xl border border-transparent space-y-2"
+            >
+              <div className="flex justify-between items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-xs font-bold truncate">{item.title}</p>
+                    {isNamuna && (
+                      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md bg-violet-500/15 text-violet-600">
+                        Namuna
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col mt-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-black text-primary">
+                        {isNamuna
+                          ? item.total.toLocaleString()
+                          : (item.price - item.discount).toLocaleString()}
+                      </span>
+                      {!isNamuna && item.discount > 0 && (
+                        <span className="text-[9px] text-muted-foreground line-through opacity-60">
+                          {item.price.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    {!isNamuna && item.discount > 0 && (
+                      <span className="text-[8px] font-bold text-emerald-600 uppercase">
+                        Chegirma: -{item.discount.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                {/* Сумма скидки (не процент!) */}
-                {item.discount > 0 && (
-                  <span className="text-[8px] font-bold text-emerald-600 uppercase">
-                  Chegirma: -{item.discount.toLocaleString()}
-                </span>
-                )}
+                <div className="flex items-center gap-2 bg-background rounded-lg p-1 border">
+                  {!isNamuna && (
+                    <>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-6"
+                        onClick={() =>
+                          updateQuantity(item.productVariantId, item.quantity - 1)
+                        }
+                      >
+                        <Minus className="size-3" />
+                      </Button>
+                      <span className="text-xs font-black">{item.quantity}</span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-6"
+                        onClick={() =>
+                          updateQuantity(item.productVariantId, item.quantity + 1)
+                        }
+                      >
+                        <Plus className="size-3" />
+                      </Button>
+                    </>
+                  )}
+                  {isNamuna && (
+                    <span className="text-xs font-black px-2">
+                      {item.quantity} dona
+                    </span>
+                  )}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-6 text-destructive"
+                    onClick={() => removeItem(item.productVariantId)}
+                  >
+                    <Trash2 className="size-3" />
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2 bg-background rounded-lg p-1 border">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-6"
-                onClick={() => updateQuantity(item.productVariantId, item.quantity - 1)}
-              >
-                <Minus className="size-3" />
-              </Button>
-              <span className="text-xs font-black">{item.quantity}</span>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-6"
-                onClick={() => updateQuantity(item.productVariantId, item.quantity + 1)}
-              >
-                <Plus className="size-3" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-6 text-destructive"
-                onClick={() => removeItem(item.productVariantId)}
-              >
-                <Trash2 className="size-3" />
-              </Button>
+              {isNamuna && (
+                <div className="pl-1 space-y-1 border-t border-border/30 pt-2">
+                  {item.instances!.map((inst) => (
+                    <div
+                      key={inst.serialNumber}
+                      className="flex justify-between text-[10px] font-mono opacity-70"
+                    >
+                      <span className="truncate">{inst.serialNumber}</span>
+                      <span className="font-bold shrink-0 ml-2">
+                        {(
+                          (inst.price ?? item.price) -
+                          (inst.discount ?? item.discount)
+                        ).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );

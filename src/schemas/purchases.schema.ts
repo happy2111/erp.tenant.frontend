@@ -48,14 +48,36 @@ export const BatchSourceLabels: Record<BatchSource, string> = {
 };
 
 // ─── Позиция в закупке (одна строка накладной) ──────────────────────
-export const CreatePurchaseItemSchema = z.object({
-  productVariantId: z.string().uuid('Некорректный ID варианта товара'),
-  quantity: z.number().int().positive('Количество должно быть > 0'),
-  price: z.number().positive(),
-  discount: z.coerce.number().nonnegative().default(0),
-  batchNumber: z.string().max(64).optional().nullable(),
-  expiryDate: z.string().datetime().optional().nullable(),
+/** Серийная единица (namuna) внутри позиции */
+export const CreatePurchaseItemInstanceSchema = z.object({
+  serialNumber: z.string().min(1, 'Serial majburiy'),
+  price: z.number().positive().optional(),
+  discount: z.coerce.number().nonnegative().optional(),
+  attributeValueIds: z.array(z.string().uuid()).default([]),
 });
+
+export type CreatePurchaseItemInstanceDto = z.infer<
+  typeof CreatePurchaseItemInstanceSchema
+>;
+
+export const CreatePurchaseItemSchema = z
+  .object({
+    productVariantId: z.string().uuid('Некорректный ID варианта товара'),
+    quantity: z.number().int().positive('Количество должно быть > 0'),
+    price: z.number().positive(),
+    discount: z.coerce.number().nonnegative().default(0),
+    batchNumber: z.string().max(64).optional().nullable(),
+    expiryDate: z.string().datetime().optional().nullable(),
+    instances: z.array(CreatePurchaseItemInstanceSchema).optional(),
+  })
+  .refine(
+    (data) =>
+      !data.instances?.length || data.instances.length === data.quantity,
+    {
+      message: 'Namunalar soni miqdorga teng bo‘lishi kerak',
+      path: ['instances'],
+    },
+  );
 
 export type CreatePurchaseItemDto = z.infer<typeof CreatePurchaseItemSchema>;
 
