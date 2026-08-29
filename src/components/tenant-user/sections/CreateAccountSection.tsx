@@ -11,7 +11,8 @@ import {
   Building2,
   Mail,
   Lock,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
@@ -23,18 +24,49 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export function CreateAccountSection({ onChange, initialData }: { onChange: (v: any) => void , initialData?: TenantUser | undefined}) {
+function generatePassword(length = 12): string {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghijkmnopqrstuvwxyz";
+  const digits = "23456789";
+  const all = upper + lower + digits;
+  const pick = (set: string) => set[Math.floor(Math.random() * set.length)]!;
+  const chars = [pick(upper), pick(lower), pick(digits)];
+  for (let i = chars.length; i < length; i += 1) chars.push(pick(all));
+  for (let i = chars.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [chars[i], chars[j]] = [chars[j]!, chars[i]!];
+  }
+  return chars.join("");
+}
+
+function generateEmail(seed?: string): string {
+  const slug =
+    (seed || "user")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/gi, "")
+      .slice(0, 12) || "user";
+  const rand = Math.random().toString(36).slice(2, 8);
+  return `${slug}.${rand}@ap.local`;
+}
+
+export function CreateAccountSection({
+  onChange,
+  initialData,
+  emailSeed,
+}: {
+  onChange: (v: any) => void;
+  initialData?: TenantUser | undefined;
+  emailSeed?: string;
+}) {
   const router = useRouter();
   const [email, setEmail] = useState(initialData?.email || "");
   const [password, setPassword] = useState("");
   const [isActive, setIsActive] = useState<boolean>(initialData?.isActive || true);
 
-  // Состояния для API проверки
-  const [debouncedEmail] = useDebounce(email, 600); // Ждем 600мс после ввода
+  const [debouncedEmail] = useDebounce(email, 600);
   const [isChecking, setIsChecking] = useState(false);
   const [existingUser, setExistingUser] = useState<CheckUserExistenceResponse | null>(null);
 
-  // Основной эффект для передачи данных родителю
   useEffect(() => {
     onChange({
       email: email || undefined,
@@ -43,10 +75,8 @@ export function CreateAccountSection({ onChange, initialData }: { onChange: (v: 
     });
   }, [email, password, isActive, onChange]);
 
-  // Эффект для автоматической проверки email
   useEffect(() => {
     const checkEmail = async () => {
-      // Проверяем только если email похож на настоящий
       if (!debouncedEmail || !debouncedEmail.includes("@")) {
         setExistingUser(null);
         return;
@@ -59,8 +89,7 @@ export function CreateAccountSection({ onChange, initialData }: { onChange: (v: 
           setExistingUser(data);
           toast.warning("Ushbu email bazada mavjud");
         }
-      } catch (error: any) {
-        // 404 означает что email свободен — это норма
+      } catch {
         setExistingUser(null);
       } finally {
         setIsChecking(false);
@@ -80,7 +109,6 @@ export function CreateAccountSection({ onChange, initialData }: { onChange: (v: 
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Поле Email с индикатором загрузки */}
         <div className="relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             <Mail className="size-4" />
@@ -88,8 +116,8 @@ export function CreateAccountSection({ onChange, initialData }: { onChange: (v: 
           <Input
             type="email"
             autoComplete="new-email"
-            placeholder="Email (ixtiyoriy)"
-            className="pl-10 bg-background/50 border-border/60 focus-visible:ring-primary"
+            placeholder="ixtiyoriy"
+            className="pl-10 pr-10 bg-background/50 border-border/60 focus-visible:ring-primary placeholder:text-muted-foreground/40"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -100,20 +128,40 @@ export function CreateAccountSection({ onChange, initialData }: { onChange: (v: 
           )}
         </div>
 
-        {/* Поле Пароль */}
         <div className="relative">
           <Input
             type="password"
-            placeholder="Parol *"
-            className="bg-background/50 border-border/60 focus-visible:ring-primary"
+            placeholder="ixtiyoriy"
+            className="bg-background/50 border-border/60 focus-visible:ring-primary placeholder:text-muted-foreground/40"
             value={password}
             autoComplete="new-password"
             onChange={(e) => setPassword(e.target.value)}
-            // required
           />
         </div>
 
-        {/* Переключатель Активности */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-[11px] gap-1.5"
+            onClick={() => setEmail(generateEmail(emailSeed))}
+          >
+            <Sparkles className="size-3" />
+            Email
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-[11px] gap-1.5"
+            onClick={() => setPassword(generatePassword())}
+          >
+            <Sparkles className="size-3" />
+            Parol
+          </Button>
+        </div>
+
         <div className="flex items-center justify-between border border-border/60 rounded-xl p-3 bg-background/30">
           <div className="flex flex-col">
             <span className="text-sm font-medium">Status</span>
@@ -122,7 +170,6 @@ export function CreateAccountSection({ onChange, initialData }: { onChange: (v: 
           <Switch checked={isActive} onCheckedChange={setIsActive} />
         </div>
 
-        {/* Виджет если пользователь найден */}
         {existingUser && (
           <div className="mt-2 animate-in slide-in-from-top-1 duration-200">
             <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">

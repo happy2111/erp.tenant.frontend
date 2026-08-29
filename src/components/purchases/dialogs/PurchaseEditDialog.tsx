@@ -5,7 +5,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PurchasesService } from '@/services/purchases.service';
 import { KassasService } from '@/services/kassas.service';
 import { OrganizationCustomerService } from '@/services/org.customer.service';
-import { CustomerTypeValues } from '@/schemas/org-customer.schema';
 import { Purchase } from '@/schemas/purchases.schema';
 import {
   Dialog,
@@ -63,7 +62,7 @@ export function PurchaseEditDialog({ purchase, open, onOpenChange }: Props) {
     queryKey: ['suppliers', 'all'],
     queryFn: () =>
       OrganizationCustomerService.getAllAdmin({
-        type: CustomerTypeValues[1],
+        isSupplier: true,
         limit: 100,
       }),
     enabled: open,

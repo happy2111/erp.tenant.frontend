@@ -62,7 +62,7 @@ export function OrganizationCustomerCrud() {
     return (saved as CrudViewMode) || "table";
   });
 
-  const [sortField, setSortField] = useState<"createdAt" | "firstName" | "lastName" | "type">("createdAt");
+  const [sortField, setSortField] = useState<"createdAt" | "firstName" | "lastName">("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
@@ -143,7 +143,7 @@ export function OrganizationCustomerCrud() {
     if (sortField === validField) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      if (["createdAt" , "firstName" , "lastName" , "type"].includes(validField)) {
+      if (["createdAt" , "firstName" , "lastName"].includes(validField)) {
         setSortField(validField);
         setSortOrder("asc");
       }

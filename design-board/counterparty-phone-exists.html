@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Board · Phone exists · ApplePark</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #000; --white: #fff; --primary: #2F6BFF;
+      --gray-label: rgba(255,255,255,0.32);
+      --gray-line: rgba(255,255,255,0.10);
+      --gray-muted: rgba(255,255,255,0.40);
+      --gray-placeholder: rgba(255,255,255,0.22);
+      --board: #121214; --panel: #1C1C1E; --danger: #EF4444;
+      --border: rgba(255,255,255,0.08); --text: #f5f5f5; --muted: #8e8e93;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--board); color: var(--text);
+      padding: 48px 32px 80px;
+    }
+    h1 { font-size: 28px; letter-spacing: -0.04em; margin-bottom: 8px; font-weight: 800; }
+    h2 { font-size: 20px; letter-spacing: -0.03em; margin: 48px 0 8px; font-weight: 700; }
+    .sub { color: var(--muted); font-size: 14px; max-width: 64ch; line-height: 1.5; margin-bottom: 36px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 28px; }
+    .art { display: flex; flex-direction: column; gap: 10px; }
+    .meta { font-size: 12px; color: #8b8c90; font-weight: 600; }
+    .tag {
+      display: inline-flex; align-self: flex-start; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 8px; border-radius: 6px;
+      background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border);
+    }
+    .tag.ship { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .tag.design { background: rgba(255,255,255,0.12); color: #fff; }
+
+    .phone {
+      width: 340px; height: 700px; border-radius: 36px; background: #000;
+      border: 1px solid rgba(255,255,255,0.12); padding: 18px 28px 24px;
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+    }
+    .status {
+      display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;
+      margin-bottom: 4px; opacity: 0.85;
+    }
+    .nav-back {
+      width: 40px; height: 40px; margin: 4px 0 10px -8px;
+      display: grid; place-items: center; color: #fff;
+    }
+    .nav-back svg {
+      width: 22px; height: 22px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .hero { font-size: 28px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; margin-bottom: 4px; }
+    .hint { font-size: 14px; line-height: 1.4; color: var(--gray-muted); margin-bottom: 24px; max-width: 32ch; }
+    .scroll { flex: 1; min-height: 0; overflow: hidden; padding-bottom: 72px; }
+
+    .fields { display: flex; flex-direction: column; gap: 28px; }
+    .field label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: var(--gray-label); margin-bottom: 12px;
+    }
+    .field-line {
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--gray-line); padding-bottom: 12px;
+    }
+    .field-line .val { flex: 1; font: 500 17px/1.2 Inter, sans-serif; color: var(--white); }
+    .field-line .ph { color: var(--gray-placeholder); }
+    .field-line .prefix { font: 500 17px Inter, sans-serif; color: var(--gray-muted); flex-shrink: 0; }
+    .field.is-err .field-line { border-bottom-color: var(--danger); }
+    .field .err-msg { margin-top: 8px; font-size: 12px; font-weight: 500; color: var(--danger); }
+
+    .type-row {
+      display: flex; gap: 0; border-bottom: 1px solid var(--gray-line); padding-bottom: 12px;
+    }
+    .type-opt {
+      flex: 1; background: none; border: none; cursor: default; pointer-events: none;
+      font: 600 15px Inter, sans-serif; color: var(--gray-muted); text-align: left; padding: 0;
+    }
+    .type-opt.is-on { color: #fff; }
+
+    .float-save {
+      position: absolute; right: 20px; bottom: 28px; z-index: 20;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px 10px 18px; border-radius: 99px;
+      background: #fff; color: #000; border: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      font: 700 15px Inter, sans-serif; letter-spacing: -0.02em;
+    }
+    .float-save svg {
+      width: 18px; height: 18px; stroke: #000; fill: none;
+      stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+    .sheet {
+      margin-top: auto; background: rgba(28,28,30,0.96);
+      border: 1px solid #2C2C2E; border-radius: 28px 28px 24px 24px;
+      padding: 12px 20px 20px; display: flex; flex-direction: column; gap: 12px;
+      position: relative; z-index: 2;
+    }
+    .handle {
+      width: 36px; height: 5px; border-radius: 3px;
+      background: rgba(255,255,255,0.28); align-self: center; margin-bottom: 4px;
+    }
+    .sheet-title { font-size: 22px; font-weight: 800; letter-spacing: -0.04em; }
+    .sheet-title.warn { color: #FCA5A5; }
+    .sheet-hint { font-size: 14px; line-height: 1.4; color: var(--gray-muted); }
+    .person-name { font: 700 17px Inter, sans-serif; letter-spacing: -0.02em; }
+    .person-name.warn { color: #FCA5A5; }
+    .person-phone { font-size: 14px; color: var(--gray-muted); margin-top: 4px; }
+
+    .circles { display: flex; justify-content: space-around; margin-top: 8px; gap: 4px; }
+    .circle-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 8px; text-align: center; max-width: 76px;
+    }
+    .circle {
+      width: 52px; height: 52px; border-radius: 26px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; background: #3A3A3C; color: #fff;
+    }
+    .circle.primary { background: var(--primary); }
+    .circle.danger { background: var(--danger); }
+    .circle-lbl { font-size: 10px; font-weight: 600; line-height: 1.25; color: #fff; }
+
+    .form-ghost { flex: 1; opacity: 0.18; pointer-events: none; }
+
+    /* V4 · chap accent + rol chip */
+    .v-rail {
+      display: flex; gap: 12px; margin-top: 4px;
+      padding: 12px 0 4px; border-top: 1px solid var(--gray-line);
+    }
+    .v-rail-bar {
+      width: 3px; border-radius: 2px; background: var(--primary); flex-shrink: 0;
+      align-self: stretch;
+    }
+    .v-rail-bar.warn { background: #EF4444; }
+    .role-row {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+    }
+    .role-chip {
+      display: inline-flex; align-items: center;
+      font-size: 12px; font-weight: 700; letter-spacing: -0.01em;
+      padding: 5px 10px; border-radius: 8px;
+      background: rgba(47,107,255,0.18); color: #8EB0FF;
+      border: 1px solid rgba(47,107,255,0.35);
+    }
+    .role-chip.warn {
+      background: rgba(239,68,68,0.16); color: #FCA5A5;
+      border-color: rgba(239,68,68,0.35);
+    }
+  </style>
+</head>
+<body>
+  <h1>Telefon band</h1>
+  <p class="sub">
+    Identichlik: <code>counterparty-create.html</code> — Inter, underline maydonlar, C3 float.
+    Sheet shaxs bloki: <b>V4 · chap accent chiziq</b> + rol chip.
+  </p>
+
+  <div class="grid">
+
+    <div class="art">
+      <div class="meta">A · Raqam bor · Ta'minotchi qilish</div>
+      <span class="tag ship">Shipped</span>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="form-ghost">
+          <div class="fields" style="padding-top:40px">
+            <div class="field"><label>Telefon</label><div class="field-line"><span class="prefix">+998</span><span class="val">90 123 45 67</span></div></div>
+          </div>
+        </div>
+        <div class="backdrop"></div>
+        <div class="sheet">
+          <div class="handle"></div>
+          <div class="sheet-title">Bunday raqam bor</div>
+          <div class="sheet-hint">Bu telefon allaqachon kontragentga biriktirilgan.</div>
+          <div class="v-rail">
+            <div class="v-rail-bar"></div>
+            <div>
+              <div class="person-name">Aziza Karimova</div>
+              <div class="person-phone">+998 90 123 45 67</div>
+              <div class="role-row"><span class="role-chip">Mijoz</span></div>
+            </div>
+          </div>
+          <div class="circles">
+            <div class="circle-item"><div class="circle primary">+</div><div class="circle-lbl">Ta'minotchi<br/>qilish</div></div>
+            <div class="circle-item"><div class="circle primary">↗</div><div class="circle-lbl">Kartochkani<br/>ochish</div></div>
+            <div class="circle-item"><div class="circle">✎</div><div class="circle-lbl">Tahrirlash</div></div>
+            <div class="circle-item"><div class="circle">✕</div><div class="circle-lbl">Yopish</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="meta">B · Ikkala rol</div>
+      <span class="tag ship">Shipped</span>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="form-ghost"></div>
+        <div class="backdrop"></div>
+        <div class="sheet">
+          <div class="handle"></div>
+          <div class="sheet-title">Bunday raqam bor</div>
+          <div class="sheet-hint">Ikkala rol mavjud — yangi rol qoʻshilmaydi.</div>
+          <div class="v-rail">
+            <div class="v-rail-bar"></div>
+            <div>
+              <div class="person-name">Sardor Aliyev</div>
+              <div class="person-phone">+998 93 111 22 33</div>
+              <div class="role-row">
+                <span class="role-chip">Mijoz</span>
+                <span class="role-chip">Ta'minotchi</span>
+              </div>
+            </div>
+          </div>
+          <div class="circles">
+            <div class="circle-item"><div class="circle primary">↗</div><div class="circle-lbl">Kartochkani<br/>ochish</div></div>
+            <div class="circle-item"><div class="circle">✎</div><div class="circle-lbl">Tahrirlash</div></div>
+            <div class="circle-item"><div class="circle">✕</div><div class="circle-lbl">Yopish</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="meta">C · Tizim hisobi — maydon xatosi</div>
+      <span class="tag ship">Shipped</span>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div class="hero">Yangi kontragent</div>
+        <p class="hint">Majburiy: faqat ism</p>
+        <div class="scroll">
+          <div class="fields">
+            <div class="field">
+              <label>Rol</label>
+              <div class="type-row">
+                <button type="button" class="type-opt is-on">Mijoz</button>
+                <button type="button" class="type-opt">Ta'minotchi</button>
+                <button type="button" class="type-opt">Ikkalasi</button>
+              </div>
+            </div>
+            <div class="field"><label>Ism *</label><div class="field-line"><span class="val">Dilshod</span></div></div>
+            <div class="field is-err">
+              <label>Telefon</label>
+              <div class="field-line"><span class="prefix">+998</span><span class="val">97 700 00 01</span></div>
+              <div class="err-msg">Bu raqamda tizim hisobi bor — boshqa telefon kiriting</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="meta">D · Qora roʻyxat</div>
+      <span class="tag ship">Shipped</span>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="form-ghost"></div>
+        <div class="backdrop"></div>
+        <div class="sheet">
+          <div class="handle"></div>
+          <div class="sheet-title warn">Qora roʻyxatdagi mijoz</div>
+          <div class="sheet-hint">Tahrirlang, roʻyxatdan olib tashlang yoki yoping.</div>
+          <div class="v-rail">
+            <div class="v-rail-bar warn"></div>
+            <div>
+              <div class="person-name warn">Jasur Rahimov</div>
+              <div class="person-phone">+998 91 555 44 33</div>
+              <div class="role-row">
+                <span class="role-chip">Mijoz</span>
+                <span class="role-chip warn">Qora roʻyxat</span>
+              </div>
+            </div>
+          </div>
+          <div class="circles">
+            <div class="circle-item"><div class="circle">✎</div><div class="circle-lbl">Tahrirlash</div></div>
+            <div class="circle-item"><div class="circle danger">⊘</div><div class="circle-lbl">Qora roʻyxatdan<br/>olib tashlash</div></div>
+            <div class="circle-item"><div class="circle">✕</div><div class="circle-lbl">Yopish</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Osmotr va oʻzgartirish</h2>
+  <p class="sub" style="margin-bottom:28px">
+    Create bilan bir xil: hero + hint + underline fields + type-row + C3 float. Alohida «Holat / Tizim hisobi» boʻlimi yoʻq.
+  </p>
+
+  <div class="grid">
+
+    <div class="art">
+      <div class="meta">H · Osmotr</div>
+      <span class="tag design">Design</span>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div class="hero">Aziza Karimova</div>
+        <p class="hint">Mijoz · Ta'minotchi</p>
+        <div class="scroll">
+          <div class="fields">
+            <div class="field"><label>Ism</label><div class="field-line"><span class="val">Aziza</span></div></div>
+            <div class="field"><label>Familiya</label><div class="field-line"><span class="val">Karimova</span></div></div>
+            <div class="field"><label>Otasining ismi</label><div class="field-line"><span class="val">Akmalovna</span></div></div>
+            <div class="field"><label>Telefon</label><div class="field-line"><span class="prefix">+998</span><span class="val">90 123 45 67</span></div></div>
+            <div class="field"><label>Rol</label><div class="field-line"><span class="val">Mijoz · Ta'minotchi</span></div></div>
+            <div class="field"><label>Qora roʻyxat</label><div class="field-line"><span class="val ph">O'chirilgan</span></div></div>
+          </div>
+        </div>
+        <button type="button" class="float-save">Tahrirlash<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="meta">I · Osmotr · qora roʻyxat</div>
+      <span class="tag design">Design</span>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div class="hero" style="color:#FCA5A5">Jasur Rahimov</div>
+        <p class="hint">Mijoz · Qora roʻyxat</p>
+        <div class="scroll">
+          <div class="fields">
+            <div class="field"><label>Ism</label><div class="field-line"><span class="val">Jasur</span></div></div>
+            <div class="field"><label>Familiya</label><div class="field-line"><span class="val">Rahimov</span></div></div>
+            <div class="field"><label>Otasining ismi</label><div class="field-line"><span class="val ph">—</span></div></div>
+            <div class="field"><label>Telefon</label><div class="field-line"><span class="prefix">+998</span><span class="val">91 555 44 33</span></div></div>
+            <div class="field"><label>Rol</label><div class="field-line"><span class="val">Mijoz</span></div></div>
+            <div class="field"><label>Qora roʻyxat</label><div class="field-line"><span class="val" style="color:#FCA5A5">Yoqilgan</span></div></div>
+          </div>
+        </div>
+        <button type="button" class="float-save">Tahrirlash<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="meta">J · Oʻzgartirish</div>
+      <span class="tag design">Design</span>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div class="hero">Tahrirlash</div>
+        <p class="hint">Kontragent maʼlumotlarini oʻzgartirish</p>
+        <div class="scroll">
+          <div class="fields">
+            <div class="field">
+              <label>Rol</label>
+              <div class="type-row">
+                <button type="button" class="type-opt is-on">Mijoz</button>
+                <button type="button" class="type-opt">Ta'minotchi</button>
+                <button type="button" class="type-opt">Ikkalasi</button>
+              </div>
+            </div>
+            <div class="field"><label>Ism *</label><div class="field-line"><span class="val">Aziza</span></div></div>
+            <div class="field"><label>Familiya</label><div class="field-line"><span class="val">Karimova</span></div></div>
+            <div class="field"><label>Otasining ismi</label><div class="field-line"><span class="val">Akmalovna</span></div></div>
+            <div class="field"><label>Telefon</label><div class="field-line"><span class="prefix">+998</span><span class="val">90 123 45 67</span></div></div>
+            <div class="field"><label>Qora roʻyxat</label><div class="field-line"><span class="val ph">O'chirilgan</span></div></div>
+          </div>
+        </div>
+        <button type="button" class="float-save">Saqlash<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="meta">K · Oʻzgartirish · qora roʻyxat</div>
+      <span class="tag design">Design</span>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div class="hero">Tahrirlash</div>
+        <p class="hint">Qora roʻyxatdan olib tashlash mumkin</p>
+        <div class="scroll">
+          <div class="fields">
+            <div class="field">
+              <label>Rol</label>
+              <div class="type-row">
+                <button type="button" class="type-opt is-on">Mijoz</button>
+                <button type="button" class="type-opt">Ta'minotchi</button>
+                <button type="button" class="type-opt">Ikkalasi</button>
+              </div>
+            </div>
+            <div class="field"><label>Ism *</label><div class="field-line"><span class="val">Jasur</span></div></div>
+            <div class="field"><label>Familiya</label><div class="field-line"><span class="val">Rahimov</span></div></div>
+            <div class="field"><label>Otasining ismi</label><div class="field-line"><span class="val ph">Ixtiyoriy</span></div></div>
+            <div class="field"><label>Telefon</label><div class="field-line"><span class="prefix">+998</span><span class="val">91 555 44 33</span></div></div>
+            <div class="field"><label>Qora roʻyxat</label><div class="field-line"><span class="val" style="color:#FCA5A5">Yoqilgan</span></div></div>
+          </div>
+        </div>
+        <button type="button" class="float-save">Saqlash<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

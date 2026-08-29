@@ -74,7 +74,7 @@ export function OrganizationCustomerDialog({
         defaultValues={
           editItem
             ? { ...editItem }
-            : { type: "CLIENT", isBlacklisted: false }
+            : { isClient: true, isSupplier: false, isBlacklisted: false }
         }
         onSubmit={handleSubmit}
         // Можно добавить индикатор загрузки из мутаций

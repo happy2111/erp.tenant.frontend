@@ -93,26 +93,19 @@ export default function ConvertCustomerToUserPage({ id }: { id: string }) {
     );
   }
   const handleSave = () => {
-    if (!formData.password) {
-      toast.error("Пароль обязательны для создания пользователя");
-      return;
-    }
-
     // Формируем профиль БЕЗ firstName и lastName
     const profileData = {
       ...formData.profile,
-      // Явно удаляем запрещённые поля (на всякий случай)
       firstName: undefined,
       lastName: undefined,
       patronymic: undefined,
-      // можно также patronymic: undefined, если бэкенд тоже его не хочет
     };
 
     const dto: ConvertCustomerToUserDto = {
       customerId: id,
       user: {
-        email: formData.email,
-        password: formData.password,
+        email: formData.email || undefined,
+        password: formData.password || undefined,
         isActive: formData.isActive ?? true,
         profile: profileData,
       },
@@ -174,7 +167,7 @@ export default function ConvertCustomerToUserPage({ id }: { id: string }) {
             onChange={(val) =>
               setFormData((prev) => ({ ...prev, ...val }))
             }
-            // initialData не передаём → пользователь создаётся новый
+            emailSeed={customer.firstName}
           />
 
           <CreatePhonesSection
@@ -192,7 +185,7 @@ export default function ConvertCustomerToUserPage({ id }: { id: string }) {
             initialData={{
               profile: {
                 firstName: customer.firstName,
-                lastName: customer.lastName,
+                lastName: customer.lastName ?? undefined,
                 patronymic: customer.patronymic || undefined,
               },
             }}
@@ -202,9 +195,10 @@ export default function ConvertCustomerToUserPage({ id }: { id: string }) {
 
       {/* Подсказка / предупреждение внизу */}
       <div className="text-xs text-muted-foreground/80 italic bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 mt-8">
-        <strong>Важно:</strong> После конвертации клиент станет полноценным
-        пользователем системы. Email и пароль обязательны. Телефоны можно
-        добавить/изменить.
+        <strong>Eslatma:</strong> Email va parol ixtiyoriy. Passport/profil
+        saqlanishi uchun user yaratiladi — parol bo&apos;lmasa server o&apos;zi
+        generatsiya qiladi. Login kerak bo&apos;lsa email/parolni kiriting yoki
+        generatsiya qiling.
       </div>
     </div>
   );

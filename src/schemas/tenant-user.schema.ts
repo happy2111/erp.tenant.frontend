@@ -5,7 +5,7 @@ export type GenderDto = typeof GenderValues[number];
 
 export const CreateTenantUserProfileSchema = z.object({
   firstName: z.string().min(1, 'Имя обязательно'),
-  lastName: z.string().min(1, 'Фамилия обязательна'),
+  lastName: z.string().optional().nullable(),
   patronymic: z.string().optional().nullable(),
   dateOfBirth: z.string().datetime().optional().nullable(),
   gender: z.enum(GenderValues).optional(),
@@ -138,7 +138,7 @@ export const TenantUserSchema = z.object({
   updatedAt: z.string().datetime().or(z.date()),
   profile: z.object({
     firstName: z.string(),
-    lastName: z.string(),
+    lastName: z.string().nullable().optional(),
     patronymic: z.string().nullable().optional(),
   }).nullable().optional(),
   phone_numbers: z.array(z.object({

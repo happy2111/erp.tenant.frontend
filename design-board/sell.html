@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Board — Sotuv · ApplePark</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #000;
+      --white: #fff;
+      --primary: #2F6BFF;
+      --gray-label: rgba(255,255,255,0.32);
+      --gray-line: rgba(255,255,255,0.10);
+      --gray-muted: rgba(255,255,255,0.42);
+      --gray-placeholder: rgba(255,255,255,0.22);
+      --sys-danger: #EF4444;
+      --sys-success: #22C55E;
+      --sys-warning: #F59E0B;
+      --board: #121214;
+      --dot: rgba(255,255,255,0.055);
+      --panel: #1e1e22;
+      --border: rgba(255,255,255,0.08);
+      --text: #f5f5f5;
+      --muted: #8e8e93;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%; overflow: hidden;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--board); color: var(--text);
+      user-select: none;
+    }
+
+    .topbar {
+      position: fixed; inset: 0 0 auto 0; z-index: 50; height: 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      background: rgba(18,18,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+    .topbar-brand a { color: var(--muted); font-weight: 400; text-decoration: none; }
+    .topbar-brand a:hover { color: #fff; }
+    .topbar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+    .topbar-hint { font-size: 12px; color: var(--muted); }
+    .topbar-hint kbd {
+      display: inline-block; padding: 2px 6px; margin: 0 2px; border-radius: 4px;
+      background: var(--panel); border: 1px solid var(--border); font: 11px Inter, sans-serif;
+    }
+
+    .zoom-bar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 50;
+      display: flex; align-items: center; gap: 4px; padding: 6px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    }
+    .zoom-bar button {
+      height: 32px; min-width: 32px; padding: 0 10px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font: 500 13px Inter, sans-serif; cursor: pointer;
+    }
+    .zoom-bar button:hover { background: rgba(255,255,255,0.08); }
+    .zoom-label { min-width: 52px; text-align: center; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .zoom-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+    .viewport { position: fixed; inset: 48px 0 0 0; overflow: hidden; cursor: grab; touch-action: none; }
+    .viewport.is-panning { cursor: grabbing; }
+    .canvas { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+    .canvas-grid {
+      position: absolute; inset: -5000px; width: 20000px; height: 20000px;
+      background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+      background-size: 24px 24px; pointer-events: none;
+    }
+
+    .section-tag { position: absolute; display: flex; flex-direction: column; gap: 4px; }
+    .section-tag h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.03em; }
+    .section-tag p { font-size: 12px; color: var(--muted); max-width: 58ch; line-height: 1.4; }
+    .artboard { position: absolute; display: flex; flex-direction: column; gap: 10px; }
+    .artboard-meta { display: flex; align-items: baseline; gap: 8px; padding-left: 2px; }
+    .artboard-name { font-size: 12px; font-weight: 600; color: #8b8c90; }
+    .artboard-size { font-size: 11px; color: rgba(139,140,144,0.65); }
+
+    .device {
+      position: relative; background: #111; border-radius: 44px; padding: 11px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 28px 80px rgba(0,0,0,0.55);
+    }
+    .device-screen {
+      position: relative; overflow: hidden; border-radius: 34px;
+      background: var(--black); width: 393px; height: 852px;
+    }
+    .island {
+      position: absolute; top: 11px; left: 50%; transform: translateX(-50%); z-index: 40;
+      width: 118px; height: 34px; background: #000; border-radius: 20px;
+    }
+    .home-ind {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 50;
+      width: 120px; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.28);
+    }
+
+    .screen {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      background: #000; color: #fff;
+      cursor: default; user-select: text; overflow: hidden;
+    }
+    .body {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      padding: 54px 20px 12px;
+      overflow: hidden;
+    }
+    .scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    .status {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; font-weight: 600; margin-bottom: 6px;
+    }
+    .status .batt {
+      width: 22px; height: 11px; border: 1.5px solid rgba(255,255,255,0.7); border-radius: 2.5px; position: relative;
+    }
+    .status .batt::after {
+      content: ""; position: absolute; inset: 2px 2px 2px auto; width: 55%;
+      background: rgba(255,255,255,0.9); border-radius: 1px;
+    }
+    .back {
+      width: 40px; height: 40px; margin: 2px 0 0; padding: 0;
+      display: grid; place-items: center;
+      background: none; border: none; color: #fff; cursor: pointer;
+    }
+    .back svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .top-space { height: 22px; flex-shrink: 0; }
+    .hero { font-size: 32px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; margin-bottom: 6px; }
+    .hero.sm { font-size: 26px; }
+    .hint { font-size: 13px; color: var(--gray-muted); margin-bottom: 18px; line-height: 1.4; }
+
+    /* NEW bottom bar — floating capsule, text only */
+    .dock {
+      flex-shrink: 0;
+      margin: 0 14px 22px;
+      padding: 14px 18px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+      backdrop-filter: blur(16px);
+    }
+    .dock-btn {
+      background: none; border: none; cursor: pointer; padding: 6px 2px;
+      font: 700 15px Inter, sans-serif; letter-spacing: -0.02em;
+      color: #fff;
+    }
+    .dock-btn.primary { color: var(--primary); }
+    .dock-btn.muted { color: var(--gray-muted); font-weight: 600; }
+    .dock-btn.danger { color: var(--sys-danger); }
+
+    .greet { font-size: 14px; color: var(--gray-muted); margin-bottom: 4px; }
+    .nav-list { display: flex; flex-direction: column; }
+    .nav-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 20px 0; border-bottom: 1px solid var(--gray-line); cursor: pointer;
+    }
+    .nav-row:last-child { border-bottom: none; }
+    .nav-ico {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: rgba(255,255,255,0.07); border: 1px solid var(--gray-line);
+      display: grid; place-items: center; color: #fff; flex-shrink: 0;
+    }
+    .nav-ico svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-title { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; }
+    .nav-sub { font-size: 12px; color: var(--gray-label); margin-top: 3px; }
+    .nav-chev { margin-left: auto; color: var(--gray-muted); }
+    .nav-chev svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-row.is-soon { opacity: 0.4; }
+    .nav-row.is-soon .nav-title::after { content: " tez orada"; font-size: 11px; font-weight: 600; color: var(--gray-muted); }
+
+    .search {
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--gray-line); margin-bottom: 12px;
+    }
+    .search svg { width: 18px; height: 18px; stroke: var(--gray-muted); fill: none; stroke-width: 1.8; flex-shrink: 0; }
+    .search input {
+      flex: 1; border: none; background: transparent; outline: none;
+      font: 500 15px Inter, sans-serif; color: #fff;
+    }
+    .search input::placeholder { color: var(--gray-placeholder); }
+
+    .chips { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex-shrink: 0; height: 30px; padding: 0 12px; border-radius: 999px;
+      border: 1px solid var(--gray-line); background: transparent;
+      color: var(--gray-muted); font: 600 12px Inter, sans-serif; cursor: pointer;
+    }
+    .chip.active { background: #fff; color: #000; border-color: #fff; }
+
+    .sale-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 4px 12px;
+      padding: 14px 0; border-bottom: 1px solid var(--gray-line); cursor: pointer;
+    }
+    .sale-id { font-size: 15px; font-weight: 700; }
+    .sale-meta { font-size: 12px; color: var(--gray-label); }
+    .sale-sum { font-size: 14px; font-weight: 700; text-align: right; }
+    .sale-badge {
+      justify-self: end; font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; padding: 3px 7px; border-radius: 6px;
+    }
+    .badge-paid { color: var(--sys-success); background: rgba(34,197,94,0.12); }
+    .badge-pending { color: var(--sys-warning); background: rgba(245,158,11,0.14); }
+    .badge-draft { color: var(--gray-muted); background: rgba(255,255,255,0.06); }
+    .badge-cancel { color: var(--sys-danger); background: rgba(239,68,68,0.12); }
+
+    .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .toolbar .search { flex: 1; margin-bottom: 0; }
+    .view-toggle {
+      display: flex; gap: 2px; padding: 3px; border-radius: 11px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--gray-line); flex-shrink: 0;
+    }
+    .view-toggle button {
+      width: 32px; height: 30px; border: none; border-radius: 8px;
+      background: transparent; color: var(--gray-muted);
+      display: grid; place-items: center; cursor: pointer; padding: 0;
+    }
+    .view-toggle button.active { background: #fff; color: #000; }
+    .view-toggle svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .tabs { display: flex; gap: 14px; margin-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
+    .tabs button {
+      flex-shrink: 0; background: none; border: none; padding: 0 0 8px;
+      font: 600 13px Inter, sans-serif; color: var(--gray-label);
+      border-bottom: 2px solid transparent; cursor: pointer;
+    }
+    .tabs button.active { color: #fff; border-bottom-color: var(--primary); }
+
+    .pos-list, .pos-grid { display: none; }
+    .pos-list.is-on { display: block; }
+    .pos-grid.is-on { display: grid; gap: 10px; }
+    .pos-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .pos-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+    .pos-product {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--gray-line); cursor: pointer;
+    }
+    .pos-thumb {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: rgba(255,255,255,0.07); border: 1px solid var(--gray-line); flex-shrink: 0;
+    }
+    .pos-name { font-size: 14px; font-weight: 600; }
+    .pos-sku { font-size: 11px; color: var(--gray-label); margin-top: 2px; }
+    .pos-price { margin-left: auto; font-size: 13px; font-weight: 700; }
+    .stock {
+      display: inline-block; margin-top: 4px; font-size: 10px; font-weight: 700;
+      color: var(--sys-success); background: rgba(34,197,94,0.12);
+      padding: 2px 6px; border-radius: 4px;
+    }
+
+    .grid-card {
+      border: 1px solid var(--gray-line); border-radius: 14px;
+      background: rgba(255,255,255,0.03); padding: 8px; cursor: pointer;
+      display: flex; flex-direction: column; gap: 6px; min-height: 150px;
+    }
+    .cols-3 .grid-card { min-height: 132px; padding: 6px; border-radius: 12px; }
+    .grid-card .thumb {
+      height: 78px; border-radius: 10px;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--gray-line);
+    }
+    .cols-3 .grid-card .thumb { height: 56px; }
+    .grid-card .name { font-size: 12px; font-weight: 700; line-height: 1.25; letter-spacing: -0.02em; }
+    .cols-3 .grid-card .name { font-size: 11px; }
+    .grid-card .sku { font-size: 9px; color: var(--gray-label); }
+    .grid-card .price { margin-top: auto; font-size: 12px; font-weight: 800; }
+    .cols-3 .grid-card .price { font-size: 11px; }
+
+    .setup-row {
+      display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; scrollbar-width: none;
+    }
+    .setup-pill {
+      flex-shrink: 0; height: 34px; padding: 0 12px; border-radius: 999px;
+      border: 1px solid var(--gray-line); background: rgba(255,255,255,0.04);
+      color: var(--gray-muted); font: 600 12px Inter, sans-serif;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .setup-pill strong { color: #fff; font-weight: 700; }
+
+    /* Sheet overlay (AddToCart / Filter) */
+    .sheet-wrap { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
+    .sheet-wrap .dim {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.55);
+    }
+    .sheet {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      max-height: 78%;
+      background: #0c0c0e;
+      border-radius: 24px 24px 0 0;
+      border-top: 1px solid var(--gray-line);
+      padding: 12px 20px 28px;
+      display: flex; flex-direction: column;
+      pointer-events: auto;
+    }
+    .sheet-handle {
+      width: 36px; height: 4px; border-radius: 4px;
+      background: rgba(255,255,255,0.18); margin: 0 auto 14px;
+    }
+    .sheet-title { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
+    .sheet-sub { font-size: 12px; color: var(--gray-muted); margin-bottom: 16px; }
+    .sheet-scroll { flex: 1; overflow-y: auto; scrollbar-width: none; min-height: 0; }
+    .sheet-scroll::-webkit-scrollbar { display: none; }
+    .sheet-actions {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 14px; margin-top: 8px; border-top: 1px solid var(--gray-line);
+    }
+
+    .block-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--gray-label); margin: 14px 0 8px;
+    }
+    .opt-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+    .opt {
+      height: 36px; padding: 0 12px; border-radius: 10px;
+      border: 1px solid var(--gray-line); background: transparent;
+      color: var(--gray-muted); font: 600 12px Inter, sans-serif; cursor: pointer;
+    }
+    .opt.active { background: #fff; color: #000; border-color: #fff; }
+    .opt.disabled { opacity: 0.35; pointer-events: none; }
+
+    .qty-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px solid var(--gray-line);
+    }
+    .qty-ctrl { display: inline-flex; align-items: center; gap: 12px; }
+    .qty-ctrl button {
+      width: 32px; height: 32px; border-radius: 10px;
+      border: 1px solid var(--gray-line); background: transparent; color: #fff;
+      font-size: 18px; cursor: pointer;
+    }
+    .price-input {
+      width: 100%; border: none; background: transparent; outline: none;
+      font: 700 22px Inter, sans-serif; color: #fff; padding: 8px 0 12px;
+      border-bottom: 1px solid var(--gray-line);
+    }
+    .pay-box {
+      margin-top: 14px; padding: 14px; border-radius: 14px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--gray-line);
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .pay-box span { font-size: 12px; color: var(--gray-muted); }
+    .pay-box strong { font-size: 20px; font-weight: 800; }
+
+    .item-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 2px 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--gray-line);
+    }
+    .item-name { font-size: 14px; font-weight: 600; }
+    .item-qty { font-size: 12px; color: var(--gray-label); }
+    .item-price { font-size: 14px; font-weight: 700; }
+    .total-box { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--gray-line); }
+    .total-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--gray-muted); }
+    .total-row.strong { font-size: 18px; font-weight: 800; color: #fff; margin-top: 6px; }
+
+    .pay-modes { display: flex; gap: 8px; margin-bottom: 16px; }
+    .pay-modes button {
+      flex: 1; height: 42px; border-radius: 12px;
+      border: 1px solid var(--gray-line); background: transparent;
+      color: var(--gray-muted); font: 600 12px Inter, sans-serif; cursor: pointer;
+    }
+    .pay-modes button.active { background: #fff; color: #000; border-color: #fff; }
+
+    .filter-group { margin-bottom: 16px; }
+    .filter-group h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .check {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; font-size: 13px; color: var(--gray-muted); cursor: pointer;
+    }
+    .check i {
+      width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--gray-line);
+      display: grid; place-items: center; font-style: normal; font-size: 11px; color: #000;
+    }
+    .check.on i { background: #fff; border-color: #fff; }
+    .check.on i::after { content: "✓"; }
+
+    .spacer { flex: 1; }
+    .note {
+      font-size: 11px; color: var(--muted); max-width: 260px; line-height: 1.45;
+      padding: 12px; border-radius: 12px;
+      background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.12);
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-dot"></div>
+      ApplePark Design Board
+      <a href="./index.html">/ Auth</a>
+      <a href="./home-variants.html">/ Asosiy variants</a>
+      <span style="color:var(--muted);font-weight:400">/ Sotuv</span>
+    </div>
+    <div class="topbar-hint"><kbd>Drag</kbd> pan · <kbd>Scroll</kbd> zoom · <kbd>0</kbd> fit</div>
+  </header>
+
+  <div class="viewport" id="viewport">
+    <div class="canvas" id="canvas">
+      <div class="canvas-grid"></div>
+
+      <div class="section-tag" style="left:60px;top:40px">
+        <h1>Sotuv · flat dark</h1>
+        <p>Yangi bottom bar (floating capsule). Yangi sotuv: List / 2× / 3×. Tovar bosilganda — AddToCart sheet (seriya, narx turi, miqdor).</p>
+      </div>
+
+      <!-- 01 Home -->
+      <div class="artboard" style="left:60px;top:120px">
+        <div class="artboard-meta"><span class="artboard-name">01 · Asosiy</span></div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="body">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <div class="top-space"></div>
+              <div class="greet">Assalomu alaykum</div>
+              <div class="hero">ApplePark</div>
+              <p class="hint">Sotuv va xaridlar</p>
+              <div class="nav-list">
+                <div class="nav-row">
+                  <div class="nav-ico"><svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg></div>
+                  <div><div class="nav-title">Sotuv</div><div class="nav-sub">Cheklar, POS, to‘lovlar</div></div>
+                  <div class="nav-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+                </div>
+                <div class="nav-row is-soon">
+                  <div class="nav-ico"><svg viewBox="0 0 24 24"><path d="M21 8H3v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M3 8 5.5 3h13L21 8"/></svg></div>
+                  <div><div class="nav-title">Xarid</div><div class="nav-sub">Yetkazib beruvchilar, partiyalar</div></div>
+                  <div class="nav-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+                </div>
+              </div>
+              <div class="spacer"></div>
+            </div>
+            <div class="dock">
+              <button type="button" class="dock-btn primary">Sotuv</button>
+              <button type="button" class="dock-btn muted">Xarid</button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- 02 List -->
+      <div class="artboard" style="left:520px;top:120px">
+        <div class="artboard-meta"><span class="artboard-name">02 · Sotuvlar</span></div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="body">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="top-space"></div>
+              <div class="hero sm">Sotuvlar</div>
+              <p class="hint">Barcha cheklar</p>
+              <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg><input placeholder="Chek, mijoz, summa..." /></div>
+              <div class="chips">
+                <button type="button" class="chip active">Hammasi</button>
+                <button type="button" class="chip">To‘langan</button>
+                <button type="button" class="chip">Kutuvda</button>
+                <button type="button" class="chip">Qoralama</button>
+              </div>
+              <div class="scroll">
+                <div class="sale-row"><div class="sale-id">Chek #1042</div><span class="sale-badge badge-paid">To‘langan</span><div class="sale-meta">Chakana · Kassa 1</div><div class="sale-sum">2 450 000</div></div>
+                <div class="sale-row"><div class="sale-id">Chek #1041</div><span class="sale-badge badge-pending">Kutuvda</span><div class="sale-meta">Aliyev A. · Kassa 2</div><div class="sale-sum">8 900 000</div></div>
+                <div class="sale-row"><div class="sale-id">Chek #1040</div><span class="sale-badge badge-draft">Qoralama</span><div class="sale-meta">Karimova N.</div><div class="sale-sum">1 200 000</div></div>
+              </div>
+            </div>
+            <div class="dock">
+              <button type="button" class="dock-btn muted">Filtr</button>
+              <button type="button" class="dock-btn primary">Yangi sotuv</button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <div class="section-tag" style="left:60px;top:1120px">
+        <h1>POS · katalog + tovar bosilganda</h1>
+        <p>Setup chips → tablar → List/2×/3× → AddToCart (seriya, narx turi, miqdor, narx) → Savat → To‘lov</p>
+      </div>
+
+      <!-- 03 POS catalog with 3 views -->
+      <div class="artboard" style="left:60px;top:1200px">
+        <div class="artboard-meta">
+          <span class="artboard-name">03 · Yangi sotuv</span>
+          <span class="artboard-size" data-view-label>List</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen" data-pos-view>
+            <div class="body">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="top-space" style="height:14px"></div>
+              <div class="hero sm">Yangi sotuv</div>
+              <div class="setup-row">
+                <span class="setup-pill">Mijoz · <strong>Chakana</strong></span>
+                <span class="setup-pill">Valyuta · <strong>UZS</strong></span>
+                <span class="setup-pill">Kassa · <strong>1</strong></span>
+              </div>
+              <div class="tabs">
+                <button type="button" class="active">Variantlar</button>
+                <button type="button">Kategoriya</button>
+                <button type="button">Mahsulotlar</button>
+                <button type="button">Namunalar</button>
+              </div>
+              <div class="toolbar">
+                <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg><input placeholder="Mahsulot qidirish..." /></div>
+                <div class="view-toggle" data-view-toggle>
+                  <button type="button" class="active" data-view="list" title="List"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+                  <button type="button" data-view="grid2" title="2×"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg></button>
+                  <button type="button" data-view="grid3" title="3×"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="5.5" height="5.5" rx="1"/><rect x="9.25" y="2" width="5.5" height="5.5" rx="1"/><rect x="16.5" y="2" width="5.5" height="5.5" rx="1"/><rect x="2" y="9.25" width="5.5" height="5.5" rx="1"/><rect x="9.25" y="9.25" width="5.5" height="5.5" rx="1"/><rect x="16.5" y="9.25" width="5.5" height="5.5" rx="1"/><rect x="2" y="16.5" width="5.5" height="5.5" rx="1"/><rect x="9.25" y="16.5" width="5.5" height="5.5" rx="1"/><rect x="16.5" y="16.5" width="5.5" height="5.5" rx="1"/></svg></button>
+                </div>
+              </div>
+              <div class="chips">
+                <button type="button" class="chip active">Hammasi</button>
+                <button type="button" class="chip">iPhone</button>
+                <button type="button" class="chip">AirPods</button>
+                <button type="button" class="chip">Watch</button>
+              </div>
+              <div class="scroll">
+                <div class="pos-list is-on" data-view-panel="list">
+                  <div class="pos-product"><div class="pos-thumb"></div><div><div class="pos-name">iPhone 15 Pro 256</div><div class="pos-sku">IP15P-256-TB</div><span class="stock">Omborda: 4</span></div><div class="pos-price">14 500 000</div></div>
+                  <div class="pos-product"><div class="pos-thumb"></div><div><div class="pos-name">AirPods Pro 2</div><div class="pos-sku">APP2-USB</div><span class="stock">Omborda: 12</span></div><div class="pos-price">3 200 000</div></div>
+                  <div class="pos-product"><div class="pos-thumb"></div><div><div class="pos-name">MagSafe Case</div><div class="pos-sku">CASE-MS-BK</div><span class="stock">Omborda: 30</span></div><div class="pos-price">450 000</div></div>
+                  <div class="pos-product"><div class="pos-thumb"></div><div><div class="pos-name">Apple Watch SE</div><div class="pos-sku">AWSE-40-AL</div><span class="stock">Omborda: 7</span></div><div class="pos-price">3 800 000</div></div>
+                </div>
+                <div class="pos-grid cols-2" data-view-panel="grid2">
+                  <div class="grid-card"><div class="thumb"></div><div class="name">iPhone 15 Pro 256</div><div class="sku">IP15P-256</div><div class="price">14 500 000</div></div>
+                  <div class="grid-card"><div class="thumb"></div><div class="name">AirPods Pro 2</div><div class="sku">APP2-USB</div><div class="price">3 200 000</div></div>
+                  <div class="grid-card"><div class="thumb"></div><div class="name">MagSafe Case</div><div class="sku">CASE-MS</div><div class="price">450 000</div></div>
+                  <div class="grid-card"><div class="thumb"></div><div class="name">Apple Watch SE</div><div class="sku">AWSE-40</div><div class="price">3 800 000</div></div>
+                </div>
+                <div class="pos-grid cols-3" data-view-panel="grid3">
+                  <div class="grid-card"><div class="thumb"></div><div class="name">iPhone 15 Pro</div><div class="sku">256</div><div class="price">14.5M</div></div>
+                  <div class="grid-card"><div class="thumb"></div><div class="name">AirPods Pro</div><div class="sku">2</div><div class="price">3.2M</div></div>
+                  <div class="grid-card"><div class="thumb"></div><div class="name">MagSafe</div><div class="sku">Case</div><div class="price">450K</div></div>
+                  <div class="grid-card"><div class="thumb"></div><div class="name">Watch SE</div><div class="sku">40</div><div class="price">3.8M</div></div>
+                  <div class="grid-card"><div class="thumb"></div><div class="name">iPhone 15</div><div class="sku">128</div><div class="price">11.2M</div></div>
+                  <div class="grid-card"><div class="thumb"></div><div class="name">Cable USB-C</div><div class="sku">1m</div><div class="price">280K</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="dock">
+              <button type="button" class="dock-btn muted">Filtrlar</button>
+              <button type="button" class="dock-btn primary">Savat · 0</button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- 04 Add to cart sheet -->
+      <div class="artboard" style="left:520px;top:1200px">
+        <div class="artboard-meta">
+          <span class="artboard-name">04 · Tovar bosilganda</span>
+          <span class="artboard-size">AddToCart sheet</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="body" style="opacity:0.35;pointer-events:none">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <div class="hero sm" style="margin-top:40px">Yangi sotuv</div>
+              <p class="hint">Katalog orqada</p>
+            </div>
+            <div class="sheet-wrap">
+              <div class="dim"></div>
+              <div class="sheet">
+                <div class="sheet-handle"></div>
+                <div class="sheet-title">iPhone 15 Pro 256</div>
+                <div class="sheet-sub">SKU · IP15P-256-TB · Omborda: 4</div>
+                <div class="sheet-scroll">
+                  <div class="block-label">Seriya raqamini tanlang</div>
+                  <div class="opt-row">
+                    <button type="button" class="opt active">SN · 3591…A2</button>
+                    <button type="button" class="opt">SN · 3591…B7</button>
+                    <button type="button" class="opt">SN · 3591…C1</button>
+                  </div>
+                  <div class="block-label">Narx turi</div>
+                  <div class="opt-row">
+                    <button type="button" class="opt">Standart</button>
+                    <button type="button" class="opt active">Naqd</button>
+                    <button type="button" class="opt">Bo‘lib</button>
+                    <button type="button" class="opt">Optom</button>
+                    <button type="button" class="opt disabled">Onlayn</button>
+                  </div>
+                  <div class="block-label">Miqdori</div>
+                  <div class="qty-row">
+                    <span style="font-size:13px;color:var(--gray-muted)">Namuna tanlanganda = 1</span>
+                    <div class="qty-ctrl"><button type="button">−</button><span style="font-weight:700">1</span><button type="button">+</button></div>
+                  </div>
+                  <div class="block-label">Bir dona narxi</div>
+                  <input class="price-input" value="14 500 000" />
+                  <div class="pay-box"><span>To‘lov · NARX RO‘YXATI</span><strong>14 500 000</strong></div>
+                </div>
+                <div class="sheet-actions">
+                  <button type="button" class="dock-btn muted">Yopish</button>
+                  <button type="button" class="dock-btn primary">Savatga qo‘shish</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- 05 Filter sheet -->
+      <div class="artboard" style="left:980px;top:1200px">
+        <div class="artboard-meta">
+          <span class="artboard-name">05 · Filtrlar</span>
+          <span class="artboard-size">PosFilter sheet</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="body" style="opacity:0.3;pointer-events:none">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <div class="hero sm" style="margin-top:40px">Yangi sotuv</div>
+            </div>
+            <div class="sheet-wrap">
+              <div class="dim"></div>
+              <div class="sheet">
+                <div class="sheet-handle"></div>
+                <div class="sheet-title">Filtrlar</div>
+                <div class="sheet-sub">Atributlar bo‘yicha</div>
+                <div class="sheet-scroll">
+                  <div class="filter-group">
+                    <h4>Rang</h4>
+                    <div class="check on"><i></i> Titan Black</div>
+                    <div class="check"><i></i> Titan Blue</div>
+                    <div class="check"><i></i> Titan Natural</div>
+                  </div>
+                  <div class="filter-group">
+                    <h4>Xotira</h4>
+                    <div class="check"><i></i> 128 GB</div>
+                    <div class="check on"><i></i> 256 GB</div>
+                    <div class="check"><i></i> 512 GB</div>
+                  </div>
+                </div>
+                <div class="sheet-actions">
+                  <button type="button" class="dock-btn muted">Tozalash</button>
+                  <button type="button" class="dock-btn primary">Natijani ko‘rsatish · 12</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- 06 Cart -->
+      <div class="artboard" style="left:1440px;top:1200px">
+        <div class="artboard-meta"><span class="artboard-name">06 · Savat</span></div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="body">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="top-space"></div>
+              <div class="hero sm">Savat</div>
+              <p class="hint">2 dona</p>
+              <div class="scroll">
+                <div class="item-row">
+                  <div>
+                    <div class="item-name">iPhone 15 Pro 256</div>
+                    <div class="item-qty">SN · 3591…A2 · Naqd</div>
+                    <div class="qty-ctrl" style="margin-top:8px"><button type="button">−</button><span style="font-weight:700">1</span><button type="button">+</button></div>
+                  </div>
+                  <div class="item-price">14 500 000</div>
+                </div>
+                <div class="item-row">
+                  <div>
+                    <div class="item-name">MagSafe Case</div>
+                    <div class="item-qty">Standart</div>
+                    <div class="qty-ctrl" style="margin-top:8px"><button type="button">−</button><span style="font-weight:700">1</span><button type="button">+</button></div>
+                  </div>
+                  <div class="item-price">450 000</div>
+                </div>
+                <div class="total-box">
+                  <div class="total-row"><span>Jami</span><span>14 950 000</span></div>
+                  <div class="total-row strong"><span>To‘lov</span><span>14 950 000 so‘m</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="dock">
+              <button type="button" class="dock-btn muted">Mijoz</button>
+              <button type="button" class="dock-btn primary">Yakunlash</button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- 07 Pay -->
+      <div class="artboard" style="left:1900px;top:1200px">
+        <div class="artboard-meta"><span class="artboard-name">07 · To‘lov</span><span class="artboard-size">Naqd/Karta | Bo‘lib</span></div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="body">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="top-space"></div>
+              <div class="hero sm">To‘lov</div>
+              <p class="hint">14 950 000 so‘m</p>
+              <div class="pay-modes">
+                <button type="button" class="active">Naqd/Karta</button>
+                <button type="button">Bo‘lib to‘lash</button>
+              </div>
+              <div class="block-label">Kassa</div>
+              <div class="setup-pill" style="margin-bottom:14px">Kassa 1 — <strong>naqd</strong></div>
+              <div class="block-label">Izoh</div>
+              <div class="search" style="margin-bottom:18px"><input placeholder="Izoh..." /></div>
+              <div class="block-label">Bo‘lib (namuna)</div>
+              <div class="opt-row">
+                <button type="button" class="opt">3 oy</button>
+                <button type="button" class="opt active">6 oy</button>
+                <button type="button" class="opt">12 oy</button>
+              </div>
+              <div class="qty-row" style="margin-top:8px">
+                <span style="font-size:13px;color:var(--gray-muted)">Boshlang‘ich to‘lov</span>
+                <strong>2 000 000</strong>
+              </div>
+              <div class="qty-row">
+                <span style="font-size:13px;color:var(--gray-muted)">Oylik to‘lov</span>
+                <strong>2 158 333</strong>
+              </div>
+              <div class="spacer"></div>
+            </div>
+            <div class="dock">
+              <button type="button" class="dock-btn muted">Orqaga</button>
+              <button type="button" class="dock-btn primary">To‘lash</button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- note -->
+      <div class="artboard" style="left:2360px;top:1200px">
+        <div class="artboard-meta"><span class="artboard-name">Flow (koddan)</span></div>
+        <div class="note">
+          1) Setup: mijoz, valyuta, kassa<br>
+          2) Katalog tablar<br>
+          3) Tovar → AddToCart:<br>
+          &nbsp;&nbsp;seriya · narx turi · miqdor · narx<br>
+          4) Savat ± / o‘chirish<br>
+          5) Naqd/Karta yoki Bo‘lib<br>
+          6) Yakunlash → PAID<br><br>
+          View: List · Grid 2× · Grid 3×
+        </div>
+      </div>
+
+      <!-- 08 Detail paid -->
+      <div class="artboard" style="left:60px;top:2280px">
+        <div class="artboard-meta"><span class="artboard-name">08 · Chek tafsiloti</span></div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="body">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="top-space"></div>
+              <div class="hero sm">Chek #1042</div>
+              <p class="hint"><span class="sale-badge badge-paid">To‘langan</span></p>
+              <div class="scroll">
+                <div class="item-row"><div><div class="item-name">AirPods Pro 2</div><div class="item-qty">1 × 2 000 000</div></div><div class="item-price">2 000 000</div></div>
+                <div class="item-row"><div><div class="item-name">MagSafe Case</div><div class="item-qty">1 × 450 000</div></div><div class="item-price">450 000</div></div>
+                <div class="total-box">
+                  <div class="total-row"><span>Jami</span><span>2 450 000</span></div>
+                  <div class="total-row strong"><span>Qoldiq</span><span>0</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="dock">
+              <button type="button" class="dock-btn muted">Chop etish</button>
+              <button type="button" class="dock-btn primary">Yopish</button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <div class="artboard" style="left:520px;top:2280px">
+        <div class="artboard-meta"><span class="artboard-name">09 · Chek · kutuvda</span></div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="body">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="top-space"></div>
+              <div class="hero sm">Chek #1041</div>
+              <p class="hint"><span class="sale-badge badge-pending">Kutuvda</span> · Aliyev A.</p>
+              <div class="scroll">
+                <div class="item-row"><div><div class="item-name">iPhone 15 128</div><div class="item-qty">1 × 8 900 000</div></div><div class="item-price">8 900 000</div></div>
+                <div class="total-box">
+                  <div class="total-row"><span>To‘langan</span><span>0</span></div>
+                  <div class="total-row strong"><span>Qoldiq</span><span>8 900 000</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="dock">
+              <button type="button" class="dock-btn danger">Bekor</button>
+              <button type="button" class="dock-btn primary">Chekni to‘lash</button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="zoom-bar">
+    <button type="button" id="zoomOut">−</button>
+    <div class="zoom-label" id="zoomLabel">100%</div>
+    <button type="button" id="zoomIn">+</button>
+    <div class="zoom-sep"></div>
+    <button type="button" id="zoomFit">Fit</button>
+    <button type="button" id="zoom100">100%</button>
+  </div>
+
+  <script>
+    (function () {
+      const viewport = document.getElementById("viewport");
+      const canvas = document.getElementById("canvas");
+      const zoomLabel = document.getElementById("zoomLabel");
+      let scale = 0.48, x = 20, y = 8, panning = false, spaceDown = false, lastX = 0, lastY = 0;
+
+      function apply() {
+        canvas.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        zoomLabel.textContent = Math.round(scale * 100) + "%";
+      }
+      function zoomAt(cx, cy, next) {
+        const rect = viewport.getBoundingClientRect();
+        const mx = cx - rect.left, my = cy - rect.top;
+        const wx = (mx - x) / scale, wy = (my - y) / scale;
+        scale = Math.min(2.5, Math.max(0.18, next));
+        x = mx - wx * scale; y = my - wy * scale; apply();
+      }
+      function fit() {
+        const rect = viewport.getBoundingClientRect();
+        const w = 2700, h = 3300, pad = 36;
+        scale = Math.max(0.18, Math.min((rect.width - pad * 2) / w, (rect.height - pad * 2) / h, 1));
+        x = (rect.width - w * scale) / 2; y = 10; apply();
+      }
+
+      viewport.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        zoomAt(e.clientX, e.clientY, scale * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+      }, { passive: false });
+      viewport.addEventListener("pointerdown", (e) => {
+        if (e.button !== 0 && e.button !== 1) return;
+        if (e.target.closest(".screen, .zoom-bar, .topbar") && !spaceDown && e.button !== 1) return;
+        panning = true; viewport.classList.add("is-panning");
+        lastX = e.clientX; lastY = e.clientY;
+        viewport.setPointerCapture(e.pointerId);
+      });
+      viewport.addEventListener("pointermove", (e) => {
+        if (!panning) return;
+        x += e.clientX - lastX; y += e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY; apply();
+      });
+      function endPan(e) {
+        if (!panning) return; panning = false; viewport.classList.remove("is-panning");
+        try { viewport.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+      viewport.addEventListener("pointerup", endPan);
+      viewport.addEventListener("pointercancel", endPan);
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space" && !e.repeat) { spaceDown = true; e.preventDefault(); }
+        if (e.key === "0" && !e.metaKey && !e.ctrlKey) fit();
+      });
+      window.addEventListener("keyup", (e) => { if (e.code === "Space") spaceDown = false; });
+
+      document.getElementById("zoomIn").onclick = () => zoomAt(innerWidth / 2, innerHeight / 2, scale * 1.15);
+      document.getElementById("zoomOut").onclick = () => zoomAt(innerWidth / 2, innerHeight / 2, scale / 1.15);
+      document.getElementById("zoomFit").onclick = fit;
+      document.getElementById("zoom100").onclick = () => {
+        const r = viewport.getBoundingClientRect();
+        zoomAt(r.left + r.width / 2, r.top + r.height / 2, 1);
+      };
+
+      document.querySelectorAll(".chips, .opt-row, .pay-modes, .tabs").forEach((wrap) => {
+        wrap.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (btn.classList.contains("disabled")) return;
+            wrap.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+          });
+        });
+      });
+
+      document.querySelectorAll("[data-pos-view]").forEach((root) => {
+        const toggle = root.querySelector("[data-view-toggle]");
+        const label = root.closest(".artboard")?.querySelector("[data-view-label]");
+        const names = { list: "List", grid2: "Grid 2×", grid3: "Grid 3×" };
+        toggle?.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            toggle.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            const view = btn.dataset.view;
+            root.querySelectorAll("[data-view-panel]").forEach((panel) => {
+              panel.classList.toggle("is-on", panel.dataset.viewPanel === view);
+            });
+            if (label) label.textContent = names[view] || view;
+          });
+        });
+      });
+
+      document.querySelectorAll(".check").forEach((el) => {
+        el.addEventListener("click", () => el.classList.toggle("on"));
+      });
+
+      fit();
+    })();
+  </script>
+</body>
+</html>

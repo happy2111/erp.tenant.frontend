@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Board — Auth Flow B · ApplePark</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #000000;
+      --white: #ffffff;
+      --primary: #2F6BFF;
+
+      /* soft neutrals on black — lines not bright */
+      --gray-label: rgba(255, 255, 255, 0.32);
+      --gray-line: rgba(255, 255, 255, 0.10);
+      --gray-muted: rgba(255, 255, 255, 0.40);
+      --gray-placeholder: rgba(255, 255, 255, 0.22);
+
+      --sys-danger: #EF4444;
+      --sys-success: #22C55E;
+      --sys-warning: #F59E0B;
+
+      --board: #121214;
+      --dot: rgba(255,255,255,0.055);
+      --panel: #1e1e22;
+      --border: rgba(255,255,255,0.08);
+      --text: #f5f5f5;
+      --muted: #8e8e93;
+
+      --rim: 5px;            /* white edge around black card */
+      --card-radius: 36px;
+      --dock-h-pad: 28px;
+
+      /* motion */
+      --motion-fast: 180ms;
+      --motion-base: 420ms;
+      --motion-slow: 700ms;
+      --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%; overflow: hidden;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--board); color: var(--text);
+      user-select: none;
+    }
+
+    .topbar {
+      position: fixed; inset: 0 0 auto 0; z-index: 50; height: 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      background: rgba(18,18,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+    .topbar-brand span { color: var(--muted); font-weight: 400; }
+    .topbar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+    .topbar-hint { font-size: 12px; color: var(--muted); }
+    .topbar-hint kbd {
+      display: inline-block; padding: 2px 6px; margin: 0 2px; border-radius: 4px;
+      background: var(--panel); border: 1px solid var(--border); font: 11px Inter, sans-serif;
+    }
+
+    .zoom-bar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 50;
+      display: flex; align-items: center; gap: 4px; padding: 6px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    }
+    .zoom-bar button {
+      height: 32px; min-width: 32px; padding: 0 10px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font: 500 13px Inter, sans-serif; cursor: pointer;
+    }
+    .zoom-bar button:hover { background: rgba(255,255,255,0.08); }
+    .zoom-label { min-width: 52px; text-align: center; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .zoom-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+    .viewport { position: fixed; inset: 48px 0 0 0; overflow: hidden; cursor: grab; touch-action: none; }
+    .viewport.is-panning { cursor: grabbing; }
+    .canvas { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+    .canvas-grid {
+      position: absolute; inset: -5000px; width: 20000px; height: 20000px;
+      background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+      background-size: 24px 24px; pointer-events: none;
+    }
+
+    .section-tag { position: absolute; display: flex; flex-direction: column; gap: 4px; }
+    .section-tag h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.03em; }
+    .section-tag p { font-size: 12px; color: var(--muted); max-width: 52ch; line-height: 1.4; }
+
+    .artboard { position: absolute; display: flex; flex-direction: column; gap: 10px; }
+    .artboard-meta { display: flex; align-items: baseline; gap: 8px; padding-left: 2px; }
+    .artboard-name { font-size: 12px; font-weight: 600; color: #8b8c90; }
+    .artboard-size { font-size: 11px; color: rgba(139,140,144,0.65); }
+
+    .device {
+      position: relative; background: #111; border-radius: 44px; padding: 11px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 28px 80px rgba(0,0,0,0.55);
+    }
+    .device-screen {
+      position: relative; overflow: hidden; border-radius: 34px;
+      background: var(--white);
+      width: 393px; height: 852px;
+    }
+    .island {
+      position: absolute; top: 11px; left: 50%; transform: translateX(-50%); z-index: 40;
+      width: 118px; height: 34px; background: var(--black); border-radius: 20px;
+    }
+    .home-ind {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 40;
+      width: 120px; height: 4px; border-radius: 4px; background: rgba(0,0,0,0.22);
+    }
+
+    /* ═══════════════════════════════════════════
+       LAYERED SHELL
+       white page → black card → separate white dock
+       ═══════════════════════════════════════════ */
+    .screen {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      background: var(--white);
+      cursor: default; user-select: text;
+      overflow: hidden;
+      padding: var(--rim) var(--rim) 0;
+      gap: 8px;
+    }
+
+    /* Black content card — separate from dock */
+    .card {
+      flex: 1;
+      min-height: 0;
+      background: var(--black);
+      color: var(--white);
+      border-radius: var(--card-radius);
+      display: flex;
+      flex-direction: column;
+      padding: 54px 28px 36px;
+      overflow: hidden;
+    }
+
+    .status {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .status .batt {
+      width: 22px; height: 11px; border: 1.5px solid rgba(255,255,255,0.7); border-radius: 2.5px; position: relative;
+    }
+    .status .batt::after {
+      content: ""; position: absolute; inset: 2px 2px 2px auto; width: 55%;
+      background: rgba(255,255,255,0.9); border-radius: 1px;
+    }
+
+    .back {
+      width: 40px; height: 40px;
+      margin: 4px 0 0;
+      display: grid; place-items: center;
+      background: none; border: none; color: var(--white); cursor: pointer; padding: 0;
+    }
+    .back svg {
+      width: 22px; height: 22px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Big top breathing room (like reference) */
+    .top-space { height: 56px; flex-shrink: 0; }
+
+    .hero {
+      font-size: 42px; font-weight: 800; letter-spacing: -0.045em;
+      line-height: 1.05; margin-bottom: 14px;
+    }
+    .step-hint {
+      font-size: 14px; color: var(--gray-muted);
+      margin-bottom: 40px; line-height: 1.4;
+    }
+
+    .seg {
+      display: flex; gap: 28px; margin-bottom: 36px;
+    }
+    .seg button {
+      background: none; border: none; padding: 0 0 8px; cursor: pointer;
+      font: 600 15px Inter, sans-serif; color: var(--gray-label);
+      border-bottom: 2px solid transparent;
+    }
+    .seg button.active {
+      color: var(--white);
+      border-bottom-color: var(--primary);
+    }
+
+    .fields { display: flex; flex-direction: column; gap: 32px; }
+    .field label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: var(--gray-label); margin-bottom: 12px;
+    }
+    .field-line {
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--gray-line);
+      padding-bottom: 12px;
+    }
+    .field-line:focus-within { border-bottom-color: rgba(255,255,255,0.28); }
+    .field-line input {
+      flex: 1; min-width: 0; border: none; background: transparent; outline: none;
+      font: 500 17px/1.2 Inter, sans-serif; color: var(--white);
+    }
+    .field-line input::placeholder { color: var(--gray-placeholder); }
+    .field-line .prefix {
+      font: 500 17px Inter, sans-serif; color: var(--gray-muted);
+    }
+    .field-top {
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .field-link {
+      background: none; border: none; padding: 0; cursor: pointer;
+      font: 500 12px Inter, sans-serif; color: var(--gray-muted);
+    }
+    .eye {
+      background: none; border: none; color: var(--gray-muted); cursor: pointer; padding: 0;
+      display: grid; place-items: center;
+    }
+    .eye svg {
+      width: 20px; height: 20px; stroke: currentColor; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .spacer { flex: 1; }
+    .hidden { display: none !important; }
+
+    /* ── Identifier reveal modal (after B1 continue) ── */
+    .card-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      transition: opacity var(--motion-base) var(--motion-ease),
+        transform var(--motion-base) var(--motion-ease);
+    }
+    .screen.is-id-reveal .card-body {
+      opacity: 0.12;
+      transform: scale(0.96) translateY(-14px);
+      pointer-events: none;
+    }
+    .screen.is-id-reveal .fields {
+      visibility: hidden;
+    }
+    .id-modal-layer {
+      position: absolute;
+      inset: 54px 0 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 20px 40px;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .screen.is-id-reveal .id-modal-layer {
+      pointer-events: auto;
+      opacity: 1;
+    }
+    .id-modal {
+      width: 100%;
+      max-width: 100%;
+      background: #1C1C1E;
+      border: 1px solid #2C2C2E;
+      border-radius: 24px;
+      padding: 28px 22px 24px;
+      text-align: center;
+      transform: translateY(28px) scale(0.9);
+      opacity: 0;
+      transition: opacity var(--motion-base) var(--motion-ease-out),
+        transform var(--motion-base) var(--motion-ease-out);
+    }
+    .screen.is-id-reveal .id-modal {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .id-modal-k {
+      font: 600 12px Inter, sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gray-label);
+      margin-bottom: 16px;
+    }
+    .id-modal-v {
+      font: 800 36px/1.1 Inter, sans-serif;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      hyphens: auto;
+      max-width: 100%;
+    }
+    .id-modal-v--phone {
+      font-size: 34px;
+      letter-spacing: -0.01em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      white-space: nowrap;
+      word-break: normal;
+      overflow-wrap: normal;
+    }
+    .id-modal-v--phone .id-dim {
+      color: var(--gray-muted);
+      font-weight: 600;
+      font-size: 1em;
+      letter-spacing: -0.01em;
+    }
+    .id-modal-v.is-long {
+      font-size: 28px;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+    .id-modal-v.is-very-long {
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      text-align: left;
+    }
+    .id-modal-edit {
+      margin-top: 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font: 600 14px Inter, sans-serif;
+      color: var(--primary);
+      padding: 6px 10px;
+    }
+    .id-modal--compact {
+      padding: 18px 18px 16px;
+      border-radius: 18px;
+      text-align: left;
+    }
+    .id-modal--compact .id-modal-k {
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+    .id-modal--compact .id-modal-v {
+      font-size: 26px;
+    }
+    .id-modal--compact .id-modal-v--phone {
+      font-size: 26px;
+      white-space: nowrap;
+    }
+    .id-modal--compact .id-modal-v.is-long { font-size: 22px; }
+    .id-modal--compact .id-modal-v.is-very-long { font-size: 18px; }
+    .id-modal--compact .id-modal-edit {
+      margin-top: 10px;
+      padding: 0;
+      font-size: 13px;
+    }
+    .card.has-id-modal .step-hint { display: none; }
+    .card.has-id-modal .id-modal-slot {
+      margin-bottom: 28px;
+    }
+
+    /* Separate bottom dock on white page */
+    .dock {
+      flex-shrink: 0;
+      background: var(--white);
+      border-radius: var(--card-radius) var(--card-radius) 0 0;
+      padding: 20px var(--dock-h-pad) 34px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 40px;
+      margin: 0 calc(-1 * var(--rim)) 0; /* full-bleed bottom on white */
+      padding-left: calc(var(--rim) + var(--dock-h-pad));
+      padding-right: calc(var(--rim) + var(--dock-h-pad));
+    }
+    .dock.between { justify-content: space-between; }
+    .dock-btn {
+      background: none; border: none; cursor: pointer; padding: 8px 4px;
+      font: 700 17px Inter, sans-serif; letter-spacing: -0.02em;
+      color: var(--black);
+    }
+    .dock-btn.primary { color: var(--primary); }
+    .dock-btn.muted { color: rgba(0,0,0,0.32); font-weight: 600; }
+
+    /* D7 · editorial arrow CTA (tanlangan) */
+    .dock.d7-arrow {
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+    }
+    .dock.d7-arrow.d7-single {
+      justify-content: flex-end;
+    }
+    .d7-arrow .arrow-cta {
+      display: flex; align-items: center; gap: 14px;
+      background: none; border: none; cursor: pointer; padding: 6px 0;
+    }
+    .d7-arrow .arrow-cta span {
+      font: 700 20px Inter, sans-serif; letter-spacing: -0.03em; color: var(--black);
+    }
+    .d7-arrow .arrow-cta svg {
+      width: 28px; height: 28px; stroke: var(--primary); fill: none;
+      stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .d7-arrow .dock-btn.muted { font-size: 15px; }
+
+    /* Welcome · W2 Statement */
+    .welcome-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 0;
+      padding-bottom: 20px;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .welcome-kicker {
+      font: 600 11px Inter, sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-label);
+      margin-bottom: 18px;
+    }
+    .welcome-headline {
+      font: 800 46px/0.98 Inter, sans-serif;
+      letter-spacing: -0.05em;
+      color: var(--white);
+    }
+    .welcome-headline--lg {
+      font-size: 54px;
+      line-height: 0.92;
+      letter-spacing: -0.055em;
+    }
+    .welcome-headline .hi { color: var(--primary); }
+    .welcome-headline .lo { color: rgba(255, 255, 255, 0.22); }
+
+    .welcome-sub {
+      margin-top: 18px;
+      max-width: 28ch;
+      font: 500 15px/1.45 Inter, sans-serif;
+      color: var(--gray-muted);
+    }
+
+    .org-list { display: flex; flex-direction: column; }
+    .org-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--gray-line);
+      cursor: pointer;
+    }
+    .org-row:last-child { border-bottom: none; }
+    .org-ico {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--white); color: var(--black);
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 15px; flex-shrink: 0;
+    }
+    .org-name { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+    .org-role { font-size: 12px; color: var(--gray-label); margin-top: 3px; }
+    .org-chev { margin-left: auto; color: var(--gray-muted); }
+    .org-chev svg {
+      width: 20px; height: 20px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Standards */
+    .std {
+      width: 880px; padding: 28px; border-radius: 24px;
+      background: #18181b; border: 1px solid rgba(255,255,255,0.08);
+    }
+    .std h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+    .std .lead { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.45; }
+    .std-row { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+    .sw {
+      width: 120px; padding: 12px; border-radius: 14px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+    }
+    .sw-chip { height: 40px; border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); }
+    .sw b { display: block; font-size: 12px; margin-bottom: 2px; }
+    .sw span { font-size: 10px; color: var(--muted); font-family: ui-monospace, monospace; }
+    .std table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .std th, .std td {
+      text-align: left; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top;
+    }
+    .std th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.4); }
+    .std code {
+      font-family: ui-monospace, monospace; font-size: 10px; color: var(--primary);
+      background: rgba(47,107,255,0.12); padding: 2px 5px; border-radius: 4px;
+    }
+    .layer-demo {
+      display: flex; flex-direction: column; gap: 6px;
+      width: 140px; height: 180px; padding: 8px 8px 0;
+      background: #fff; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+    }
+    .layer-demo .c {
+      flex: 1; background: #000; border-radius: 14px;
+      display: grid; place-items: center; color: #fff; font-size: 10px; font-weight: 600;
+    }
+    .layer-demo .d {
+      height: 36px; background: #fff; color: #000;
+      display: grid; place-items: center; font-size: 10px; font-weight: 700;
+    }
+
+    /* ═══════════════════════════════════════════
+       QR PAIRING · layered shell (Flow B)
+       ═══════════════════════════════════════════ */
+    .pair-tag {
+      position: absolute;
+      top: 38px;
+      right: 14px;
+      z-index: 5;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font: 600 10px Inter, sans-serif;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .pair-tag.rec {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .screen.qr-step .card {
+      padding-bottom: 28px;
+    }
+    .screen.qr-step .hero {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+    .screen.qr-step .step-hint {
+      margin-bottom: 24px;
+    }
+
+    .qr-view {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      border-radius: 28px;
+      overflow: hidden;
+      background: #0c0c0e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .qr-feed {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, #141416 0%, #08080a 55%, #101012 100%);
+    }
+    .qr-feed::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.2;
+      background-image:
+        radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* Q1 · Portal — yumaloq viewport */
+    .qr-view.q1-portal .qr-guide {
+      position: absolute;
+      inset: 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    /* Q2 · Ring — pulsatsiya halqasi */
+    .qr-view.q2-ring .qr-guide {
+      position: absolute;
+      inset: 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .qr-view.q2-ring .qr-pulse {
+      position: absolute;
+      inset: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      animation: qr-ring-pulse 2.4s var(--motion-ease-out) infinite;
+    }
+    @keyframes qr-ring-pulse {
+      0%, 100% { opacity: 0.35; transform: scale(0.98); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Q3 · Line — yagona yumaloq chiziq */
+    .qr-view.q3-line {
+      border: none;
+      background: transparent;
+    }
+    .qr-view.q3-line .qr-feed {
+      inset: 3px;
+      border-radius: 25px;
+    }
+    .qr-view.q3-line .qr-guide {
+      position: absolute;
+      inset: 0;
+      border-radius: 28px;
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      pointer-events: none;
+    }
+
+    /* Q4 · Wide — keng format */
+    .qr-view.q4-wide {
+      border-radius: 22px;
+      max-height: 220px;
+      flex: 0 0 auto;
+    }
+    .qr-view.q4-wide .qr-guide {
+      position: absolute;
+      inset: 16px 28px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .screen.q4-layout .qr-copy {
+      margin-top: 28px;
+    }
+    .screen.q4-layout .hero {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+  .qr-scanline {
+      position: absolute;
+      left: 14%;
+      right: 14%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.45);
+      top: 28%;
+      opacity: 0;
+      z-index: 2;
+    }
+    .qr-view.is-scanning .qr-scanline {
+      opacity: 1;
+      animation: qr-scan-sweep 2.4s var(--motion-ease-out) infinite;
+    }
+    @keyframes qr-scan-sweep {
+      0%, 100% { top: 22%; opacity: 0.35; }
+      50% { top: 72%; opacity: 0.9; }
+    }
+
+    .qr-foot {
+      margin-top: 14px;
+      font: 500 13px/1.4 Inter, sans-serif;
+      color: var(--gray-muted);
+    }
+    .qr-foot b { color: rgba(255,255,255,0.65); font-weight: 600; }
+
+    .dock.qr-dock {
+      justify-content: center;
+      padding-top: 14px;
+      padding-bottom: 28px;
+    }
+    .qr-dock-note {
+      font: 500 13px Inter, sans-serif;
+      color: rgba(0, 0, 0, 0.36);
+      text-align: center;
+      max-width: 30ch;
+      line-height: 1.4;
+    }
+
+    /* ── R1+ · B&W layered shell + optional glass ── */
+    .screen.qr-bw .card {
+      align-items: stretch;
+      padding-bottom: 28px;
+    }
+    .screen.qr-bw .hero {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+    .screen.qr-bw .step-hint {
+      margin-bottom: 28px;
+      max-width: 30ch;
+    }
+    .qr-bw-stage {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 4px 0 20px;
+    }
+    .qr-bw-view {
+      position: relative;
+      width: 168px;
+      height: 168px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: #000;
+      flex-shrink: 0;
+    }
+    .qr-bw-view .qr-feed {
+      background: #000;
+      border-radius: 20px;
+    }
+    .qr-bw-view .qr-feed::before {
+      opacity: 0.12;
+    }
+    .qr-bw-corners {
+      position: absolute;
+      inset: 18px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .qr-bw-corners i {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #fff;
+      font-style: normal;
+    }
+    .qr-bw-corners i:nth-child(1) {
+      top: 0; left: 0;
+      border-right: none; border-bottom: none;
+      border-radius: 4px 0 0 0;
+    }
+    .qr-bw-corners i:nth-child(2) {
+      top: 0; right: 0;
+      border-left: none; border-bottom: none;
+      border-radius: 0 4px 0 0;
+    }
+    .qr-bw-corners i:nth-child(3) {
+      bottom: 0; left: 0;
+      border-right: none; border-top: none;
+      border-radius: 0 0 0 4px;
+    }
+    .qr-bw-corners i:nth-child(4) {
+      bottom: 0; right: 0;
+      border-left: none; border-top: none;
+      border-radius: 0 0 4px 0;
+    }
+    .qr-bw-view .qr-scanline {
+      left: 16%;
+      right: 16%;
+      background: rgba(255, 255, 255, 0.55);
+    }
+    .qr-bw-caption {
+      text-align: center;
+      font: 600 11px Inter, sans-serif;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-label);
+    }
+    .qr-bw-chip {
+      display: inline-flex;
+      align-self: center;
+      margin-top: 12px;
+      padding: 8px 14px;
+      border-radius: 99px;
+      font: 500 13px Inter, sans-serif;
+      color: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .dock.qr-bw-dock {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding-top: 18px;
+      padding-bottom: 30px;
+    }
+    .qr-bw-actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+    .qr-act-lg {
+      flex: 1;
+      min-height: 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 8px;
+      border-radius: 18px;
+      border: 1.5px solid rgba(0, 0, 0, 0.1);
+      background: #fff;
+      cursor: pointer;
+      color: #000;
+    }
+    .qr-act-lg svg {
+      width: 22px;
+      height: 22px;
+      stroke: #000;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .qr-act-lg span {
+      font: 700 15px Inter, sans-serif;
+      letter-spacing: -0.02em;
+    }
+    .qr-act-lg.is-pressed {
+      background: #000;
+      border-color: #000;
+      color: #fff;
+    }
+    .qr-act-lg.is-pressed svg { stroke: #fff; }
+
+    /* Liquid glass · CSS mock (prod: expo-glass-effect iOS 26+) */
+    .screen.qr-glass .dock.qr-bw-dock {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border-top: 1px solid rgba(255, 255, 255, 0.65);
+    }
+    .screen.qr-glass .qr-act-lg {
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+    .screen.qr-glass .qr-glass-chip {
+      display: inline-flex;
+      align-self: center;
+      margin-top: 12px;
+      padding: 8px 14px;
+      border-radius: 99px;
+      font: 500 13px Inter, sans-serif;
+      color: rgba(255, 255, 255, 0.72);
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* Error — layered shell */
+    .screen.qr-error .paired-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: grid;
+      place-items: center;
+      margin-bottom: 22px;
+    }
+    .screen.qr-error .paired-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--sys-danger);
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+    }
+    .screen.qr-error .hero {
+      font-size: 30px;
+      line-height: 1.08;
+    }
+
+    /* Flow arrow panel */
+    .flow-strip {
+      width: 380px;
+      padding: 20px 22px;
+      border-radius: 18px;
+      background: #18181b;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .flow-strip h3 {
+      font: 700 15px Inter, sans-serif;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .flow-steps li {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .flow-steps .n {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      display: grid;
+      place-items: center;
+      font: 700 10px Inter, sans-serif;
+      color: rgba(255,255,255,0.5);
+    }
+    .flow-steps .skip {
+      text-decoration: line-through;
+      opacity: 0.35;
+    }
+    .flow-steps b { color: #fff; font-weight: 600; }
+
+    .qr-variants-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+    .qr-mini {
+      height: 88px;
+      border-radius: 12px;
+      background: #0c0c0e;
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .qr-mini span {
+      position: absolute;
+      bottom: 6px;
+      left: 8px;
+      font: 600 9px Inter, sans-serif;
+      color: rgba(255,255,255,0.45);
+    }
+    .qr-mini.m1::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .qr-mini.m2::after {
+      content: "";
+      position: absolute;
+      inset: 14px 20px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    .qr-mini.m3 {
+      border: 2px solid rgba(255,255,255,0.2);
+      background: #08080a;
+    }
+    .qr-mini.m4::after {
+      content: "";
+      position: absolute;
+      inset: 18px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    /* Web admin QR panel */
+    .web-qr-panel {
+      width: 420px;
+      padding: 24px;
+      border-radius: 20px;
+      background: #fff;
+      color: #111;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    .web-qr-panel h3 {
+      font: 700 18px Inter, sans-serif;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+    .web-qr-panel .sub {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    .web-qr-box {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .web-qr-svg {
+      flex-shrink: 0;
+      width: 148px;
+      height: 148px;
+      padding: 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+    }
+    .web-qr-meta { flex: 1; min-width: 0; }
+    .web-qr-tenant {
+      font: 700 15px Inter, sans-serif;
+      margin-bottom: 6px;
+    }
+    .web-qr-timer {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 14px;
+    }
+    .web-qr-timer em {
+      font-style: normal;
+      font-weight: 600;
+      color: #111;
+      font-variant-numeric: tabular-nums;
+    }
+    .web-qr-steps {
+      font-size: 12px;
+      color: #374151;
+      line-height: 1.55;
+    }
+    .web-qr-steps li { margin-left: 16px; margin-bottom: 4px; }
+    .web-qr-regen {
+      margin-top: 16px;
+      width: 100%;
+      height: 40px;
+      border: none;
+      border-radius: 10px;
+      background: #000;
+      color: #fff;
+      font: 600 14px Inter, sans-serif;
+      cursor: pointer;
+    }
+
+    /* ── Motion standards ── */
+    @keyframes logo-enter {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.94);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    @keyframes dock-enter {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes card-enter {
+      from { opacity: 0; transform: scale(0.985); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .welcome-body .welcome-kicker,
+    .welcome-body .welcome-headline,
+    .welcome-body .welcome-sub {
+      opacity: 0;
+      animation: logo-enter var(--motion-slow) var(--motion-ease-out) forwards;
+    }
+    .welcome-body .welcome-kicker { animation-delay: 120ms; }
+    .welcome-body .welcome-headline--1 { animation-delay: 220ms; }
+    .welcome-body .welcome-headline--2 { animation-delay: 340ms; }
+    .welcome-body .welcome-sub { animation-delay: 460ms; }
+
+    .screen.is-welcome .card {
+      opacity: 0;
+      animation: card-enter var(--motion-base) var(--motion-ease) 40ms forwards;
+    }
+    .screen.is-welcome .dock {
+      opacity: 0;
+      animation: dock-enter var(--motion-base) var(--motion-ease) 480ms forwards;
+    }
+
+    /* Replay control on welcome artboard */
+    .replay-btn {
+      margin-top: 2px;
+      align-self: flex-start;
+      height: 28px; padding: 0 10px;
+      border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05); color: var(--muted);
+      font: 500 11px Inter, sans-serif; cursor: pointer;
+    }
+    .replay-btn:hover { color: #fff; border-color: rgba(255,255,255,0.22); }
+
+    .motion-timeline {
+      display: flex; flex-direction: column; gap: 8px; margin-top: 8px;
+    }
+    .motion-row {
+      display: grid; grid-template-columns: 90px 1fr 70px;
+      gap: 10px; align-items: center; font-size: 11px;
+    }
+    .motion-row span:first-child { color: rgba(255,255,255,0.55); font-weight: 600; }
+    .motion-bar {
+      height: 8px; border-radius: 4px; background: rgba(255,255,255,0.06);
+      position: relative; overflow: hidden;
+    }
+    .motion-bar i {
+      position: absolute; top: 0; bottom: 0; border-radius: 4px;
+      background: var(--primary); font-style: normal;
+    }
+    .motion-row em { font-style: normal; color: var(--muted); font-family: ui-monospace, monospace; font-size: 10px; text-align: right; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .welcome-body .welcome-kicker,
+      .welcome-body .welcome-headline,
+      .welcome-body .welcome-sub,
+      .screen.is-welcome .card,
+      .screen.is-welcome .dock {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+      .card-body,
+      .id-modal,
+      .id-modal-layer {
+        animation: none !important;
+        transition: none !important;
+      }
+      .screen.is-id-reveal .card-body {
+        opacity: 0.22;
+        transform: scale(0.96) translateY(-14px);
+      }
+      .screen.is-id-reveal .id-modal {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-dot"></div>
+      ApplePark Design Board
+      <span>/ Flow B · white page + black card + dock</span>
+    </div>
+    <div class="topbar-hint"><kbd>Drag</kbd> pan · <kbd>Scroll</kbd> zoom · <kbd>0</kbd> fit</div>
+  </header>
+
+  <div class="viewport" id="viewport">
+    <div class="canvas" id="canvas">
+      <div class="canvas-grid"></div>
+
+      <div class="section-tag" style="left: 60px; top: 40px;">
+        <h1>Flow B</h1>
+        <p>Welcome → <b>Kirish → QR</b> → Hisob → Reveal → Parol → Tashkilot</p>
+      </div>
+
+      <!-- B0 Welcome · W2 Statement -->
+      <div class="artboard" style="left: 60px; top: 110px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">B0 · Welcome</span>
+          <span class="artboard-size">statement · W2</span>
+        </div>
+        <button type="button" class="replay-btn" id="replayWelcome" title="Replay welcome animation">↻ Replay</button>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen is-welcome" id="welcomeScreen">
+            <div class="card">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <div class="welcome-body">
+                <div class="welcome-kicker">ApplePark ERP</div>
+                <div class="welcome-headline welcome-headline--lg welcome-headline--1">
+                  Bitta<br /><span class="hi">platforma.</span>
+                </div>
+                <div class="welcome-headline welcome-headline--lg welcome-headline--2" style="margin-top:6px">
+                  <span class="lo">Barcha</span> filiallar.
+                </div>
+                <p class="welcome-sub">POS, ombor va moliya — mobil ilovada</p>
+              </div>
+            </div>
+            <div class="dock d7-arrow d7-single">
+              <button type="button" class="arrow-cta">
+                <span>Kirish</span>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- B1 Identifier (interactive reveal) -->
+      <div class="artboard" style="left: 520px; top: 110px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">B1 · Identifier</span>
+          <span class="artboard-size">Davom etish → modal</span>
+        </div>
+        <button type="button" class="replay-btn" id="replayIdReveal" title="Reset reveal">↻ Reset</button>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen" data-auth="b1" id="b1Screen">
+            <div class="card">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back" aria-label="Back">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div class="card-body">
+                <div class="top-space"></div>
+                <div class="hero">Hisob</div>
+                <p class="step-hint">Email yoki telefon raqamingizni kiriting</p>
+                <div class="seg" data-seg>
+                  <button type="button" class="active" data-tab="phone">Telefon</button>
+                  <button type="button" data-tab="email">Email</button>
+                </div>
+                <div class="fields">
+                  <div class="field hidden" data-panel="email">
+                    <label>Email</label>
+                    <div class="field-line">
+                      <input type="email" data-id-input="email" placeholder="name@company.uz" value="name@company.uz" />
+                    </div>
+                  </div>
+                  <div class="field" data-panel="phone">
+                    <label>Telefon</label>
+                    <div class="field-line">
+                      <span class="prefix">+998</span>
+                      <input type="tel" data-id-input="phone" placeholder="90 123 45 67" value="90 123 45 67" />
+                    </div>
+                  </div>
+                </div>
+                <div class="spacer"></div>
+              </div>
+              <div class="id-modal-layer" aria-hidden="true">
+                <div class="id-modal" id="b1IdModal">
+                  <div class="id-modal-k" id="b1ModalK">Telefon</div>
+                  <div class="id-modal-v id-modal-v--phone" id="b1ModalV"><span class="id-dim">+998 </span>90 123 45 67</div>
+                  <button type="button" class="id-modal-edit" data-id-edit>O‘zgartirish</button>
+                </div>
+              </div>
+            </div>
+            <div class="dock d7-arrow d7-single">
+              <button type="button" class="arrow-cta" data-id-continue>
+                <span>Davom etish</span>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- B1+ Reveal · telefon -->
+      <div class="artboard" style="left: 980px; top: 110px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">B1+ · Reveal · telefon</span>
+          <span class="artboard-size">katta raqam · modal</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen is-id-reveal">
+            <div class="card">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back" aria-label="Back">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div class="card-body">
+                <div class="top-space"></div>
+                <div class="hero">Hisob</div>
+                <p class="step-hint">Email yoki telefon raqamingizni kiriting</p>
+                <div class="seg">
+                  <button type="button" class="active">Telefon</button>
+                  <button type="button">Email</button>
+                </div>
+                <div class="fields">
+                  <div class="field">
+                    <label>Telefon</label>
+                    <div class="field-line">
+                      <span class="prefix">+998</span>
+                      <input type="tel" value="90 123 45 67" readonly />
+                    </div>
+                  </div>
+                </div>
+                <div class="spacer"></div>
+              </div>
+              <div class="id-modal-layer" aria-hidden="false">
+                <div class="id-modal">
+                  <div class="id-modal-k">Telefon</div>
+                  <div class="id-modal-v id-modal-v--phone">
+                    <span class="id-dim">+998 </span>90 123 45 67
+                  </div>
+                  <button type="button" class="id-modal-edit">O‘zgartirish</button>
+                </div>
+              </div>
+            </div>
+            <div class="dock d7-arrow d7-single">
+              <button type="button" class="arrow-cta">
+                <span>Parolga o‘tish</span>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- B1++ Reveal · uzun email -->
+      <div class="artboard" style="left: 1440px; top: 110px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">B1++ · Reveal · uzun email</span>
+          <span class="artboard-size">font scale · break</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen is-id-reveal">
+            <div class="card">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back" aria-label="Back">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div class="card-body">
+                <div class="top-space"></div>
+                <div class="hero">Hisob</div>
+                <p class="step-hint">Email yoki telefon raqamingizni kiriting</p>
+                <div class="seg">
+                  <button type="button">Telefon</button>
+                  <button type="button" class="active">Email</button>
+                </div>
+                <div class="spacer"></div>
+              </div>
+              <div class="id-modal-layer" aria-hidden="false">
+                <div class="id-modal">
+                  <div class="id-modal-k">Email</div>
+                  <div class="id-modal-v is-very-long">admin.operations@applepark-tashkent.enterprise.uz</div>
+                  <button type="button" class="id-modal-edit">O‘zgartirish</button>
+                </div>
+              </div>
+            </div>
+            <div class="dock d7-arrow d7-single">
+              <button type="button" class="arrow-cta">
+                <span>Parolga o‘tish</span>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- B2 Password -->
+      <div class="artboard" style="left: 1960px; top: 110px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">B2 · Password</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="card has-id-modal">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back" aria-label="Back">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div class="top-space"></div>
+              <div class="hero">Parol</div>
+              <div class="id-modal-slot">
+                <div class="id-modal id-modal--compact">
+                  <div class="id-modal-k">Email</div>
+                  <div class="id-modal-v">name@company.uz</div>
+                  <button type="button" class="id-modal-edit">O‘zgartirish</button>
+                </div>
+              </div>
+              <div class="fields">
+                <div class="field">
+                  <div class="field-top">
+                    <label>Parol</label>
+                    <button type="button" class="field-link">Unutdingizmi?</button>
+                  </div>
+                  <div class="field-line">
+                    <input type="password" value="password" data-pass />
+                    <button type="button" class="eye" data-toggle-pass aria-label="Show">
+                      <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="spacer"></div>
+            </div>
+            <div class="dock d7-arrow">
+              <button type="button" class="dock-btn muted">Orqaga</button>
+              <button type="button" class="arrow-cta">
+                <span>Kirish</span>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- B3 Org -->
+      <div class="artboard" style="left: 2420px; top: 110px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">B3 · Select org</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen">
+            <div class="card">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back" aria-label="Back">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div class="top-space"></div>
+              <div class="hero" style="font-size:36px">Tashkilot</div>
+              <p class="step-hint">Davom etish uchun birini tanlang</p>
+              <div class="org-list">
+                <div class="org-row">
+                  <div class="org-ico">A</div>
+                  <div>
+                    <div class="org-name">ApplePark Tashkent</div>
+                    <div class="org-role">Admin</div>
+                  </div>
+                  <div class="org-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+                </div>
+                <div class="org-row">
+                  <div class="org-ico">S</div>
+                  <div>
+                    <div class="org-name">Samarqand Branch</div>
+                    <div class="org-role">Manager</div>
+                  </div>
+                  <div class="org-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+                </div>
+                <div class="org-row">
+                  <div class="org-ico">B</div>
+                  <div>
+                    <div class="org-name">Buxoro Store</div>
+                    <div class="org-role">Cashier</div>
+                  </div>
+                  <div class="org-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+                </div>
+              </div>
+              <div class="spacer"></div>
+            </div>
+            <div class="dock d7-arrow">
+              <button type="button" class="dock-btn muted">Orqaga</button>
+              <button type="button" class="arrow-cta">
+                <span>Tanlash</span>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- STANDARDS — moved right -->
+      <div class="artboard" style="left: 2880px; top: 110px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">00 · Standards</span>
+          <span class="artboard-size">colors · shell · motion</span>
+        </div>
+        <div class="std">
+          <h2>Flow B + layered shell</h2>
+          <p class="lead">
+            Oq fon → qora card → alohida oq dock. Gradient yo‘q. Field chiziqlari past kontrast.
+          </p>
+          <div class="std-row">
+            <div class="sw"><div class="sw-chip" style="background:#000"></div><b>Black</b><span>card</span></div>
+            <div class="sw"><div class="sw-chip" style="background:#fff"></div><b>White</b><span>page + dock</span></div>
+            <div class="sw"><div class="sw-chip" style="background:#2F6BFF"></div><b>Primary</b><span>#2F6BFF</span></div>
+            <div class="layer-demo" title="structure">
+              <div class="c">black card</div>
+              <div class="d">dock</div>
+            </div>
+          </div>
+          <table>
+            <tr><th>Layer</th><th>Spec</th></tr>
+            <tr><td>Page</td><td><code>white</code> full screen</td></tr>
+            <tr><td>Card</td><td><code>black</code> · radius 36 · rim 5px</td></tr>
+            <tr><td>Dock</td><td>D7 streлka · CTA o‘ngda · <code>padding-top 16px</code></td></tr>
+            <tr><td>Field line</td><td><code>white / 10%</code></td></tr>
+            <tr><td>Top space</td><td>~56px after back</td></tr>
+            <tr><td>Flow</td><td>Welcome → <b>Kirish → QR</b> → Hisob → Reveal → Password → Org</td></tr>
+            <tr><td>Reveal</td><td>email/phone katta modal · uzun email <code>22px</code> break</td></tr>
+          </table>
+
+          <h2 style="margin-top:28px; font-size:18px;">Motion · Welcome logo</h2>
+          <p class="lead" style="margin-bottom:12px;">
+            Birinchi sahifa: logo fade + soft rise. Keyin dock. Ease: ease-out. Loop yo‘q.
+          </p>
+          <table>
+            <tr><th>Token</th><th>Value</th></tr>
+            <tr><td>fast</td><td><code>180ms</code></td></tr>
+            <tr><td>base</td><td><code>420ms</code></td></tr>
+            <tr><td>slow</td><td><code>700ms</code> — logo</td></tr>
+            <tr><td>ease</td><td><code>cubic-bezier(0.16, 1, 0.3, 1)</code></td></tr>
+          </table>
+          <div class="motion-timeline">
+            <div class="motion-row">
+              <span>Card</span>
+              <div class="motion-bar"><i style="left:4%; width:28%"></i></div>
+              <em>40→460ms</em>
+            </div>
+            <div class="motion-row">
+              <span>Kicker</span>
+              <div class="motion-bar"><i style="left:12%; width:28%"></i></div>
+              <em>120→820ms</em>
+            </div>
+            <div class="motion-row">
+              <span>Qator 1</span>
+              <div class="motion-bar"><i style="left:22%; width:28%"></i></div>
+              <em>220→640ms</em>
+            </div>
+            <div class="motion-row">
+              <span>Qator 2</span>
+              <div class="motion-bar"><i style="left:34%; width:28%"></i></div>
+              <em>340→760ms</em>
+            </div>
+            <div class="motion-row">
+              <span>Sub</span>
+              <div class="motion-bar"><i style="left:46%; width:24%"></i></div>
+              <em>460→880ms</em>
+            </div>
+            <div class="motion-row">
+              <span>Dock</span>
+              <div class="motion-bar"><i style="left:58%; width:30%"></i></div>
+              <em>480→900ms</em>
+            </div>
+          </div>
+          <table style="margin-top:14px">
+            <tr><th>Rule</th><th>Detail</th></tr>
+            <tr><td>Headline</td><td>opacity 0→1 · Y +14→0 · scale 0.94→1</td></tr>
+            <tr><td>Stagger</td><td>kicker → qator 1 → qator 2 → sub</td></tr>
+            <tr><td>Accent</td><td><code>platforma.</code> — primary</td></tr>
+            <tr><td>Dock</td><td>after text · Y +16→0</td></tr>
+            <tr><td>Reduced motion</td><td>agar OS prefers-reduced-motion — faqat opacity</td></tr>
+            <tr><td>No</td><td>bounce, spring overshoot, infinite loop, gradient glow</td></tr>
+          </table>
+
+          <h2 style="margin-top:28px; font-size:18px;">Welcome · W2</h2>
+          <p class="lead" style="margin-bottom:12px;">
+            Editorial statement — katta shrift, 2 qator headline.
+          </p>
+          <table>
+            <tr><th>Element</th><th>Detail</th></tr>
+            <tr><td>Kicker</td><td>11px uppercase · ApplePark ERP</td></tr>
+            <tr><td>Headline</td><td>54px · Bitta <code>platforma.</code> / Barcha filiallar.</td></tr>
+            <tr><td>Sub</td><td>15px · gray-muted · max 28ch</td></tr>
+            <tr><td>Dock</td><td>D7 arrow · «Kirish» → QR</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ QR PAIRING ═══ -->
+      <div class="section-tag" style="left: 60px; top: 1020px;">
+        <h1>QR pairing</h1>
+        <p>Kirish → <b>skaner</b> → Hisob · xato — Q5</p>
+      </div>
+
+      <!-- R1++ · Skaner -->
+      <div class="artboard" style="left: 60px; top: 1100px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">R1++ · Skaner</span>
+          <span class="artboard-size">layered shell · 168px</span>
+        </div>
+        <span class="pair-tag rec">tavsiya</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen qr-bw">
+            <div class="card">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back" aria-label="Back">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div class="top-space" style="height:24px"></div>
+              <div class="hero">Ulanish</div>
+              <p class="step-hint">Veb-kabinetdagi QR kodni skanerlang</p>
+              <div class="qr-bw-stage">
+                <div class="qr-bw-view">
+                  <div class="qr-feed"></div>
+                  <div class="qr-bw-corners"><i></i><i></i><i></i><i></i></div>
+                </div>
+              </div>
+              <span class="qr-bw-chip">Sozlamalar → Telefon ulash</span>
+              <div class="spacer"></div>
+            </div>
+            <div class="dock qr-bw-dock">
+              <div class="qr-bw-actions">
+                <button type="button" class="qr-act-lg">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                  <span>Galereya</span>
+                </button>
+                <button type="button" class="qr-act-lg">
+                  <svg viewBox="0 0 24 24"><path d="M18 6 8 18"/><path d="m8 6 10 10"/><path d="M14 6v12"/></svg>
+                  <span>Fonar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Q5 Error -->
+      <div class="artboard" style="left: 520px; top: 1100px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">Q5 · Xato</span>
+          <span class="artboard-size">kod muddati tugagan</span>
+        </div>
+        <span class="pair-tag">error</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="screen qr-step qr-error">
+            <div class="card">
+              <div class="status"><span>9:41</span><span class="batt"></span></div>
+              <button type="button" class="back" aria-label="Back">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div class="top-space" style="height:32px"></div>
+              <div class="paired-icon">
+                <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </div>
+              <div class="hero">Kod muddati tugagan</div>
+              <p class="step-hint">Veb-kabinetda yangi QR yarating</p>
+            </div>
+            <div class="dock d7-arrow">
+              <button type="button" class="dock-btn muted">Orqaga</button>
+              <button type="button" class="arrow-cta">
+                <span>Qayta skaner</span>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="zoom-bar">
+    <button type="button" id="zoomOut">−</button>
+    <div class="zoom-label" id="zoomLabel">100%</div>
+    <button type="button" id="zoomIn">+</button>
+    <div class="zoom-sep"></div>
+    <button type="button" id="zoomFit">Fit</button>
+    <button type="button" id="zoom100">100%</button>
+  </div>
+
+  <script>
+    (function () {
+      const viewport = document.getElementById("viewport");
+      const canvas = document.getElementById("canvas");
+      const zoomLabel = document.getElementById("zoomLabel");
+      let scale = 0.55, x = 30, y = 10, panning = false, spaceDown = false, lastX = 0, lastY = 0;
+
+      function apply() {
+        canvas.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        zoomLabel.textContent = Math.round(scale * 100) + "%";
+      }
+      function zoomAt(cx, cy, next) {
+        const rect = viewport.getBoundingClientRect();
+        const mx = cx - rect.left, my = cy - rect.top;
+        const wx = (mx - x) / scale, wy = (my - y) / scale;
+        scale = Math.min(2.5, Math.max(0.2, next));
+        x = mx - wx * scale; y = my - wy * scale;
+        apply();
+      }
+      function fit() {
+        const rect = viewport.getBoundingClientRect();
+        const w = 2400, h = 3200, pad = 36;
+        scale = Math.max(0.22, Math.min((rect.width - pad * 2) / w, (rect.height - pad * 2) / h, 1));
+        x = (rect.width - w * scale) / 2; y = 12;
+        apply();
+      }
+
+      viewport.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        zoomAt(e.clientX, e.clientY, scale * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+      }, { passive: false });
+
+      viewport.addEventListener("pointerdown", (e) => {
+        if (e.button !== 0 && e.button !== 1) return;
+        if (e.target.closest(".screen, .zoom-bar, .topbar") && !spaceDown && e.button !== 1) return;
+        panning = true; viewport.classList.add("is-panning");
+        lastX = e.clientX; lastY = e.clientY;
+        viewport.setPointerCapture(e.pointerId);
+      });
+      viewport.addEventListener("pointermove", (e) => {
+        if (!panning) return;
+        x += e.clientX - lastX; y += e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY; apply();
+      });
+      function endPan(e) {
+        if (!panning) return; panning = false; viewport.classList.remove("is-panning");
+        try { viewport.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+      viewport.addEventListener("pointerup", endPan);
+      viewport.addEventListener("pointercancel", endPan);
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space" && !e.repeat) { spaceDown = true; e.preventDefault(); }
+        if (e.key === "0" && !e.metaKey && !e.ctrlKey) fit();
+      });
+      window.addEventListener("keyup", (e) => { if (e.code === "Space") spaceDown = false; });
+
+      document.getElementById("zoomIn").onclick = () => zoomAt(innerWidth / 2, innerHeight / 2, scale * 1.15);
+      document.getElementById("zoomOut").onclick = () => zoomAt(innerWidth / 2, innerHeight / 2, scale / 1.15);
+      document.getElementById("zoomFit").onclick = fit;
+      document.getElementById("zoom100").onclick = () => {
+        const r = viewport.getBoundingClientRect();
+        zoomAt(r.left + r.width / 2, r.top + r.height / 2, 1);
+      };
+
+      document.querySelectorAll("[data-auth]").forEach((root) => {
+        const seg = root.querySelector("[data-seg]");
+        seg?.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            seg.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            root.querySelectorAll("[data-panel]").forEach((p) => {
+              p.classList.toggle("hidden", p.dataset.panel !== btn.dataset.tab);
+            });
+          });
+        });
+      });
+
+      document.querySelectorAll("[data-toggle-pass]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const input = btn.parentElement.querySelector("[data-pass]");
+          if (input) input.type = input.type === "password" ? "text" : "password";
+        });
+      });
+
+      function replayWelcome() {
+        const screen = document.getElementById("welcomeScreen");
+        if (!screen) return;
+        const nodes = screen.querySelectorAll(
+          ".card, .dock, .welcome-kicker, .welcome-headline, .welcome-sub"
+        );
+        nodes.forEach((el) => {
+          el.style.animation = "none";
+          void el.offsetWidth;
+          el.style.animation = "";
+        });
+      }
+      document.getElementById("replayWelcome")?.addEventListener("click", replayWelcome);
+
+      /* B1 · identifier reveal modal */
+      function emailSizeClass(value) {
+        const len = value.trim().length;
+        if (len > 42) return "is-very-long";
+        if (len > 28) return "is-long";
+        return "";
+      }
+
+      function syncIdModal(root) {
+        const screen = root;
+        const modalK = screen.querySelector("#b1ModalK");
+        const modalV = screen.querySelector("#b1ModalV");
+        const activeTab = screen.querySelector("[data-seg] button.active")?.dataset.tab || "phone";
+        const emailInput = screen.querySelector('[data-id-input="email"]');
+        const phoneInput = screen.querySelector('[data-id-input="phone"]');
+        if (!modalK || !modalV) return;
+
+        modalV.className = "id-modal-v";
+        if (activeTab === "phone") {
+          modalK.textContent = "Telefon";
+          const raw = (phoneInput?.value || "").replace(/[^\d]/g, "");
+          const formatted = raw.replace(/(\d{2})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4").trim() || raw;
+          modalV.classList.add("id-modal-v--phone");
+          modalV.innerHTML = '<span class="id-dim">+998 </span>' + (formatted || "90 123 45 67");
+        } else {
+          modalK.textContent = "Email";
+          const email = (emailInput?.value || "").trim() || "name@company.uz";
+          modalV.textContent = email;
+          const sizeClass = emailSizeClass(email);
+          if (sizeClass) modalV.classList.add(sizeClass);
+        }
+      }
+
+      function setIdReveal(root, on) {
+        root.classList.toggle("is-id-reveal", on);
+        const continueBtn = root.querySelector("[data-id-continue] span");
+        if (continueBtn) {
+          continueBtn.textContent = on ? "Parolga o‘tish" : "Davom etish";
+        }
+      }
+
+      const b1Screen = document.getElementById("b1Screen");
+      if (b1Screen) {
+        syncIdModal(b1Screen);
+        b1Screen.querySelector('[data-id-input="email"]')?.addEventListener("input", () => {
+          syncIdModal(b1Screen);
+          setIdReveal(b1Screen, false);
+        });
+        b1Screen.querySelector('[data-id-input="phone"]')?.addEventListener("input", () => {
+          syncIdModal(b1Screen);
+          setIdReveal(b1Screen, false);
+        });
+        b1Screen.querySelector("[data-seg]")?.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            setTimeout(() => syncIdModal(b1Screen), 0);
+            setIdReveal(b1Screen, false);
+          });
+        });
+        b1Screen.querySelector("[data-id-continue]")?.addEventListener("click", () => {
+          if (!b1Screen.classList.contains("is-id-reveal")) {
+            syncIdModal(b1Screen);
+            setIdReveal(b1Screen, true);
+          }
+        });
+        b1Screen.querySelector("[data-id-edit]")?.addEventListener("click", () => {
+          setIdReveal(b1Screen, false);
+        });
+      }
+      document.getElementById("replayIdReveal")?.addEventListener("click", () => {
+        if (b1Screen) setIdReveal(b1Screen, false);
+      });
+
+      fit();
+    })();
+  </script>
+</body>
+</html>

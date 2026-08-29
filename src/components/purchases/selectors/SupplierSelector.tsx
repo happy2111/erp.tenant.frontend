@@ -16,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Search, User, X, CheckCircle2 } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 import { cn } from '@/lib/utils';
-import { CustomerTypeValues } from "@/schemas/org-customer.schema";
 
 export function SupplierSelector() {
   const { supplierId, setSupplier } = usePurchaseStore();
@@ -29,7 +28,7 @@ export function SupplierSelector() {
     queryFn: () =>
       OrganizationCustomerService.getAllAdmin({
         search: debouncedSearch,
-        type: CustomerTypeValues[1],
+        isSupplier: true,
         limit: 20,
       }),
     enabled: open,
