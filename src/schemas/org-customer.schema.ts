@@ -1,39 +1,75 @@
 import { z } from 'zod';
 import { GenderValues } from './tenant-user.schema';
 
-export const CustomerTypeValues = ['CLIENT', 'SUPPLIER'] as const;
-export type CustomerType = typeof CustomerTypeValues[number];
-export const CustomerTypeLabels: Record<CustomerType, string> = {
-  CLIENT: 'MIJOZ',
-  SUPPLIER: 'TA’MINOTCHI',
-}
+const atLeastOneRole = (data: { isClient?: boolean; isSupplier?: boolean }) =>
+  Boolean(data.isClient) || Boolean(data.isSupplier);
 
-export const CreateOrgCustomerSchema = z.object({
-  userId: z.string().uuid().optional().nullable(),
-  firstName: z.string().min(1).max(255),
-  lastName: z.string().min(1).max(255),
-  patronymic: z.string().max(255).optional().nullable(),
-  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Некорректный формат телефона'),
-  type: z.enum(CustomerTypeValues),
-  isBlacklisted: z.boolean().optional().default(false),
-});
+export const CreateOrgCustomerSchema = z
+  .object({
+    userId: z.string().uuid().optional().nullable(),
+    firstName: z.string().min(1).max(255),
+    lastName: z.string().max(255).optional().nullable(),
+    patronymic: z.string().max(255).optional().nullable(),
+    phone: z
+      .string()
+      .regex(/^\+?[1-9]\d{1,14}$/, 'Некорректный формат телефона')
+      .optional()
+      .nullable()
+      .or(z.literal('')),
+    isClient: z.boolean(),
+    isSupplier: z.boolean(),
+    isBlacklisted: z.boolean().optional().default(false),
+  })
+  .refine(atLeastOneRole, {
+    message: 'Выберите хотя бы одну роль: Клиент или Поставщик',
+    path: ['isClient'],
+  })
+  .transform((data) => ({
+    ...data,
+    phone: data.phone === '' ? null : data.phone,
+    lastName: data.lastName === '' ? null : data.lastName,
+  }));
 
 export type CreateOrgCustomerDto = z.infer<typeof CreateOrgCustomerSchema>;
 
-export const UpdateOrgCustomerSchema = z.object({
-  firstName: z.string().min(1).max(255).optional(),
-  lastName: z.string().min(1).max(255).optional(),
-  patronymic: z.string().max(255).optional().nullable(),
-  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/).optional(),
-  type: z.enum(CustomerTypeValues).optional(),
-  isBlacklisted: z.boolean().optional(),
-});
+export const UpdateOrgCustomerSchema = z
+  .object({
+    firstName: z.string().min(1).max(255).optional(),
+    lastName: z.string().max(255).optional().nullable(),
+    patronymic: z.string().max(255).optional().nullable(),
+    phone: z
+      .string()
+      .regex(/^\+?[1-9]\d{1,14}$/)
+      .optional()
+      .nullable()
+      .or(z.literal('')),
+    isClient: z.boolean().optional(),
+    isSupplier: z.boolean().optional(),
+    isBlacklisted: z.boolean().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.isClient === undefined && data.isSupplier === undefined) return true;
+      if (data.isClient === false && data.isSupplier === false) return false;
+      return true;
+    },
+    {
+      message: 'Нельзя снять обе роли',
+      path: ['isClient'],
+    },
+  )
+  .transform((data) => ({
+    ...data,
+    phone: data.phone === '' ? null : data.phone,
+    lastName: data.lastName === '' ? null : data.lastName,
+  }));
 
 export type UpdateOrgCustomerDto = z.infer<typeof UpdateOrgCustomerSchema>;
 
 export const OrganizationCustomerFilterSchema = z.object({
   page: z.coerce.number().min(1).catch(1).optional(),
-  type: z.enum(CustomerTypeValues).optional(),
+  isClient: z.coerce.boolean().optional().catch(undefined),
+  isSupplier: z.coerce.boolean().optional().catch(undefined),
   limit: z.coerce.number().min(1).max(100).catch(10).optional(),
   search: z.string().optional().catch(''),
   sortBy: z.string().catch('createdAt').optional(),
@@ -45,7 +81,7 @@ export type OrganizationCustomerFilterDto = z.infer<typeof OrganizationCustomerF
 
 export const CustomerToUserProfileSchema = z.object({
   firstName: z.string().min(1).optional(),
-  lastName: z.string().min(1).optional(),
+  lastName: z.string().optional().nullable(),
   patronymic: z.string().optional().nullable(),
   dateOfBirth: z.string().datetime().optional().nullable(),
   gender: z.enum(GenderValues).optional(),
@@ -63,14 +99,23 @@ export const CustomerToUserProfileSchema = z.object({
 });
 
 export const CustomerToUserSchema = z.object({
-  email: z.string().email().optional(),
-  password: z.string().min(8, 'Минимум 8 символов'),
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : undefined))
+    .pipe(z.string().email().optional()),
+  password: z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim().length > 0 ? v.trim() : undefined))
+    .pipe(z.string().min(8, 'Минимум 8 символов').optional()),
   isActive: z.boolean().optional().default(true),
   profile: CustomerToUserProfileSchema,
 });
 
 export const ConvertCustomerToUserSchema = z.object({
-  customerId: z.string().uuid("Некорректный ID клиента"),
+  customerId: z.string().uuid('Некорректный ID клиента'),
   user: CustomerToUserSchema,
   phonesToAdd: z
     .array(
@@ -78,7 +123,7 @@ export const ConvertCustomerToUserSchema = z.object({
         phone: z.string().regex(/^\+?[1-9]\d{1,14}$/),
         isPrimary: z.boolean().default(false),
         note: z.string().optional().nullable(),
-      })
+      }),
     )
     .optional()
     .default([]),
@@ -91,13 +136,20 @@ export const OrganizationCustomerSchema = z.object({
   organizationId: z.string().uuid(),
   userId: z.string().uuid().nullable().optional(),
   firstName: z.string(),
-  lastName: z.string(),
+  lastName: z.string().nullable().optional(),
   patronymic: z.string().nullable().optional(),
-  phone: z.string(),
-  type: z.enum(CustomerTypeValues),
+  phone: z.string().nullable().optional(),
+  isClient: z.boolean(),
+  isSupplier: z.boolean(),
   isBlacklisted: z.boolean(),
-  createdAt: z.preprocess((arg) => typeof arg === "string" ? new Date(arg) : arg, z.date()),
-  updatedAt: z.preprocess((arg) => typeof arg === "string" ? new Date(arg) : arg, z.date()),
+  createdAt: z.preprocess(
+    (arg) => (typeof arg === 'string' ? new Date(arg) : arg),
+    z.date(),
+  ),
+  updatedAt: z.preprocess(
+    (arg) => (typeof arg === 'string' ? new Date(arg) : arg),
+    z.date(),
+  ),
 });
 
 export type OrganizationCustomer = z.infer<typeof OrganizationCustomerSchema>;
@@ -106,3 +158,11 @@ export const OrganizationCustomerListSchema = z.object({
   items: z.array(OrganizationCustomerSchema),
   total: z.number(),
 });
+
+/** @deprecated Pricing segment only — kept for product-prices. Not org-customer identity. */
+export const CustomerTypeValues = ['CLIENT', 'SUPPLIER'] as const;
+export type CustomerType = (typeof CustomerTypeValues)[number];
+export const CustomerTypeLabels: Record<CustomerType, string> = {
+  CLIENT: 'MIJOZ',
+  SUPPLIER: "TA'MINOTCHI",
+};

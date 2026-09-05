@@ -1,6 +1,25 @@
 import { z } from 'zod';
 
+// ─── Происхождение партии ────────────────────────────────────────────
+// Партии из закупки создаёт проведение документа. Вручную заводят только
+// начальные остатки и излишки инвентаризации.
+export const ManualBatchSourceValues = [
+  'OPENING_BALANCE',
+  'INVENTORY_SURPLUS',
+  'CUSTOMER_RETURN',
+] as const;
+
+export type ManualBatchSource = (typeof ManualBatchSourceValues)[number];
+
+export const ManualBatchSourceLabels: Record<ManualBatchSource, string> = {
+  OPENING_BALANCE: 'BOSHLANG‘ICH QOLDIQ',
+  INVENTORY_SURPLUS: 'INVENTARIZATSIYA ORTIQCHASI',
+  CUSTOMER_RETURN: 'MIJOZ QAYTARGAN',
+};
+
 // ─── Создание партии ─────────────────────────────────────────────────
+// costPrice и currencyId обязательны: партия без себестоимости бессмысленна —
+// по ней потом невозможно посчитать прибыль с продажи.
 export const CreateProductBatchSchema = z.object({
   productVariantId: z.string().uuid('Некорректный ID варианта товара'),
   batchNumber: z
@@ -8,6 +27,19 @@ export const CreateProductBatchSchema = z.object({
     .min(1, 'Номер партии обязателен')
     .max(64, 'Номер партии слишком длинный'),
   quantity: z.number().int().positive('Количество должно быть больше 0'),
+  // Не coerce: с ним входной тип схемы становится unknown и ломает
+  // типизацию react-hook-form. Приведение делает valueAsNumber в register.
+  costPrice: z
+    .number({ message: 'Укажите себестоимость' })
+    .nonnegative('Себестоимость не может быть отрицательной'),
+  currencyId: z.string().uuid('Выберите валюту себестоимости'),
+  source: z.enum(ManualBatchSourceValues).optional(),
+  supplierId: z.string().uuid().optional().nullable(),
+  receivedAt: z
+    .string()
+    .nullable()
+    .transform((val) => (val ? new Date(val).toISOString() : null))
+    .optional(),
   expiryDate: z
     .string()
     .nullable()
@@ -59,6 +91,15 @@ export const ProductBatchSchema = z.object({
   productVariantId: z.string().uuid(),
   batchNumber: z.string(),
   quantity: z.number(),
+  /** Сколько от партии осталось. Уменьшается при списании */
+  remainingQuantity: z.number().optional(),
+  /** Себестоимость единицы в валюте партии */
+  costPrice: z.coerce.number().optional(),
+  /** Она же в базовой валюте, заморожена по курсу на дату прихода */
+  costPriceBase: z.coerce.number().optional(),
+  currencyId: z.string().uuid().optional(),
+  source: z.string().optional(),
+  receivedAt: z.coerce.date().optional(),
   expiryDate: z.coerce.date().nullable().optional(),
   isValid: z.boolean(),
   createdAt: z.coerce.date(),
@@ -103,6 +144,8 @@ export const BatchStatsSchema = z.object({
   totalBatches: z.number(),
   activeBatches: z.number(),
   totalQuantity: z.number(),
+  /** Сумма остатков — именно она должна совпадать со Stock.quantity */
+  remainingQuantity: z.number().optional(),
   nearestExpiry: z.coerce.date().nullable().optional(),
   createdAtEarliest: z.coerce.date().nullable().optional(),
 });

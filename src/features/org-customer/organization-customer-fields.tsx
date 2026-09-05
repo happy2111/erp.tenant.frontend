@@ -1,6 +1,14 @@
+'use client';
+
 import { CrudField } from "@/components/crud/types";
 import { OrganizationCustomer } from "@/schemas/org-customer.schema";
-import { CustomerTypeValues } from "@/schemas/org-customer.schema";
+
+function RolesBadges({ row }: { row: OrganizationCustomer }) {
+  const parts: string[] = [];
+  if (row.isClient) parts.push("Клиент");
+  if (row.isSupplier) parts.push("Поставщик");
+  return parts.length ? parts.join(" · ") : "—";
+}
 
 export const organizationCustomerFields: CrudField<OrganizationCustomer>[] = [
   {
@@ -11,7 +19,7 @@ export const organizationCustomerFields: CrudField<OrganizationCustomer>[] = [
   {
     name: "lastName",
     label: "Фамилия",
-    required: true,
+    placeholder: "Необязательно",
   },
   {
     name: "patronymic",
@@ -22,20 +30,35 @@ export const organizationCustomerFields: CrudField<OrganizationCustomer>[] = [
     name: "phone",
     label: "Телефон",
     type: "phone",
-    placeholder: "+998901234567",
+    placeholder: "+998901234567 (необязательно)",
   },
   {
-    name: "type",
-    label: "Тип",
-    type: "select",
-    options: CustomerTypeValues.map((v) => ({ label: v === "CLIENT" ? "Клиент" : "Поставщик", value: v })),
-    required: true,
+    name: "isClient",
+    label: "Клиент",
+    type: "boolean",
+    helperText: "Роль для продаж",
+    hiddenInTable: true,
+    hiddenInCard: true,
+  },
+  {
+    name: "isSupplier",
+    label: "Поставщик",
+    type: "boolean",
+    helperText: "Роль для закупок",
+    hiddenInTable: true,
+    hiddenInCard: true,
+  },
+  {
+    name: "roles",
+    label: "Роли",
+    hiddenInForm: true,
+    render: (row) => <RolesBadges row={row} />,
   },
   {
     name: "isBlacklisted",
-    label: "Чёрный список",
+    label: "Qora roʻyxat",
     type: "boolean",
-    render: (row) => (row.isBlacklisted ? "Да" : "—"),
+    render: (row) => (row.isBlacklisted ? "Ha" : "—"),
   },
   {
     name: "createdAt",

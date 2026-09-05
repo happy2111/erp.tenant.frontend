@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
+// ─── Статусы закупки ─────────────────────────────────────────────────
+// CONFIRMED — товар принят на склад партиями, но ещё не оплачен.
+// Появился вместе с учётом себестоимости: раньше приход и оплата были
+// одним действием, теперь это два разных события.
 export const PurchaseStatusValues = [
   'DRAFT',
+  'CONFIRMED',
   'PARTIAL',
   'PAID',
   'CANCELLED',
@@ -11,51 +16,115 @@ export type PurchaseStatus = (typeof PurchaseStatusValues)[number];
 
 export const PurchaseStatusLabels: Record<PurchaseStatus, string> = {
   DRAFT: 'QORALAMA',
+  CONFIRMED: 'QABUL QILINGAN',
   PARTIAL: 'QISMAN',
   PAID: 'TO\'LANGAN',
   CANCELLED: 'BEKOR QILINGAN',
-}
+};
 
+export const PurchaseStatusStyles: Record<PurchaseStatus, string> = {
+  DRAFT: 'bg-blue-500/20 text-blue-600 border-blue-500/20',
+  CONFIRMED: 'bg-violet-500/20 text-violet-600 border-violet-500/20',
+  PARTIAL: 'bg-orange-500/20 text-orange-600 border-orange-500/20',
+  PAID: 'bg-emerald-500/20 text-emerald-600 border-emerald-500/20',
+  CANCELLED: 'bg-destructive/20 text-destructive border-destructive/20',
+};
 
+// ─── Происхождение партии ────────────────────────────────────────────
+export const BatchSourceValues = [
+  'PURCHASE',
+  'OPENING_BALANCE',
+  'INVENTORY_SURPLUS',
+  'CUSTOMER_RETURN',
+] as const;
+
+export type BatchSource = (typeof BatchSourceValues)[number];
+
+export const BatchSourceLabels: Record<BatchSource, string> = {
+  PURCHASE: 'XARID',
+  OPENING_BALANCE: 'BOSHLANG‘ICH QOLDIQ',
+  INVENTORY_SURPLUS: 'INVENTARIZATSIYA ORTIQCHASI',
+  CUSTOMER_RETURN: 'MIJOZ QAYTARGAN',
+};
 
 // ─── Позиция в закупке (одна строка накладной) ──────────────────────
-export const CreatePurchaseItemSchema = z.object({
-  productVariantId: z.string().uuid('Некорректный ID варианта товара'),
-  quantity: z.number().int().positive('Количество должно быть > 0'),
-  price: z.number().positive(),
-  discount: z.coerce.number().nonnegative().default(0),
-  batchNumber: z.string().max(64).optional().nullable(),
-  expiryDate: z.string().datetime().optional().nullable(),
+/** Серийная единица (namuna) внутри позиции */
+export const CreatePurchaseItemInstanceSchema = z.object({
+  serialNumber: z.string().min(1, 'Serial majburiy'),
+  price: z.number().positive().optional(),
+  discount: z.coerce.number().nonnegative().optional(),
+  attributeValueIds: z.array(z.string().uuid()).default([]),
 });
+
+export type CreatePurchaseItemInstanceDto = z.infer<
+  typeof CreatePurchaseItemInstanceSchema
+>;
+
+export const CreatePurchaseItemSchema = z
+  .object({
+    productVariantId: z.string().uuid('Некорректный ID варианта товара'),
+    quantity: z.number().int().positive('Количество должно быть > 0'),
+    price: z.number().positive(),
+    discount: z.coerce.number().nonnegative().default(0),
+    batchNumber: z.string().max(64).optional().nullable(),
+    expiryDate: z.string().datetime().optional().nullable(),
+    instances: z.array(CreatePurchaseItemInstanceSchema).optional(),
+  })
+  .refine(
+    (data) =>
+      !data.instances?.length || data.instances.length === data.quantity,
+    {
+      message: 'Namunalar soni miqdorga teng bo‘lishi kerak',
+      path: ['instances'],
+    },
+  );
 
 export type CreatePurchaseItemDto = z.infer<typeof CreatePurchaseItemSchema>;
 
 // ─── Создание закупки ────────────────────────────────────────────────
+// Документ всегда создаётся черновиком: ни склад, ни касса не трогаются.
+// Приход и оплата — отдельным вызовом confirm.
 export const CreatePurchaseSchema = z.object({
   supplierId: z.string().uuid('Некорректный ID поставщика'),
   kassaId: z.string().uuid().optional().nullable(),
-  status: z.enum(PurchaseStatusValues).optional().default('DRAFT'),
+  purchaseDate: z.string().datetime().optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
   currencyId: z.string().uuid('Некорректный ID валюты'),
 
   items: z
     .array(CreatePurchaseItemSchema)
     .min(1, 'Должна быть хотя бы одна позиция'),
-
-  initialPayment: z.coerce.number().nonnegative().optional().nullable(),
 });
 
 export type CreatePurchaseDto = z.infer<typeof CreatePurchaseSchema>;
 
-// ─── Обновление закупки ──────────────────────────────────────────────
+// ─── Обновление закупки (только черновик) ────────────────────────────
 export const UpdatePurchaseSchema = z.object({
   supplierId: z.string().uuid().optional().nullable(),
   kassaId: z.string().uuid().optional().nullable(),
-  status: z.enum(PurchaseStatusValues).optional(),
+  purchaseDate: z.string().datetime().optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
 });
 
 export type UpdatePurchaseDto = z.infer<typeof UpdatePurchaseSchema>;
+
+// ─── Проведение закупки ──────────────────────────────────────────────
+// Без кассы — товар приходуется, документ остаётся неоплаченным (CONFIRMED).
+// exchangeRate перебивает справочник курсов: пригодится, когда курса на дату
+// накладной в базе нет.
+export const ConfirmPurchaseSchema = z.object({
+  kassaId: z.string().uuid().optional().nullable(),
+  exchangeRate: z.coerce.number().positive().optional().nullable(),
+});
+
+export type ConfirmPurchaseDto = z.infer<typeof ConfirmPurchaseSchema>;
+
+// ─── Отмена проведённой закупки ──────────────────────────────────────
+export const CancelPurchaseSchema = z.object({
+  reason: z.string().max(500).optional().nullable(),
+});
+
+export type CancelPurchaseDto = z.infer<typeof CancelPurchaseSchema>;
 
 // ─── Фильтр / поиск закупок ──────────────────────────────────────────
 export const GetPurchaseQuerySchema = z.object({
@@ -71,15 +140,228 @@ export const GetPurchaseQuerySchema = z.object({
 export type GetPurchaseQueryDto = z.infer<typeof GetPurchaseQuerySchema>;
 
 // ─── Оплата по закупке ───────────────────────────────────────────────
+// amount именно число: бэкенд валидирует @IsNumber(), а глобальный
+// ValidationPipe идёт без enableImplicitConversion — строка вернёт 400.
 export const PayPurchaseSchema = z.object({
   kassaId: z.string().uuid('Некорректный ID кассы'),
-  amount: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/, 'Некорректный формат суммы'),
+  amount: z.number().positive('Сумма должна быть больше нуля'),
   note: z.string().max(500).optional().nullable(),
 });
 
 export type PayPurchaseDto = z.infer<typeof PayPurchaseSchema>;
+
+// ─── Партия товара ───────────────────────────────────────────────────
+// costPrice — себестоимость единицы в валюте закупки,
+// costPriceBase — она же в базовой валюте по курсу на дату накладной.
+// costPriceBase заморожен: меняется курс — цифра в партии остаётся прежней.
+export const ProductBatchSchema = z.object({
+  id: z.string().uuid(),
+  organizationId: z.string().uuid(),
+  productVariantId: z.string().uuid(),
+  batchNumber: z.string(),
+  expiryDate: z.coerce.date().nullable().optional(),
+  quantity: z.number(),
+  remainingQuantity: z.number(),
+  soldQuantity: z.number().optional(),
+  costPrice: z.coerce.number(),
+  costPriceBase: z.coerce.number(),
+  currencyId: z.string().uuid(),
+  receivedAt: z.coerce.date(),
+  source: z.enum(BatchSourceValues),
+  isValid: z.boolean(),
+  createdAt: z.coerce.date(),
+  purchaseId: z.string().uuid().nullable().optional(),
+  purchaseItemId: z.string().uuid().nullable().optional(),
+  supplierId: z.string().uuid().nullable().optional(),
+
+  product_variant: z
+    .object({
+      id: z.string().uuid(),
+      title: z.string(),
+      sku: z.string().nullable().optional(),
+      barcode: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+  currency: z
+    .object({
+      id: z.string().uuid(),
+      code: z.string(),
+      symbol: z.string(),
+    })
+    .nullable()
+    .optional(),
+  supplier: z
+    .object({
+      id: z.string().uuid(),
+      firstName: z.string().nullable(),
+      lastName: z.string().nullable(),
+      phone: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+  purchase: z
+    .object({
+      id: z.string().uuid(),
+      invoiceNumber: z.string().nullable(),
+      purchaseDate: z.coerce.date().optional(),
+    })
+    .nullable()
+    .optional(),
+});
+
+export type ProductBatch = z.infer<typeof ProductBatchSchema>;
+
+export const BatchesListResponseSchema = z.object({
+  items: z.array(ProductBatchSchema),
+  total: z.number(),
+  page: z.number(),
+  limit: z.number(),
+  totalPages: z.number(),
+});
+
+export const GetBatchesQuerySchema = z.object({
+  variantId: z.string().uuid().optional(),
+  supplierId: z.string().uuid().optional(),
+  purchaseId: z.string().uuid().optional(),
+  source: z.enum(BatchSourceValues).optional(),
+  /** Строка, а не boolean: бэкенд валидирует через @IsBooleanString */
+  onlyAvailable: z.enum(['true', 'false']).optional(),
+  search: z.string().optional(),
+  order: z.enum(['asc', 'desc']).optional(),
+  page: z.coerce.number().min(1).optional(),
+  limit: z.coerce.number().min(1).max(100).optional(),
+});
+
+export type GetBatchesQueryDto = z.infer<typeof GetBatchesQuerySchema>;
+
+// ─── «За сколько куплен вариант» ─────────────────────────────────────
+export const VariantCostSchema = z.object({
+  variant: z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+    sku: z.string().nullable().optional(),
+    barcode: z.string().nullable().optional(),
+    defaultPrice: z.coerce.number().nullable().optional(),
+  }),
+  /** Остаток по таблице Stock */
+  stockQuantity: z.number(),
+  /** Остаток по сумме партий; расхождение — признак рассинхрона */
+  batchesQuantity: z.number(),
+  inSync: z.boolean(),
+  batchesCount: z.number(),
+  availableBatchesCount: z.number(),
+  totalCostBase: z.coerce.number(),
+  averageCostBase: z.coerce.number(),
+  minCostBase: z.coerce.number(),
+  maxCostBase: z.coerce.number(),
+  lastPurchase: z
+    .object({
+      batchNumber: z.string(),
+      costPrice: z.coerce.number(),
+      costPriceBase: z.coerce.number(),
+      currency: z
+        .object({
+          id: z.string().uuid(),
+          code: z.string(),
+          symbol: z.string(),
+        })
+        .nullable()
+        .optional(),
+      receivedAt: z.coerce.date(),
+      supplier: z
+        .object({
+          id: z.string().uuid(),
+          firstName: z.string().nullable(),
+          lastName: z.string().nullable(),
+        })
+        .nullable()
+        .optional(),
+      purchase: z
+        .object({
+          id: z.string().uuid(),
+          invoiceNumber: z.string().nullable(),
+        })
+        .nullable()
+        .optional(),
+    })
+    .nullable()
+    .optional(),
+});
+
+export type VariantCost = z.infer<typeof VariantCostSchema>;
+
+// ─── История закупочных цен варианта ─────────────────────────────────
+export const PriceHistoryItemSchema = z.object({
+  purchaseId: z.string().uuid(),
+  invoiceNumber: z.string().nullable(),
+  purchaseDate: z.coerce.date(),
+  supplier: z
+    .object({
+      id: z.string().uuid(),
+      firstName: z.string().nullable(),
+      lastName: z.string().nullable(),
+    })
+    .nullable()
+    .optional(),
+  currency: z
+    .object({
+      id: z.string().uuid(),
+      code: z.string(),
+      symbol: z.string(),
+    })
+    .nullable()
+    .optional(),
+  quantity: z.number(),
+  price: z.coerce.number(),
+  discount: z.coerce.number(),
+  costPrice: z.coerce.number(),
+  costPriceBase: z.coerce.number().nullable(),
+  exchangeRate: z.coerce.number().nullable(),
+  batchNumber: z.string().nullable(),
+});
+
+export type PriceHistoryItem = z.infer<typeof PriceHistoryItemSchema>;
+
+export const PriceHistoryResponseSchema = z.array(PriceHistoryItemSchema);
+
+// ─── Позиция закупки (ответ сервера) ─────────────────────────────────
+/** Черновик namuna до проведения — лежит в PurchaseItem.instancesJson */
+export const PurchaseItemInstanceDraftSchema = z.object({
+  serialNumber: z.string(),
+  price: z.number().nullable().optional(),
+  discount: z.number().nullable().optional(),
+  attributeValueIds: z.array(z.string()).optional().default([]),
+});
+
+export const PurchaseItemInstanceSchema = z.object({
+  id: z.string().uuid(),
+  serialNumber: z.string(),
+  currentStatus: z.string(),
+  costPrice: z.coerce.number().nullable().optional(),
+  costPriceBase: z.coerce.number().nullable().optional(),
+  attributes: z
+    .array(
+      z.object({
+        id: z.string().uuid().optional(),
+        value: z
+          .object({
+            value: z.string(),
+            attribute: z
+              .object({
+                id: z.string().uuid().optional(),
+                name: z.string(),
+                key: z.string().optional(),
+              })
+              .optional(),
+          })
+          .optional(),
+      }),
+    )
+    .optional()
+    .default([]),
+});
+
 export const PurchaseItemSchema = z.object({
   id: z.string().uuid(),
   productVariantId: z.string().uuid(),
@@ -89,9 +371,17 @@ export const PurchaseItemSchema = z.object({
   discount: z.coerce.number(),
   total: z.coerce.number(),
 
-
   batchNumber: z.string().nullable().optional(),
   expiryDate: z.coerce.date().nullable().optional(),
+
+  /** Черновик экземпляров (пока документ DRAFT) */
+  instancesJson: z
+    .array(PurchaseItemInstanceDraftSchema)
+    .nullable()
+    .optional(),
+
+  /** Созданные при проведении ProductInstance */
+  product_instances: z.array(PurchaseItemInstanceSchema).optional().default([]),
 
   product_variant: z
     .object({
@@ -106,12 +396,12 @@ export const PurchaseItemSchema = z.object({
   product_batches: z.array(z.any()).optional().default([]),
 });
 
-
 export type PurchaseItem = z.infer<typeof PurchaseItemSchema>;
+
 export const PurchaseSuplierUser = z.object({
   id: z.string().uuid(),
   phone_numbers: z.array(z.any()).optional().default([]),
-})
+});
 
 // ─── Полная закупка (ответ от сервера) ───────────────────────────────
 export const PurchaseSchema = z.object({
@@ -122,15 +412,31 @@ export const PurchaseSchema = z.object({
   responsibleId: z.string().uuid().nullable().optional(),
   kassaId: z.string().uuid().nullable().optional(),
   purchaseDate: z.coerce.date(),
-  totalAmount: z.number(),
-  paidAmount: z.number(),
+  totalAmount: z.coerce.number(),
+  paidAmount: z.coerce.number(),
   currencyId: z.string().uuid(),
   status: z.enum(PurchaseStatusValues),
   notes: z.string().nullable().optional(),
 
+  /** Курс к базовой валюте, зафиксированный при проведении */
+  exchangeRate: z.coerce.number().nullable().optional(),
+  baseCurrencyId: z.string().uuid().nullable().optional(),
+  confirmedAt: z.coerce.date().nullable().optional(),
+  confirmedBy: z.string().nullable().optional(),
+
   items: z.array(PurchaseItemSchema).default([]),
+  /** Партии, созданные проведением документа */
+  product_batches: z.array(ProductBatchSchema).optional().default([]),
   currency: z
     .object({
+      code: z.string(),
+      symbol: z.string(),
+    })
+    .optional()
+    .nullable(),
+  baseCurrency: z
+    .object({
+      id: z.string().uuid(),
       code: z.string(),
       symbol: z.string(),
     })

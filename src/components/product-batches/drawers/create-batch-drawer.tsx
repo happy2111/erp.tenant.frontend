@@ -1,10 +1,17 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreateProductBatchSchema, CreateProductBatchDto } from "@/schemas/product-batches.schema";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  CreateProductBatchSchema,
+  CreateProductBatchDto,
+  ManualBatchSourceLabels,
+  ManualBatchSourceValues,
+} from "@/schemas/product-batches.schema";
 import { ProductBatchesService } from "@/services/product-batches.service";
+import { currencyService } from "@/services/currency.service";
 import { toast } from "sonner";
 import {
   Drawer,
@@ -17,7 +24,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Boxes, Calendar, Loader2, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Boxes, Calendar, Loader2 } from "lucide-react";
 
 interface Props {
   variantId: string;
@@ -25,12 +39,24 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Ручное заведение партии. Партии из закупки создаёт проведение документа —
+ * здесь вводят начальные остатки и излишки инвентаризации. Себестоимость
+ * обязательна: без неё прибыль с продажи этой партии не посчитать.
+ */
 export function CreateBatchDrawer({ variantId, open, onOpenChange }: Props) {
   const queryClient = useQueryClient();
+
+  const { data: currencies } = useQuery({
+    queryKey: ["currencies"],
+    queryFn: () => currencyService.findAll(),
+    enabled: open,
+  });
 
   const {
     register,
     handleSubmit,
+    control,
     reset,
     formState: { errors },
   } = useForm<CreateProductBatchDto>({
@@ -38,21 +64,45 @@ export function CreateBatchDrawer({ variantId, open, onOpenChange }: Props) {
     defaultValues: {
       productVariantId: variantId,
       quantity: 1,
-      batchNumber: `BATCH-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`,
+      costPrice: 0,
+      source: "OPENING_BALANCE",
+      batchNumber: "",
     },
   });
+
+  // Номер-заготовку генерируем на открытии, а не в defaultValues: случайное
+  // число во время рендера — нечистая функция, и один и тот же номер
+  // подставлялся бы при каждом повторном открытии
+  useEffect(() => {
+    if (!open) return;
+    reset({
+      productVariantId: variantId,
+      quantity: 1,
+      costPrice: 0,
+      source: "OPENING_BALANCE",
+      batchNumber: `BATCH-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`,
+    });
+  }, [open, variantId, reset]);
 
   const mutation = useMutation({
     mutationFn: (data: CreateProductBatchDto) => ProductBatchesService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["product-batches", variantId] });
       queryClient.invalidateQueries({ queryKey: ["product-batches-stats", variantId] });
+      queryClient.invalidateQueries({ queryKey: ["variant-cost", variantId] });
+      queryClient.invalidateQueries({ queryKey: ["stocks"] });
       toast.success("Yangi partiya muvaffaqiyatli qo'shildi");
       reset();
       onOpenChange(false);
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
+    onError: (error: unknown) => {
+      const message = (
+        error as { response?: { data?: { message?: string | { message?: string } } } }
+      )?.response?.data?.message;
+      toast.error(
+        (typeof message === "string" ? message : message?.message) ||
+        "Xatolik yuz berdi"
+      );
     },
   });
 
@@ -64,14 +114,17 @@ export function CreateBatchDrawer({ variantId, open, onOpenChange }: Props) {
             <Boxes className="size-7 text-orange-600" />
           </div>
           <DrawerTitle className="text-2xl font-black italic uppercase tracking-tighter">
-            Partiya Qo'shish
+            Partiya Qo&apos;shish
           </DrawerTitle>
           <p className="text-[10px] uppercase tracking-[0.3em] opacity-40 font-bold">
-            Ombor zaxirasini to&apos;ldirish
+            Boshlang&apos;ich qoldiq yoki ortiqcha
           </p>
         </DrawerHeader>
 
-        <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit((data) => mutation.mutate(data))}
+          className="p-6 space-y-6 max-h-[70vh] overflow-y-auto"
+        >
           <div className="grid grid-cols-1 gap-6">
 
             {/* Batch Number */}
@@ -99,6 +152,87 @@ export function CreateBatchDrawer({ variantId, open, onOpenChange }: Props) {
                   className="h-12 rounded-2xl bg-muted/50 border-border/50 font-black focus:bg-background transition-all"
                 />
                 {errors.quantity && <p className="text-[10px] text-destructive font-bold">{errors.quantity.message}</p>}
+              </div>
+
+              {/* Cost price */}
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">
+                  Tannarx (Dona)
+                </Label>
+                <Input
+                  type="number"
+                  step="any"
+                  {...register("costPrice", { valueAsNumber: true })}
+                  className="h-12 rounded-2xl bg-muted/50 border-border/50 font-black focus:bg-background transition-all"
+                />
+                {errors.costPrice && <p className="text-[10px] text-destructive font-bold">{errors.costPrice.message}</p>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Currency */}
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">
+                  Valyuta
+                </Label>
+                <Controller
+                  control={control}
+                  name="currencyId"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="h-12 w-full rounded-2xl bg-muted/50 border-border/50 font-bold">
+                        <SelectValue placeholder="Tanlang" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {currencies?.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.code} <span className="opacity-50">{c.symbol}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.currencyId && <p className="text-[10px] text-destructive font-bold">{errors.currencyId.message}</p>}
+              </div>
+
+              {/* Source */}
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">
+                  Manba
+                </Label>
+                <Controller
+                  control={control}
+                  name="source"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="h-12 w-full rounded-2xl bg-muted/50 border-border/50 font-bold">
+                        <SelectValue placeholder="Tanlang" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ManualBatchSourceValues.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {ManualBatchSourceLabels[s]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Received at — ключ сортировки FIFO */}
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">
+                  Kelgan sana
+                </Label>
+                <Input
+                  type="datetime-local"
+                  {...register("receivedAt")}
+                  className="h-12 rounded-2xl bg-muted/50 border-border/50 focus:bg-background transition-all"
+                />
               </div>
 
               {/* Expiry Date */}

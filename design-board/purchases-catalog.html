@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Board — Xarid katalog · ApplePark</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #000; --white: #fff; --primary: #2F6BFF;
+      --gray-label: rgba(255,255,255,0.32);
+      --gray-line: rgba(255,255,255,0.10);
+      --gray-muted: rgba(255,255,255,0.40);
+      --gray-placeholder: rgba(255,255,255,0.22);
+      --board: #121214; --panel: #1C1C1E; --danger: #EF4444;
+      --border: rgba(255,255,255,0.08); --text: #f5f5f5; --muted: #8e8e93;
+      --dot: rgba(255,255,255,0.055);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%; overflow: hidden;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--board); color: var(--text); user-select: none;
+    }
+
+    .topbar {
+      position: fixed; inset: 0 0 auto 0; z-index: 50; height: 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      background: rgba(18,18,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+    .topbar-brand a { color: var(--muted); font-weight: 400; text-decoration: none; }
+    .topbar-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+    .topbar-hint { font-size: 12px; color: var(--muted); }
+    .topbar-hint kbd {
+      display: inline-block; padding: 2px 6px; margin: 0 2px; border-radius: 4px;
+      background: var(--panel); border: 1px solid var(--border); font: 11px Inter, sans-serif;
+    }
+
+    .zoom-bar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 50;
+      display: flex; align-items: center; gap: 4px; padding: 6px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    }
+    .zoom-bar button {
+      height: 32px; min-width: 32px; padding: 0 10px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font: 500 13px Inter, sans-serif; cursor: pointer;
+    }
+    .zoom-bar button:hover { background: rgba(255,255,255,0.08); }
+    .zoom-label { min-width: 52px; text-align: center; font-size: 12px; color: var(--muted); }
+    .zoom-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+    .viewport { position: fixed; inset: 48px 0 0 0; overflow: hidden; cursor: grab; touch-action: none; }
+    .viewport.is-panning { cursor: grabbing; }
+    .canvas { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+    .canvas-grid {
+      position: absolute; inset: -5000px; width: 20000px; height: 20000px;
+      background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+      background-size: 24px 24px; pointer-events: none;
+    }
+
+    .section-tag { position: absolute; display: flex; flex-direction: column; gap: 6px; max-width: 520px; }
+    .section-tag h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; }
+    .section-tag p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    .artboard { position: absolute; display: flex; flex-direction: column; gap: 10px; }
+    .artboard-meta { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .artboard-name { font-size: 12px; font-weight: 600; color: #8b8c90; }
+    .pair-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 4px 8px; border-radius: 6px; color: #fff; background: rgba(255,255,255,0.12);
+    }
+
+    .device {
+      position: relative; background: #111; border-radius: 44px; padding: 11px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 28px 80px rgba(0,0,0,0.55);
+    }
+    .device-screen {
+      position: relative; overflow: hidden; border-radius: 34px;
+      width: 393px; height: 852px; background: var(--black);
+    }
+    .island {
+      position: absolute; top: 11px; left: 50%; transform: translateX(-50%); z-index: 40;
+      width: 118px; height: 34px; background: #000; border-radius: 20px;
+    }
+    .home-ind {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 50;
+      width: 120px; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.28);
+    }
+
+    .full {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      padding: 54px 20px 24px; color: #fff; cursor: default; user-select: text; overflow: hidden;
+    }
+    .scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; padding-bottom: 8px; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    .status {
+      display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;
+      margin-bottom: 4px; opacity: 0.85;
+    }
+    .status .batt {
+      width: 22px; height: 11px; border: 1.5px solid rgba(255,255,255,0.7); border-radius: 2.5px; position: relative;
+    }
+    .status .batt::after {
+      content: ""; position: absolute; inset: 2px 2px 2px auto; width: 55%;
+      background: rgba(255,255,255,0.9); border-radius: 1px;
+    }
+
+    .topbar-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 4px 0 12px; min-height: 40px;
+    }
+    .nav-back {
+      width: 40px; height: 40px; border: none; background: none; cursor: pointer;
+      color: #fff; display: grid; place-items: center; margin-left: -8px;
+    }
+    .nav-back svg {
+      width: 22px; height: 22px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .bag {
+      width: 44px; height: 44px; border-radius: 99px;
+      display: grid; place-items: center; position: relative;
+      background: #fff; color: #000; border: none; font: 800 14px Inter, sans-serif; cursor: pointer;
+    }
+    .bag .n {
+      position: absolute; top: -4px; right: -4px;
+      min-width: 18px; height: 18px; padding: 0 5px;
+      background: #000; color: #fff; border: 1.5px solid #fff;
+      font: 700 10px Inter, sans-serif; border-radius: 9px; display: grid; place-items: center;
+    }
+
+    .hero {
+      font-size: 28px; font-weight: 800; letter-spacing: -0.045em;
+      line-height: 1.05; margin-bottom: 4px;
+    }
+    .hero.sm { font-size: 24px; }
+    .hint { font-size: 13px; line-height: 1.4; color: var(--gray-muted); margin-bottom: 14px; max-width: 34ch; }
+
+    .meta-line {
+      font-size: 12px; color: var(--gray-muted); margin-bottom: 14px;
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    }
+    .meta-line button {
+      background: none; border: none; font: 600 12px Inter, sans-serif;
+      color: #fff; cursor: pointer; padding: 0;
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+    .meta-line .sep { opacity: 0.35; }
+
+    .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .find {
+      flex: 1; display: flex; align-items: center; gap: 10px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--gray-line);
+    }
+    .find svg { width: 18px; height: 18px; stroke: var(--gray-muted); fill: none; stroke-width: 1.8; flex-shrink: 0; }
+    .find input {
+      flex: 1; border: none; background: none; outline: none;
+      font: 500 15px Inter, sans-serif; color: #fff;
+    }
+    .find input::placeholder { color: var(--gray-placeholder); }
+
+    .view-toggle {
+      display: flex; gap: 2px; padding: 3px; border-radius: 11px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--gray-line); flex-shrink: 0;
+    }
+    .view-toggle button {
+      width: 30px; height: 28px; border: none; border-radius: 8px;
+      background: transparent; color: var(--gray-muted);
+      display: grid; place-items: center; cursor: pointer; padding: 0;
+    }
+    .view-toggle button.active { background: #fff; color: #000; }
+    .view-toggle svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+    .filter-btn {
+      height: 34px; padding: 0 12px; border-radius: 99px;
+      border: 1px solid var(--gray-line); background: transparent;
+      color: #fff; font: 600 12px Inter, sans-serif; cursor: pointer; flex-shrink: 0;
+    }
+    .filter-btn.has { border-color: rgba(255,255,255,0.35); }
+
+    .tabs {
+      display: flex; gap: 16px; margin-bottom: 12px;
+      border-bottom: 1px solid var(--gray-line);
+    }
+    .tabs button {
+      background: none; border: none; padding: 0 0 10px;
+      font: 600 14px Inter, sans-serif; color: var(--gray-label);
+      border-bottom: 2px solid transparent; cursor: pointer;
+    }
+    .tabs button.active { color: #fff; border-bottom-color: #fff; }
+
+    /* List / grids */
+    .panel { display: none; }
+    .panel.is-on { display: block; }
+    .panel.grid.is-on { display: grid; gap: 8px; }
+    .panel.cols-2 { grid-template-columns: 1fr 1fr; }
+    .panel.cols-3 { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .panel.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
+
+    .rows { display: flex; flex-direction: column; }
+    .rows .item {
+      padding: 12px 14px; border-radius: 16px; cursor: pointer;
+    }
+    .rows .item.on { background: rgba(255,255,255,0.08); }
+    .rows .fade {
+      height: 1px; margin: 2px 14px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+    }
+    .rows .item.on + .fade, .rows .fade:has(+ .item.on) { opacity: 0; }
+
+    .l-title { font: 700 15px Inter, sans-serif; letter-spacing: -0.02em; }
+    .l-attrs { font-size: 12px; color: var(--gray-muted); margin-top: 3px; }
+    .l-meta {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+      font-size: 11px; font-weight: 600;
+    }
+    .chip-soft {
+      padding: 3px 8px; border-radius: 7px;
+      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7);
+    }
+    .chip-cost { color: #fff; background: rgba(255,255,255,0.10); }
+    .l-right { text-align: right; flex-shrink: 0; }
+    .l-price { font: 800 14px Inter, sans-serif; }
+    .l-sku { font-size: 10px; color: var(--gray-label); margin-top: 3px; }
+
+    .list-row {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+
+    .g-card {
+      border-radius: 14px; padding: 10px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--gray-line);
+      cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-height: 118px;
+    }
+    .cols-3 .g-card { min-height: 100px; padding: 8px; border-radius: 12px; }
+    .cols-4 .g-card { min-height: 88px; padding: 6px; border-radius: 10px; }
+    .g-card .t { font: 700 12px Inter, sans-serif; line-height: 1.25; letter-spacing: -0.02em; }
+    .cols-3 .g-card .t, .cols-4 .g-card .t { font-size: 11px; }
+    .g-card .a { font-size: 10px; color: var(--gray-muted); }
+    .cols-4 .g-card .a { display: none; }
+    .g-card .p { margin-top: auto; font: 800 12px Inter, sans-serif; }
+    .g-card .c { font-size: 9px; color: var(--gray-label); }
+
+    .empty-create {
+      margin-top: 20px; padding: 18px 16px; border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.22);
+      text-align: left; cursor: pointer;
+    }
+    .empty-create .t { font: 700 15px Inter, sans-serif; margin-bottom: 6px; }
+    .empty-create .s { font-size: 13px; color: var(--gray-muted); line-height: 1.4; }
+
+    .float-save {
+      position: absolute; right: 20px; bottom: 28px; z-index: 20;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px 10px 18px; border-radius: 99px;
+      background: #fff; color: #000; border: none; cursor: pointer;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      font: 700 15px Inter, sans-serif; letter-spacing: -0.02em;
+    }
+    .float-save svg {
+      width: 18px; height: 18px; stroke: #000; fill: none;
+      stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Sheets */
+    .sheet-wrap { position: absolute; inset: 0; z-index: 25; }
+    .sheet-wrap .dim { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+    .sheet {
+      position: absolute; left: 0; right: 0; bottom: 0; max-height: 82%;
+      background: #0c0c0e; border-radius: 28px 28px 0 0;
+      border-top: 1px solid var(--gray-line);
+      padding: 12px 20px 28px; display: flex; flex-direction: column;
+    }
+    .sheet-handle {
+      width: 36px; height: 5px; border-radius: 3px;
+      background: rgba(255,255,255,0.28); margin: 0 auto 14px;
+    }
+    .sheet-title { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
+    .sheet-sub { font-size: 13px; color: var(--gray-muted); margin-bottom: 16px; line-height: 1.4; }
+    .sheet-scroll { flex: 1; overflow-y: auto; scrollbar-width: none; min-height: 0; }
+    .sheet-scroll::-webkit-scrollbar { display: none; }
+
+    .ufield { margin-bottom: 22px; }
+    .ufield label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: var(--gray-label); margin-bottom: 10px;
+    }
+    .ufield .uline {
+      padding-bottom: 12px; border-bottom: 1px solid var(--gray-line);
+      font: 500 16px Inter, sans-serif; color: #fff;
+    }
+    .ufield .uline.ph { color: var(--gray-placeholder); }
+
+    .opt-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .opt {
+      min-height: 34px; padding: 0 12px; border-radius: 10px;
+      border: 1px solid var(--gray-line); background: transparent;
+      color: var(--gray-muted); font: 600 12px Inter, sans-serif; cursor: pointer;
+    }
+    .opt.active { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.35); }
+
+    .step-dots { display: flex; align-items: center; gap: 6px; }
+    .step-dots i {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.18); font-style: normal;
+    }
+    .step-dots i.on { background: #fff; width: 18px; border-radius: 3px; }
+
+    .note {
+      width: 420px; padding: 16px 18px; background: var(--panel);
+      border: 1px solid var(--border); border-radius: 14px;
+      font-size: 12px; line-height: 1.55; color: var(--muted);
+      cursor: default; user-select: text;
+    }
+    .note b { color: #fff; }
+    .note code {
+      font-size: 11px; padding: 1px 5px; border-radius: 4px;
+      background: rgba(255,255,255,0.08); color: #ddd;
+    }
+
+    .tree {
+      width: 420px; padding: 18px; border-radius: 16px;
+      background: var(--panel); border: 1px solid var(--border);
+      font-size: 13px; line-height: 1.6; color: var(--muted); cursor: default; user-select: text;
+    }
+    .tree .h { color: #fff; font-weight: 800; font-size: 14px; margin-bottom: 10px; }
+    .tree .branch { margin: 8px 0 8px 12px; padding-left: 12px; border-left: 1px solid var(--border); }
+    .tree .leaf { color: #fff; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-dot"></span>
+      Xarid · Katalog
+      <a href="purchases.html">Flow</a>
+      <a href="sell.html">Sotuv</a>
+    </div>
+    <div class="topbar-hint">Variant ≠ Namuna · filtr · grid · tezkor yaratish · <kbd>0</kbd> Fit</div>
+  </div>
+
+  <div class="viewport" id="viewport">
+    <div class="canvas" id="canvas">
+      <div class="canvas-grid"></div>
+
+      <!-- Model -->
+      <div class="section-tag" style="left:40px;top:40px">
+        <h1>0 · Maʼlumotlar modeli</h1>
+        <p>Xarid katalogining asosiy birligi — <b>Variant</b>. Product — klassifikatsiya. Namuna — serial.</p>
+      </div>
+
+      <div class="artboard" style="left:40px;top:130px">
+        <div class="artboard-meta"><span class="artboard-name">Model</span></div>
+        <div class="tree">
+          <div class="h">Mahsulot (Product)</div>
+          ism, brand, kategoriya — «iPhone 15»
+          <div class="branch">
+            <span class="leaf">Variant</span> — SKU / barcode / atributlar / ombor miqdori<br/>
+            «iPhone 15 128 Black» · oxirgi xarid narxi · partiya
+          </div>
+          <div class="branch">
+            <span class="leaf">Namuna (Instance)</span> — serial / IMEI · bitta dona<br/>
+            Variant ostida; xaridda miqdor = serial soni
+          </div>
+          <div style="margin-top:12px;color:#fff;font-weight:700">Qoida</div>
+          Bir xarid qatorida bir variant uchun <b>yoki</b> partiya (miqdor), <b>yoki</b> namuna (serial) — ikkalasi birga emas.
+        </div>
+      </div>
+
+      <div class="artboard" style="left:500px;top:130px">
+        <div class="artboard-meta"><span class="artboard-name">Xaridor uchun maydonlar</span></div>
+        <div class="note">
+          <b>Ko‘rsatish (must):</b><br/>
+          · Variant nomi (<code>title</code>)<br/>
+          · Atributlar (rang, xotira…)<br/>
+          · SKU / barcode (qidiruv)<br/>
+          · <b>Oxirgi xarid narxi</b> (price-history)<br/>
+          · Ombordagi qoldiq (stock yoki IN_STOCK namuna)<br/><br/>
+          <b>Qo‘shishda:</b> xarid narxi · chegirma · partiya № / serial · yaroqlilik<br/><br/>
+          <b>Kerak emas katalogda:</b> avatar, ichki id, sotuv narxlari (POS).
+        </div>
+      </div>
+
+      <!-- Catalog interactive -->
+      <div class="section-tag" style="left:40px;top:520px">
+        <h1>A · Katalog (must-have)</h1>
+        <p>Tab: Variantlar | Namunalar. Filtr. Ko‘rinish: List · 2× · 3× · 4×. Bo‘sh qidiruv → tezkor yaratish.</p>
+      </div>
+
+      <div class="artboard" style="left:40px;top:620px">
+        <div class="artboard-meta">
+          <span class="artboard-name">A1 · Katalog</span>
+          <span class="artboard-size" data-view-label>List</span>
+          <span class="pair-tag">Interactive</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full" data-pos-view>
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button type="button" class="bag">2<span class="n">2</span></button>
+            </div>
+            <div class="hero sm">Ombor</div>
+            <div class="meta-line">
+              <span>Aziza K.</span><span class="sep">·</span><span>UZS</span><span class="sep">·</span>
+              <button type="button">O‘zgartirish</button>
+            </div>
+
+            <div class="tabs" data-tabs>
+              <button type="button" class="active">Variantlar</button>
+              <button type="button">Namunalar</button>
+            </div>
+
+            <div class="toolbar">
+              <div class="find">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                <input placeholder="Nom, SKU, barcode…" readonly />
+              </div>
+              <button type="button" class="filter-btn has">Filtr · 2</button>
+            </div>
+            <div class="toolbar" style="margin-top:-2px; margin-bottom:12px; justify-content:flex-end">
+              <div class="view-toggle" data-view-toggle>
+                <button type="button" class="active" data-view="list" title="List" aria-label="Roʻyxat">
+                  <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                </button>
+                <button type="button" data-view="grid2" title="2×">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+                </button>
+                <button type="button" data-view="grid3" title="3×">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="5.5" height="5.5" rx="1"/><rect x="9.25" y="2" width="5.5" height="5.5" rx="1"/><rect x="16.5" y="2" width="5.5" height="5.5" rx="1"/><rect x="2" y="9.25" width="5.5" height="5.5" rx="1"/><rect x="9.25" y="9.25" width="5.5" height="5.5" rx="1"/><rect x="16.5" y="9.25" width="5.5" height="5.5" rx="1"/><rect x="2" y="16.5" width="5.5" height="5.5" rx="1"/><rect x="9.25" y="16.5" width="5.5" height="5.5" rx="1"/><rect x="16.5" y="16.5" width="5.5" height="5.5" rx="1"/></svg>
+                </button>
+                <button type="button" data-view="grid4" title="4×">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="4" height="4" rx="0.8"/><rect x="7.3" y="2" width="4" height="4" rx="0.8"/><rect x="12.7" y="2" width="4" height="4" rx="0.8"/><rect x="18" y="2" width="4" height="4" rx="0.8"/><rect x="2" y="7.3" width="4" height="4" rx="0.8"/><rect x="7.3" y="7.3" width="4" height="4" rx="0.8"/><rect x="12.7" y="7.3" width="4" height="4" rx="0.8"/><rect x="18" y="7.3" width="4" height="4" rx="0.8"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="scroll">
+              <div class="panel is-on" data-view-panel="list">
+                <div class="rows">
+                  <div class="item">
+                    <div class="list-row">
+                      <div>
+                        <div class="l-title">iPhone 15 128</div>
+                        <div class="l-attrs">Black · 128GB</div>
+                        <div class="l-meta">
+                          <span class="chip-soft">Qoldiq 4</span>
+                          <span class="chip-cost">Oxirgi 8.2M</span>
+                        </div>
+                      </div>
+                      <div class="l-right">
+                        <div class="l-price">8.2M</div>
+                        <div class="l-sku">IP15-128-BK</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="fade"></div>
+                  <div class="item">
+                    <div class="list-row">
+                      <div>
+                        <div class="l-title">AirPods Pro 2</div>
+                        <div class="l-attrs">USB-C</div>
+                        <div class="l-meta">
+                          <span class="chip-soft">Qoldiq 12</span>
+                          <span class="chip-cost">Oxirgi 2.1M</span>
+                        </div>
+                      </div>
+                      <div class="l-right">
+                        <div class="l-price">2.1M</div>
+                        <div class="l-sku">APP2-USB</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="fade"></div>
+                  <div class="item">
+                    <div class="list-row">
+                      <div>
+                        <div class="l-title">Watch 9 45mm</div>
+                        <div class="l-attrs">Aluminium · Midnight</div>
+                        <div class="l-meta">
+                          <span class="chip-soft">Qoldiq 3</span>
+                          <span class="chip-cost">Oxirgi 4.5M</span>
+                        </div>
+                      </div>
+                      <div class="l-right">
+                        <div class="l-price">4.5M</div>
+                        <div class="l-sku">AW9-45</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel grid cols-2" data-view-panel="grid2">
+                <div class="g-card"><div class="t">iPhone 15 128</div><div class="a">Black</div><div class="p">8.2M</div><div class="c">oxirgi · qoldiq 4</div></div>
+                <div class="g-card"><div class="t">AirPods Pro 2</div><div class="a">USB-C</div><div class="p">2.1M</div><div class="c">oxirgi · qoldiq 12</div></div>
+                <div class="g-card"><div class="t">Watch 9 45</div><div class="a">Midnight</div><div class="p">4.5M</div><div class="c">oxirgi · qoldiq 3</div></div>
+                <div class="g-card"><div class="t">Case MagSafe</div><div class="a">Black</div><div class="p">280K</div><div class="c">oxirgi · qoldiq 40</div></div>
+              </div>
+              <div class="panel grid cols-3" data-view-panel="grid3">
+                <div class="g-card"><div class="t">iPhone 15</div><div class="a">128</div><div class="p">8.2M</div><div class="c">4 dona</div></div>
+                <div class="g-card"><div class="t">AirPods</div><div class="a">Pro 2</div><div class="p">2.1M</div><div class="c">12</div></div>
+                <div class="g-card"><div class="t">Watch 9</div><div class="a">45</div><div class="p">4.5M</div><div class="c">3</div></div>
+                <div class="g-card"><div class="t">Case</div><div class="a">MS</div><div class="p">280K</div><div class="c">40</div></div>
+                <div class="g-card"><div class="t">Cable</div><div class="a">1m</div><div class="p">120K</div><div class="c">20</div></div>
+                <div class="g-card"><div class="t">20W</div><div class="a">—</div><div class="p">350K</div><div class="c">8</div></div>
+              </div>
+              <div class="panel grid cols-4" data-view-panel="grid4">
+                <div class="g-card"><div class="t">iP15</div><div class="p">8.2M</div></div>
+                <div class="g-card"><div class="t">AP2</div><div class="p">2.1M</div></div>
+                <div class="g-card"><div class="t">W9</div><div class="p">4.5M</div></div>
+                <div class="g-card"><div class="t">Case</div><div class="p">280K</div></div>
+                <div class="g-card"><div class="t">Cable</div><div class="p">120K</div></div>
+                <div class="g-card"><div class="t">20W</div><div class="p">350K</div></div>
+                <div class="g-card"><div class="t">Glass</div><div class="p">90K</div></div>
+                <div class="g-card"><div class="t">Band</div><div class="p">400K</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Filter -->
+      <div class="artboard" style="left:500px;top:620px">
+        <div class="artboard-meta">
+          <span class="artboard-name">A2 · Filtr</span>
+          <span class="pair-tag">Must</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full" style="opacity:0.28;pointer-events:none">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="hero sm" style="margin-top:40px">Ombor</div>
+          </div>
+          <div class="sheet-wrap">
+            <div class="dim"></div>
+            <div class="sheet">
+              <div class="sheet-handle"></div>
+              <div class="sheet-title">Filtrlar</div>
+              <div class="sheet-sub">POS uslubi — atributlar (variant uchun)</div>
+              <div class="sheet-scroll">
+                <div class="ufield">
+                  <label>Rang</label>
+                  <div class="opt-row">
+                    <button type="button" class="opt active">Black</button>
+                    <button type="button" class="opt">White</button>
+                    <button type="button" class="opt">Blue</button>
+                  </div>
+                </div>
+                <div class="ufield">
+                  <label>Xotira</label>
+                  <div class="opt-row">
+                    <button type="button" class="opt">128</button>
+                    <button type="button" class="opt active">256</button>
+                    <button type="button" class="opt">512</button>
+                  </div>
+                </div>
+                <div class="ufield">
+                  <label>Kategoriya</label>
+                  <div class="opt-row">
+                    <button type="button" class="opt active">Telefon</button>
+                    <button type="button" class="opt">Aksessuar</button>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="float-save" style="position:relative;right:auto;bottom:auto;align-self:flex-end;margin-top:12px">
+                Qo‘llash<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Namunalar tab -->
+      <div class="artboard" style="left:960px;top:620px">
+        <div class="artboard-meta">
+          <span class="artboard-name">A3 · Namunalar tabi</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button type="button" class="bag">2<span class="n">2</span></button>
+            </div>
+            <div class="hero sm">Ombor</div>
+            <div class="tabs">
+              <button type="button">Variantlar</button>
+              <button type="button" class="active">Namunalar</button>
+            </div>
+            <p class="hint">Faqat seriali bor variantlar. Kartada — ombordagi namuna soni.</p>
+            <div class="scroll rows">
+              <div class="item">
+                <div class="list-row">
+                  <div>
+                    <div class="l-title">iPhone 15 Pro 256</div>
+                    <div class="l-attrs">Natural · 256GB</div>
+                    <div class="l-meta">
+                      <span class="chip-soft">Namuna 3</span>
+                      <span class="chip-cost">Oxirgi 11.4M</span>
+                    </div>
+                  </div>
+                  <div class="l-right"><div class="l-price">11.4M</div><div class="l-sku">Serial</div></div>
+                </div>
+              </div>
+              <div class="fade"></div>
+              <div class="item">
+                <div class="list-row">
+                  <div>
+                    <div class="l-title">iPhone 14 128</div>
+                    <div class="l-attrs">Blue</div>
+                    <div class="l-meta">
+                      <span class="chip-soft">Namuna 1</span>
+                      <span class="chip-cost">Oxirgi 6.8M</span>
+                    </div>
+                  </div>
+                  <div class="l-right"><div class="l-price">6.8M</div><div class="l-sku">Serial</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Add flows -->
+      <div class="section-tag" style="left:40px;top:1580px">
+        <h1>B · Tanlashdan keyin</h1>
+        <p>Variant → partiya/miqdor. Namuna → seriallar. Bir qatorda aralashtirmaslik.</p>
+      </div>
+
+      <div class="artboard" style="left:40px;top:1680px">
+        <div class="artboard-meta">
+          <span class="artboard-name">B1 · Variant qo‘shish</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            </div>
+            <div class="hero sm">iPhone 15 128</div>
+            <p class="hint">Black · SKU IP15-128-BK · oxirgi 8.2M</p>
+            <div class="ufield"><label>Miqdor</label><div class="uline">2</div></div>
+            <div class="ufield"><label>Xarid narxi</label><div class="uline">8 200 000</div></div>
+            <div class="ufield"><label>Partiya №</label><div class="uline ph">ixtiyoriy</div></div>
+            <div class="ufield"><label>Yaroqlilik</label><div class="uline ph">ixtiyoriy</div></div>
+            <button type="button" class="float-save">Xaridga<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <div class="artboard" style="left:500px;top:1680px">
+        <div class="artboard-meta">
+          <span class="artboard-name">B2 · Namuna qo‘shish</div>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            </div>
+            <div class="hero sm">iPhone 15 Pro</div>
+            <p class="hint">Har bir serial — alohida qator. Miqdor = serial soni.</p>
+            <div class="ufield"><label>Serial / IMEI 1</label><div class="uline">3591…A2</div></div>
+            <div class="ufield"><label>Narx</label><div class="uline">11 400 000</div></div>
+            <div class="ufield"><label>Serial / IMEI 2</label><div class="uline ph">qo‘shish…</div></div>
+            <button type="button" class="float-save">Xaridga · 1<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Missing product -->
+      <div class="section-tag" style="left:40px;top:2640px">
+        <h1>C · DB da yo‘q mahsulot</h1>
+        <p>Supplier olib keldi, katalogda yo‘q. Bitta joyda Product + Variant yaratish — instance keyin serial bilan.</p>
+      </div>
+
+      <div class="artboard" style="left:40px;top:2760px">
+        <div class="artboard-meta">
+          <span class="artboard-name">C1 · Bo‘sh qidiruv</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button type="button" class="bag">0</button>
+            </div>
+            <div class="hero sm">Ombor</div>
+            <div class="find" style="margin:12px 0 20px">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+              <input value="iPhone 15 Pro Max" readonly />
+            </div>
+            <p class="hint">Hech narsa topilmadi</p>
+            <div class="empty-create">
+              <div class="t">+ Tezkor yaratish</div>
+              <div class="s">«iPhone 15 Pro Max» — mahsulot va variantni shu yerda ochamiz, keyin xaridga qo‘shamiz.</div>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <div class="artboard" style="left:500px;top:2760px">
+        <div class="artboard-meta">
+          <span class="artboard-name">C2 · G‘oya A · bitta sheet</span>
+          <span class="pair-tag">Tavsiya</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="step-dots"><i class="on"></i><i class="on"></i></div>
+            </div>
+            <div class="hero sm">Tezkor yaratish</div>
+            <p class="hint">Mahsulot + variant birga. Namuna — serial kiritilganda.</p>
+            <div class="scroll" style="padding-bottom:80px">
+              <div class="ufield"><label>Mahsulot nomi *</label><div class="uline">iPhone 15 Pro Max</div></div>
+              <div class="ufield"><label>Variant *</label><div class="uline">256 Natural</div></div>
+              <div class="ufield"><label>SKU</label><div class="uline ph">avto yoki qo‘lda</div></div>
+              <div class="ufield"><label>Xarid narxi *</label><div class="uline">13 200 000</div></div>
+              <div class="ufield"><label>Qabul turi</label><div class="uline">Partiya (miqdor) ›</div></div>
+              <div class="ufield"><label>Miqdor</label><div class="uline">2</div></div>
+            </div>
+            <button type="button" class="float-save">Yaratish + qo‘shish<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <div class="artboard" style="left:960px;top:2760px">
+        <div class="artboard-meta">
+          <span class="artboard-name">C3 · G‘oya B · 2 qadam</span>
+        </div>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="step-dots"><i class="on"></i><i></i></div>
+            </div>
+            <div class="hero sm">1. Mahsulot</div>
+            <p class="hint">Avval klassifikatsiya. Keyingi — variant + narx.</p>
+            <div class="ufield"><label>Nom *</label><div class="uline">iPhone 15 Pro Max</div></div>
+            <div class="ufield"><label>Brand</label><div class="uline ph">Apple ›</div></div>
+            <div class="ufield"><label>Kategoriya</label><div class="uline ph">Telefon ›</div></div>
+            <button type="button" class="float-save">Keyingi<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <div class="artboard" style="left:1420px;top:2760px">
+        <div class="artboard-meta">
+          <span class="artboard-name">Tavsiyalar</span>
+        </div>
+        <div class="note" style="width:393px">
+          <b>1.</b> Katalogda asosiy yozuv = <b>Variant</b> (SKU).<br/><br/>
+          <b>2.</b> Tab bilan ajratish: <b>Variantlar</b> (partiya) / <b>Namunalar</b> (serial). Aralashtirmaslik.<br/><br/>
+          <b>3.</b> List default — oxirgi xarid + qoldiq ko‘rinadi. Grid — tez skaner.<br/><br/>
+          <b>4.</b> Topilmasa → <b>C2 bitta sheet</b>: Product+Variant+xarid bir CTA. Serial rejim tanlansa — serial maydonlari ochiladi; instance API confirm da yaratiladi.<br/><br/>
+          <b>5.</b> Agar mahsulot bor, variant yo‘q → faqat «Yangi variant» (productId oldindan).<br/><br/>
+          <b>6.</b> Mavjud web: create alohida sahifa — mobil uchun inline sheet tezroq.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="zoom-bar">
+    <button type="button" id="zoomOut">−</button>
+    <div class="zoom-label" id="zoomLabel">100%</div>
+    <button type="button" id="zoomIn">+</button>
+    <div class="zoom-sep"></div>
+    <button type="button" id="zoomFit">Fit</button>
+    <button type="button" id="zoom100">100%</button>
+  </div>
+
+  <script>
+    (function () {
+      const viewport = document.getElementById("viewport");
+      const canvas = document.getElementById("canvas");
+      const zoomLabel = document.getElementById("zoomLabel");
+      let scale = 0.4, x = 20, y = 8, panning = false, spaceDown = false, lastX = 0, lastY = 0;
+
+      function apply() {
+        canvas.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        zoomLabel.textContent = Math.round(scale * 100) + "%";
+      }
+      function zoomAt(cx, cy, next) {
+        const rect = viewport.getBoundingClientRect();
+        const mx = cx - rect.left, my = cy - rect.top;
+        const wx = (mx - x) / scale, wy = (my - y) / scale;
+        scale = Math.min(2.5, Math.max(0.15, next));
+        x = mx - wx * scale; y = my - wy * scale; apply();
+      }
+      function fit() {
+        const rect = viewport.getBoundingClientRect();
+        const w = 2000, h = 3800, pad = 40;
+        scale = Math.max(0.15, Math.min((rect.width - pad * 2) / w, (rect.height - pad * 2) / h, 1));
+        x = (rect.width - w * scale) / 2; y = 12; apply();
+      }
+
+      viewport.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        zoomAt(e.clientX, e.clientY, scale * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+      }, { passive: false });
+      viewport.addEventListener("pointerdown", (e) => {
+        if (e.button !== 0 && e.button !== 1) return;
+        if (e.target.closest(".device-screen, .zoom-bar, .topbar, .note, .tree") && !spaceDown && e.button !== 1) return;
+        panning = true; viewport.classList.add("is-panning");
+        lastX = e.clientX; lastY = e.clientY;
+        viewport.setPointerCapture(e.pointerId);
+      });
+      viewport.addEventListener("pointermove", (e) => {
+        if (!panning) return;
+        x += e.clientX - lastX; y += e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY; apply();
+      });
+      function endPan(e) {
+        if (!panning) return; panning = false; viewport.classList.remove("is-panning");
+        try { viewport.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+      viewport.addEventListener("pointerup", endPan);
+      viewport.addEventListener("pointercancel", endPan);
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space" && !e.repeat) { spaceDown = true; e.preventDefault(); }
+        if (e.key === "0" && !e.metaKey && !e.ctrlKey) fit();
+      });
+      window.addEventListener("keyup", (e) => { if (e.code === "Space") spaceDown = false; });
+
+      document.getElementById("zoomIn").onclick = () => zoomAt(innerWidth / 2, innerHeight / 2, scale * 1.15);
+      document.getElementById("zoomOut").onclick = () => zoomAt(innerWidth / 2, innerHeight / 2, scale / 1.15);
+      document.getElementById("zoomFit").onclick = fit;
+      document.getElementById("zoom100").onclick = () => {
+        const r = viewport.getBoundingClientRect();
+        zoomAt(r.left + r.width / 2, r.top + r.height / 2, 1);
+      };
+
+      document.querySelectorAll("[data-tabs], .opt-row").forEach((wrap) => {
+        wrap.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            wrap.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+          });
+        });
+      });
+
+      document.querySelectorAll("[data-pos-view]").forEach((root) => {
+        const toggle = root.querySelector("[data-view-toggle]");
+        const label = root.closest(".artboard")?.querySelector("[data-view-label]");
+        const names = { list: "List", grid2: "Grid 2×", grid3: "Grid 3×", grid4: "Grid 4×" };
+        toggle?.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            toggle.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            const view = btn.dataset.view;
+            root.querySelectorAll("[data-view-panel]").forEach((panel) => {
+              panel.classList.toggle("is-on", panel.dataset.viewPanel === view);
+            });
+            if (label) label.textContent = names[view] || view;
+          });
+        });
+      });
+
+      fit();
+    })();
+  </script>
+</body>
+</html>

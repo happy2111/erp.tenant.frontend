@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Board · Kontragent V2 · ApplePark</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #000; --white: #fff; --primary: #2F6BFF;
+      --gray-label: rgba(255,255,255,0.32);
+      --gray-line: rgba(255,255,255,0.10);
+      --gray-muted: rgba(255,255,255,0.40);
+      --gray-placeholder: rgba(255,255,255,0.22);
+      --board: #121214; --dot: rgba(255,255,255,0.055);
+      --panel: #1e1e22; --border: rgba(255,255,255,0.08);
+      --text: #f5f5f5; --muted: #8e8e93; --danger: #EF4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%; overflow: hidden;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--board); color: var(--text); user-select: none;
+    }
+    .topbar {
+      position: fixed; inset: 0 0 auto 0; z-index: 50; height: 48px;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+      background: rgba(18,18,20,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+    .topbar-brand a { color: var(--muted); font-weight: 400; text-decoration: none; }
+    .topbar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+    .topbar-hint { font-size: 12px; color: var(--muted); }
+    .topbar-hint kbd {
+      display: inline-block; padding: 2px 6px; margin: 0 2px; border-radius: 4px;
+      background: var(--panel); border: 1px solid var(--border); font: 11px Inter, sans-serif;
+    }
+    .zoom-bar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 50;
+      display: flex; align-items: center; gap: 4px; padding: 6px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    }
+    .zoom-bar button {
+      height: 32px; min-width: 32px; padding: 0 10px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font: 500 13px Inter, sans-serif; cursor: pointer;
+    }
+    .zoom-label { min-width: 52px; text-align: center; font-size: 12px; color: var(--muted); }
+    .zoom-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+    .viewport { position: fixed; inset: 48px 0 0 0; overflow: hidden; cursor: grab; touch-action: none; }
+    .viewport.is-panning { cursor: grabbing; }
+    .canvas { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+    .canvas-grid {
+      position: absolute; inset: -5000px; width: 20000px; height: 20000px;
+      background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+      background-size: 24px 24px; pointer-events: none;
+    }
+    .section-tag { position: absolute; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+    .section-tag h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.03em; }
+    .section-tag p { font-size: 12px; color: var(--muted); max-width: 58ch; line-height: 1.45; }
+
+    .artboard { position: absolute; display: flex; flex-direction: column; gap: 10px; }
+    .artboard-meta { display: flex; align-items: baseline; gap: 8px; padding-left: 2px; pointer-events: none; }
+    .artboard-name { font-size: 12px; font-weight: 600; color: #8b8c90; }
+    .artboard-size { font-size: 11px; color: rgba(139,140,144,0.65); }
+    .pair-tag {
+      align-self: flex-start; font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 4px 8px; border-radius: 6px;
+      background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border);
+      pointer-events: none;
+    }
+    .pair-tag.rec { color: #fff; background: var(--primary); border-color: var(--primary); }
+    .pair-tag.err { color: #fff; background: var(--danger); border-color: var(--danger); }
+    .pair-tag.ok { background: #fff; color: #000; border-color: #fff; }
+    .pair-tag.step { color: #fff; background: rgba(255,255,255,0.12); }
+
+    .device {
+      position: relative; background: #111; border-radius: 44px; padding: 11px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 28px 80px rgba(0,0,0,0.55);
+    }
+    .device-screen {
+      position: relative; overflow: hidden; border-radius: 34px;
+      background: #000; width: 393px; height: 852px;
+    }
+    .island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); z-index: 40; width: 118px; height: 34px; background: #000; border-radius: 20px; pointer-events: none; }
+    .home-ind { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 40; width: 120px; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.28); pointer-events: none; }
+
+    .full {
+      position: absolute; inset: 0; background: #000; color: #fff;
+      display: flex; flex-direction: column; padding: 52px 28px 24px;
+    }
+    .status {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; font-weight: 600; margin-bottom: 4px;
+    }
+    .status .batt {
+      width: 22px; height: 11px; border: 1.5px solid rgba(255,255,255,0.7); border-radius: 2.5px; position: relative;
+    }
+    .status .batt::after {
+      content: ""; position: absolute; inset: 2px 2px 2px auto; width: 55%;
+      background: rgba(255,255,255,0.9); border-radius: 1px;
+    }
+
+    .topbar-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 4px 0 14px; min-height: 40px;
+    }
+    .nav-back {
+      width: 40px; height: 40px; border: none; background: none; cursor: default;
+      color: #fff; display: grid; place-items: center; margin-left: -8px; pointer-events: none;
+    }
+    .nav-back svg {
+      width: 22px; height: 22px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .skip-link {
+      background: none; border: none; cursor: default; pointer-events: none;
+      font: 600 14px Inter, sans-serif; color: var(--gray-muted); padding: 8px 4px;
+    }
+    .step-dots {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .step-dots i {
+      width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.18);
+      font-style: normal;
+    }
+    .step-dots i.on { background: #fff; width: 18px; border-radius: 3px; }
+
+    .hero { font-size: 28px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; margin-bottom: 4px; }
+    .hint { font-size: 14px; line-height: 1.4; color: var(--gray-muted); margin-bottom: 20px; max-width: 30ch; }
+
+    .scroll {
+      flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none;
+      padding-bottom: 72px;
+    }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    .fields { display: flex; flex-direction: column; gap: 28px; margin-bottom: 4px; }
+    .field label { display: block; font-size: 13px; font-weight: 500; color: var(--gray-label); margin-bottom: 12px; }
+    .field-line {
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--gray-line); padding-bottom: 12px;
+    }
+    .field-line .val { flex: 1; font: 500 17px/1.2 Inter, sans-serif; color: var(--white); }
+    .field-line .ph { color: var(--gray-placeholder); }
+    .field-line .prefix { font: 500 17px Inter, sans-serif; color: var(--gray-muted); flex-shrink: 0; }
+    .field.is-err .field-line { border-bottom-color: var(--danger); }
+    .field .err-msg { margin-top: 8px; font-size: 12px; font-weight: 500; color: var(--danger); }
+
+    .type-row {
+      display: flex; gap: 0; border-bottom: 1px solid var(--gray-line); padding-bottom: 12px;
+    }
+    .type-opt {
+      flex: 1; background: none; border: none; cursor: default; pointer-events: none;
+      font: 600 15px Inter, sans-serif; color: var(--gray-muted); text-align: left; padding: 0;
+    }
+    .type-opt.is-on { color: #fff; }
+
+    .acc { border-top: 1px solid var(--gray-line); }
+    .acc-head {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 18px 0; border: none; background: none; cursor: default;
+      color: #fff; text-align: left; font: inherit; pointer-events: none;
+    }
+    .acc-head .t { font: 700 15px Inter, sans-serif; letter-spacing: -0.02em; }
+    .acc-head .s { font: 500 12px Inter, sans-serif; color: var(--gray-muted); margin-top: 3px; }
+    .acc-head svg {
+      width: 18px; height: 18px; stroke: rgba(255,255,255,0.35); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 0.2s;
+    }
+    .acc.is-open .acc-head svg { transform: rotate(180deg); stroke: rgba(255,255,255,0.65); }
+    .acc-body { display: none; padding: 0 0 12px; }
+    .acc.is-open .acc-body { display: block; }
+    .acc-body .fields { gap: 24px; }
+
+    .float-save {
+      position: absolute; right: 20px; z-index: 20;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px 10px 18px; border-radius: 99px;
+      background: #fff; color: #000; border: none; cursor: default;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      font: 700 15px Inter, sans-serif; letter-spacing: -0.02em;
+      pointer-events: none;
+    }
+    .float-save.is-dim { opacity: 0.35; }
+    .float-save svg {
+      width: 18px; height: 18px; stroke: #000; fill: none;
+      stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .kb-mock {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 220px;
+      background: #1c1c1e; border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 10; pointer-events: none;
+    }
+    .kb-mock::before {
+      content: ""; position: absolute; inset: 16px 12px;
+      background: rgba(255,255,255,0.06); border-radius: 8px;
+    }
+
+    .success-center {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 0 32px 40px;
+    }
+    .success-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      display: grid; place-items: center; margin-bottom: 20px;
+    }
+    .success-icon svg {
+      width: 24px; height: 24px; stroke: #fff; fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .success-name { font: 800 24px Inter, sans-serif; letter-spacing: -0.04em; margin-bottom: 8px; }
+    .success-sub { font-size: 14px; color: var(--gray-muted); margin-bottom: 36px; max-width: 24ch; }
+    .success-actions { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+    .btn-primary {
+      width: 100%; height: 52px; border: none; border-radius: 14px; cursor: default;
+      background: #fff; color: #000; font: 700 16px Inter, sans-serif; pointer-events: none;
+    }
+    .btn-ghost {
+      width: 100%; height: 48px; border: none; background: none; cursor: default;
+      font: 600 15px Inter, sans-serif; color: var(--gray-muted); pointer-events: none;
+    }
+
+    .std {
+      width: 420px; padding: 22px; border-radius: 18px;
+      background: var(--panel); border: 1px solid var(--border);
+    }
+    .std h2 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .std .lead { font-size: 12px; color: var(--muted); line-height: 1.45; margin-bottom: 12px; }
+    .std table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .std th, .std td {
+      text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border);
+      vertical-align: top; line-height: 1.4;
+    }
+    .std th { color: var(--muted); font-weight: 600; width: 30%; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-dot"></span>
+      <span>Kontragent V2 · 2 bosqich</span>
+      <a href="home-variants.html">Asosiy</a>
+    </div>
+    <div class="topbar-hint">Drag fon · <kbd>Space</kbd> + drag · scroll zoom</div>
+  </div>
+
+  <div class="viewport" id="viewport">
+    <div class="canvas" id="canvas">
+      <div class="canvas-grid"></div>
+
+      <div class="section-tag" style="left:60px; top:40px;">
+        <h1>1-bosqich · OrganizationCustomer</h1>
+        <p>Ism, familiya, telefon, qora ro&apos;yxat. Rol — type-row (Mijoz / Ta&apos;minotchi / Ikkalasi). C3 float pill.</p>
+      </div>
+
+      <!-- Step 1 collapsed -->
+      <div class="artboard" style="left:60px; top:120px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">1a · Yopiq</span>
+          <span class="artboard-size">accordion yopiq</span>
+        </div>
+        <span class="pair-tag step">1 / 2</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="step-dots"><i class="on"></i><i></i></div>
+            </div>
+            <div class="hero">Yangi kontragent</div>
+            <p class="hint">Asosiy ma'lumotlar</p>
+            <div class="scroll">
+              <div class="fields">
+                <div class="field"><label>Familiya *</label><div class="field-line"><span class="val">Karimov</span></div></div>
+                <div class="field"><label>Ism *</label><div class="field-line"><span class="val">Aziz</span></div></div>
+                <div class="field"><label>Otasining ismi</label><div class="field-line"><span class="val ph">Ixtiyoriy</span></div></div>
+                <div class="field"><label>Telefon *</label><div class="field-line"><span class="prefix">+998</span><span class="val">90 123 45 67</span></div></div>
+                <div class="field">
+                  <label>Rol</label>
+                  <div class="type-row">
+                    <span class="type-opt is-on">Mijoz</span>
+                    <span class="type-opt">Ta'minotchi</span>
+                    <span class="type-opt">Ikkalasi</span>
+                  </div>
+                </div>
+                <div class="field"><label>Qora ro&apos;yxat</label><div class="field-line"><span class="val ph">O&apos;chirilgan</span></div></div>
+              </div>
+              <div class="acc"><button type="button" class="acc-head"><div><div class="t">Passport</div><div class="s">Ixtiyoriy</div></div><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></div>
+              <div class="acc"><button type="button" class="acc-head"><div><div class="t">Manzil</div><div class="s">Ixtiyoriy</div></div><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></div>
+            </div>
+            <button type="button" class="float-save" style="bottom:28px;">Keyingi<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Step 1 expanded -->
+      <div class="artboard" style="left:520px; top:120px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">1b · Ochiq</span>
+          <span class="artboard-size">accordion ochiq</span>
+        </div>
+        <span class="pair-tag rec">expanded</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="step-dots"><i class="on"></i><i></i></div>
+            </div>
+            <div class="hero">Yangi kontragent</div>
+            <p class="hint">Asosiy ma'lumotlar</p>
+            <div class="scroll">
+              <div class="fields">
+                <div class="field"><label>Familiya *</label><div class="field-line"><span class="val">Karimov</span></div></div>
+                <div class="field"><label>Ism *</label><div class="field-line"><span class="val">Aziz</span></div></div>
+                <div class="field"><label>Telefon *</label><div class="field-line"><span class="prefix">+998</span><span class="val">90 123 45 67</span></div></div>
+              </div>
+              <div class="acc is-open">
+                <button type="button" class="acc-head"><div><div class="t">Passport</div><div class="s">Seriya, raqam</div></div><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+                <div class="acc-body">
+                  <div class="fields">
+                    <div class="field"><label>Seriya</label><div class="field-line"><span class="val">AA</span></div></div>
+                    <div class="field"><label>Raqam</label><div class="field-line"><span class="val">1234567</span></div></div>
+                    <div class="field"><label>Berilgan sana</label><div class="field-line"><span class="val ph">kk.oo.yyyy</span></div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="acc is-open">
+                <button type="button" class="acc-head"><div><div class="t">Manzil</div><div class="s">Viloyat, tuman</div></div><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+                <div class="acc-body">
+                  <div class="fields">
+                    <div class="field"><label>Viloyat</label><div class="field-line"><span class="val">Toshkent</span></div></div>
+                    <div class="field"><label>Tuman</label><div class="field-line"><span class="val ph">Tanlang</span></div></div>
+                    <div class="field"><label>To'liq manzil</label><div class="field-line"><span class="val ph">Ko'cha, uy</span></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="float-save" style="bottom:28px;">Keyingi<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Step 1 keyboard + C3 -->
+      <div class="artboard" style="left:980px; top:120px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">1c · Klaviatura</span>
+          <span class="artboard-size">C3 pill ustida</span>
+        </div>
+        <span class="pair-tag rec">C3</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full" style="padding-bottom:0;">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="step-dots"><i class="on"></i><i></i></div>
+            </div>
+            <div class="hero">Yangi kontragent</div>
+            <div class="scroll" style="padding-bottom:60px;">
+              <div class="fields">
+                <div class="field"><label>Familiya *</label><div class="field-line"><span class="val">Karimov</span></div></div>
+                <div class="field"><label>Ism *</label><div class="field-line"><span class="val ph">Ismingiz</span></div></div>
+                <div class="field"><label>Telefon *</label><div class="field-line"><span class="prefix">+998</span><span class="val ph">90 123 45 67</span></div></div>
+              </div>
+              <div class="acc"><button type="button" class="acc-head"><div><div class="t">Passport</div><div class="s">Ixtiyoriy</div></div><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></div>
+              <div class="acc"><button type="button" class="acc-head"><div><div class="t">Manzil</div><div class="s">Ixtiyoriy</div></div><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></div>
+            </div>
+            <button type="button" class="float-save is-dim" style="bottom:236px;">Keyingi<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+            <div class="kb-mock"></div>
+          </div>
+          <div class="home-ind" style="bottom:228px;"></div>
+        </div></div>
+      </div>
+
+      <!-- Step 1 error -->
+      <div class="artboard" style="left:1440px; top:120px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">1e · Xato</span>
+          <span class="artboard-size">409 telefon</span>
+        </div>
+        <span class="pair-tag err">error</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <div class="step-dots"><i class="on"></i><i></i></div>
+            </div>
+            <div class="hero">Yangi kontragent</div>
+            <div class="scroll">
+              <div class="fields">
+                <div class="field"><label>Familiya *</label><div class="field-line"><span class="val">Karimov</span></div></div>
+                <div class="field"><label>Ism *</label><div class="field-line"><span class="val">Aziz</span></div></div>
+                <div class="field is-err">
+                  <label>Telefon *</label>
+                  <div class="field-line"><span class="prefix">+998</span><span class="val">90 123 45 67</span></div>
+                  <div class="err-msg">Bu raqam ushbu tashkilotda allaqachon bor</div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="float-save is-dim" style="bottom:28px;">Keyingi<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Step 2 section -->
+      <div class="section-tag" style="left:60px; top:1120px;">
+        <h1>2-bosqich · Tizim hisobi (User)</h1>
+        <p>Ixtiyoriy. «O'tkazib yuborish» yoki accordion ochib Email + Parol. C3 pill — «Saqlash».</p>
+      </div>
+
+      <!-- Step 2 collapsed -->
+      <div class="artboard" style="left:60px; top:1200px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">2a · Yopiq</span>
+          <span class="artboard-size">skip mavjud</span>
+        </div>
+        <span class="pair-tag step">2 / 2</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button type="button" class="skip-link">O'tkazib yuborish</button>
+            </div>
+            <div class="hero">Tizim hisobi</div>
+            <p class="hint">Aziz Karimov · mijoz yaratildi. Hisob ixtiyoriy.</p>
+            <div class="scroll">
+              <div class="acc">
+                <button type="button" class="acc-head"><div><div class="t">Login ma'lumotlari</div><div class="s">Email va parol</div></div><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+              </div>
+            </div>
+            <button type="button" class="float-save is-dim" style="bottom:28px;">Saqlash<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Step 2 expanded -->
+      <div class="artboard" style="left:520px; top:1200px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">2b · Ochiq</span>
+          <span class="artboard-size">accordion ochiq</span>
+        </div>
+        <span class="pair-tag rec">expanded</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button type="button" class="skip-link">O'tkazib yuborish</button>
+            </div>
+            <div class="hero">Tizim hisobi</div>
+            <p class="hint">Foydalanuvchi ilovaga kirishi uchun</p>
+            <div class="scroll">
+              <div class="acc is-open">
+                <button type="button" class="acc-head"><div><div class="t">Login ma'lumotlari</div><div class="s">Email va parol</div></div><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+                <div class="acc-body">
+                  <div class="fields">
+                    <div class="field"><label>Email</label><div class="field-line"><span class="val">aziz@mail.uz</span></div></div>
+                    <div class="field"><label>Parol</label><div class="field-line"><span class="val">••••••••</span></div></div>
+                    <div class="field"><label>Parolni tasdiqlash</label><div class="field-line"><span class="val">••••••••</span></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="float-save" style="bottom:28px;">Saqlash<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <!-- Step 2 keyboard -->
+      <div class="artboard" style="left:980px; top:1200px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">2c · Klaviatura</span>
+          <span class="artboard-size">C3 pill</span>
+        </div>
+        <span class="pair-tag rec">C3</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full" style="padding-bottom:0;">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="topbar-row">
+              <button type="button" class="nav-back" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button type="button" class="skip-link">O'tkazib yuborish</button>
+            </div>
+            <div class="hero">Tizim hisobi</div>
+            <div class="scroll" style="padding-bottom:60px;">
+              <div class="acc is-open">
+                <button type="button" class="acc-head"><div><div class="t">Login ma'lumotlari</div><div class="s">Email va parol</div></div><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+                <div class="acc-body">
+                  <div class="fields">
+                    <div class="field"><label>Email</label><div class="field-line"><span class="val ph">email@example.uz</span></div></div>
+                    <div class="field"><label>Parol</label><div class="field-line"><span class="val ph">Kamida 8 belgi</span></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="float-save is-dim" style="bottom:236px;">Saqlash<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></button>
+            <div class="kb-mock"></div>
+          </div>
+          <div class="home-ind" style="bottom:228px;"></div>
+        </div></div>
+      </div>
+
+      <!-- Success -->
+      <div class="artboard" style="left:1440px; top:1200px;">
+        <div class="artboard-meta">
+          <span class="artboard-name">S · Tayyor</span>
+          <span class="artboard-size">skip yoki saqlashdan keyin</span>
+        </div>
+        <span class="pair-tag ok">success</span>
+        <div class="device"><div class="device-screen">
+          <div class="island"></div>
+          <div class="full">
+            <div class="status"><span>9:41</span><span class="batt"></span></div>
+            <div class="success-center">
+              <div class="success-icon"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+              <div class="success-name">Aziz Karimov</div>
+              <p class="success-sub">Mijoz saqlandi</p>
+              <div class="success-actions">
+                <button type="button" class="btn-primary">Asosiyga qaytish</button>
+                <button type="button" class="btn-ghost">Yana qo'shish</button>
+              </div>
+            </div>
+          </div>
+          <div class="home-ind"></div>
+        </div></div>
+      </div>
+
+      <div class="artboard" style="left:60px; top:2180px;">
+        <div class="artboard-meta"><span class="artboard-name">Spec</span></div>
+        <div class="std">
+          <h2>Flow</h2>
+          <p class="lead"><b>1-bosqich</b> — OrganizationCustomer. <b>2-bosqich</b> — User (ixtiyoriy). C3 pill har ikkalasida.</p>
+          <table>
+            <tr><th>1a</th><td>Majburiy maydonlar, accordion yopiq</td></tr>
+            <tr><th>1b</th><td>Passport + Manzil ochiq</td></tr>
+            <tr><th>1c</th><td>Klaviatura · pill ustida</td></tr>
+            <tr><th>2a</th><td>Skip o'ngda · accordion yopiq · Saqlash dim</td></tr>
+            <tr><th>2b</th><td>Email + Parol ochiq · Saqlash active</td></tr>
+            <tr><th>Skip</th><td>Customer saqlanadi, User yo'q → Success</td></tr>
+            <tr><th>Saqlash</th><td>convert-to-user → Success</td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="zoom-bar">
+    <button type="button" id="zoomOut">−</button>
+    <div class="zoom-label" id="zoomLabel">48%</div>
+    <button type="button" id="zoomIn">+</button>
+    <div class="zoom-sep"></div>
+    <button type="button" id="zoomFit">Fit</button>
+  </div>
+
+  <script>
+    (function () {
+      const viewport = document.getElementById("viewport");
+      const canvas = document.getElementById("canvas");
+      const zoomLabel = document.getElementById("zoomLabel");
+      let scale = 0.48, x = 36, y = 12, panning = false, spaceDown = false, lastX = 0, lastY = 0;
+
+      function apply() {
+        canvas.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        zoomLabel.textContent = Math.round(scale * 100) + "%";
+      }
+      apply();
+
+      function zoomAt(cx, cy, next) {
+        const rect = viewport.getBoundingClientRect();
+        const mx = cx - rect.left, my = cy - rect.top;
+        const wx = (mx - x) / scale, wy = (my - y) / scale;
+        scale = Math.min(1.2, Math.max(0.28, next));
+        x = mx - wx * scale; y = my - wy * scale;
+        apply();
+      }
+
+      function fit() {
+        const rect = viewport.getBoundingClientRect();
+        const w = 1960, h = 2500, pad = 40;
+        scale = Math.max(0.28, Math.min((rect.width - pad * 2) / w, (rect.height - pad * 2) / h, 0.55));
+        x = (rect.width - w * scale) / 2;
+        y = 12;
+        apply();
+      }
+
+      document.getElementById("zoomIn").onclick = () => zoomAt(innerWidth / 2, innerHeight / 2, scale * 1.12);
+      document.getElementById("zoomOut").onclick = () => zoomAt(innerWidth / 2, innerHeight / 2, scale / 1.12);
+      document.getElementById("zoomFit").onclick = fit;
+
+      viewport.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        zoomAt(e.clientX, e.clientY, scale * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+      }, { passive: false });
+
+      viewport.addEventListener("pointerdown", (e) => {
+        if (e.button !== 0 && e.button !== 1) return;
+        if (e.target.closest(".device-screen, .zoom-bar, .topbar, .std") && !spaceDown && e.button !== 1) return;
+        panning = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        viewport.classList.add("is-panning");
+        viewport.setPointerCapture(e.pointerId);
+      });
+
+      viewport.addEventListener("pointermove", (e) => {
+        if (!panning) return;
+        x += e.clientX - lastX;
+        y += e.clientY - lastY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        apply();
+      });
+
+      function endPan(e) {
+        if (!panning) return;
+        panning = false;
+        viewport.classList.remove("is-panning");
+        try { viewport.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+      viewport.addEventListener("pointerup", endPan);
+      viewport.addEventListener("pointercancel", endPan);
+
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space" && !e.repeat) { spaceDown = true; e.preventDefault(); }
+        if (e.key === "0" && !e.metaKey && !e.ctrlKey) fit();
+      });
+      window.addEventListener("keyup", (e) => { if (e.code === "Space") spaceDown = false; });
+    })();
+  </script>
+</body>
+</html>

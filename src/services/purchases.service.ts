@@ -3,10 +3,19 @@ import {
   CreatePurchaseDto,
   UpdatePurchaseDto,
   PayPurchaseDto,
+  ConfirmPurchaseDto,
+  CancelPurchaseDto,
   GetPurchaseQueryDto,
+  GetBatchesQueryDto,
   Purchase,
+  ProductBatch,
+  VariantCost,
+  PriceHistoryItem,
   PurchasesListResponseSchema,
   PurchaseSchema,
+  BatchesListResponseSchema,
+  VariantCostSchema,
+  PriceHistoryResponseSchema,
 } from '@/schemas/purchases.schema';
 
 interface ApiResponse<T> {
@@ -17,7 +26,8 @@ interface ApiResponse<T> {
 
 export class PurchasesService {
   /**
-   * Создать новую закупку (с возможной частичной/полной оплатой)
+   * Создать закупку. Документ всегда уходит в DRAFT: товар на склад не
+   * приходит и деньги из кассы не списываются до проведения.
    */
   static async create(dto: CreatePurchaseDto): Promise<Purchase> {
     const res = await api.post<ApiResponse<Purchase>>(
@@ -41,7 +51,7 @@ export class PurchasesService {
   }> {
     const res = await api.get<
       ApiResponse<{
-        items: any[];
+        items: unknown[];
         total: number;
         page: number;
         limit: number;
@@ -55,7 +65,7 @@ export class PurchasesService {
   }
 
   /**
-   * Получить одну закупку по ID (со всеми позициями и платежами)
+   * Получить одну закупку по ID (позиции, платежи, партии прихода)
    */
   static async findOne(id: string): Promise<Purchase> {
     const res = await api.get<ApiResponse<Purchase>>(`/purchases/${id}`);
@@ -63,7 +73,8 @@ export class PurchasesService {
   }
 
   /**
-   * Обновить закупку (поставщик, статус, заметки и т.д.)
+   * Обновить закупку. Разрешено только для черновика и только по полям
+   * шапки: поставщик, касса, дата, примечание.
    */
   static async update(
     id: string,
@@ -77,28 +88,48 @@ export class PurchasesService {
   }
 
   /**
-   * Удалить закупку (только если нет платежей)
+   * Удалить черновик. Проведённую закупку удалить нельзя — только отменить.
    */
   static async remove(id: string): Promise<void> {
     await api.delete(`/purchases/remove/${id}`);
   }
 
   /**
-   * Подтвердить закупку (перевод в PAID + списание с кассы)
+   * Провести закупку: на каждую позицию создаётся партия с себестоимостью
+   * и остатком, растёт Stock. Касса указана — документ ещё и оплачивается.
    */
   static async confirmPurchase(
     purchaseId: string,
-    kassaId?: string
-  ): Promise<{ message: string }> {
-    const res = await api.post<ApiResponse<{ message: string }>>(
+    dto: ConfirmPurchaseDto = {}
+  ): Promise<Purchase> {
+    const res = await api.post<ApiResponse<Purchase>>(
       `/purchases/${purchaseId}/confirm`,
-      { kassaId }
+      {
+        kassaId: dto.kassaId ?? undefined,
+        exchangeRate: dto.exchangeRate ?? undefined,
+      }
     );
     return res.data.data;
   }
 
   /**
-   * Оплатить часть или всю закупку
+   * Отменить проведённую закупку: партии удаляются, товар снимается со
+   * склада, деньги возвращаются в кассу. Если из партии уже списывали —
+   * бэкенд ответит 409.
+   */
+  static async cancelPurchase(
+    purchaseId: string,
+    dto: CancelPurchaseDto = {}
+  ): Promise<Purchase> {
+    const res = await api.post<ApiResponse<Purchase>>(
+      `/purchases/${purchaseId}/cancel`,
+      { reason: dto.reason ?? undefined }
+    );
+    return res.data.data;
+  }
+
+  /**
+   * Оплатить часть или всю закупку. Черновик оплатить нельзя.
    */
   static async pay(
     purchaseId: string,
@@ -109,5 +140,51 @@ export class PurchasesService {
       dto
     );
     return PurchaseSchema.parse(res.data.data);
+  }
+
+  // ─── Себестоимость ─────────────────────────────────────────────────
+
+  /**
+   * Партии: за сколько куплена каждая пачка товара и сколько от неё осталось.
+   * order=asc — тот же порядок, в котором будет списывать FIFO.
+   */
+  static async getBatches(
+    query: GetBatchesQueryDto = {}
+  ): Promise<{
+    items: ProductBatch[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const res = await api.get<ApiResponse<unknown>>('/purchases/batches', {
+      params: query,
+    });
+    return BatchesListResponseSchema.parse(res.data.data);
+  }
+
+  /**
+   * За сколько куплен вариант товара: средневзвешенная себестоимость,
+   * разброс, стоимость остатка и сверка Stock с суммой партий.
+   */
+  static async getVariantCost(variantId: string): Promise<VariantCost> {
+    const res = await api.get<ApiResponse<unknown>>(
+      `/purchases/cost/${variantId}`
+    );
+    return VariantCostSchema.parse(res.data.data);
+  }
+
+  /**
+   * История закупочных цен варианта — подсказка при заведении накладной.
+   */
+  static async getPriceHistory(
+    variantId: string,
+    query: { supplierId?: string; limit?: number } = {}
+  ): Promise<PriceHistoryItem[]> {
+    const res = await api.get<ApiResponse<unknown>>(
+      `/purchases/price-history/${variantId}`,
+      { params: query }
+    );
+    return PriceHistoryResponseSchema.parse(res.data.data);
   }
 }

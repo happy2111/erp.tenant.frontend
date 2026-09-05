@@ -11,7 +11,7 @@ import { KassaSelector } from '../selectors/KassaSelector';
 
 export function PurchaseHeader() {
   const router = useRouter();
-  const { items, reset, currencyId, kassaId, supplierId, initialPayment, notes } = usePurchaseStore();
+  const { items, reset, currencyId, kassaId, supplierId, notes } = usePurchaseStore();
 
   const handleReset = () => {
     if (confirm('Butun xaridni bekor qilish?')) {
@@ -58,8 +58,7 @@ export function PurchaseHeader() {
               !supplierId &&
               !currencyId &&
               !kassaId &&
-              !notes &&
-              initialPayment === 0
+              !notes
             }
           >
             <RotateCcw className="size-4" />

@@ -36,7 +36,10 @@ export const PosFilter = ({ onApply, onClear }: ProductFilterDialogProps) => {
   const loadAttributes = async () => {
     try {
       setLoading(true);
-      const data = await AttributesService.getAllAdmin({ limit: 100 });
+      const data = await AttributesService.getAllAdmin({
+        limit: 100,
+        isForVariant: true,
+      });
       setAttributes(data.items);
     } catch (error) {
       console.error("Failed to load attributes", error);

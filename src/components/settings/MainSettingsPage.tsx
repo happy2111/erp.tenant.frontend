@@ -2,21 +2,40 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { SettingsService } from '@/services/settings.service';
+import { currencyService } from '@/services/currency.service';
+import {
+  BatchSelectionMode,
+  BatchSelectionModeHints,
+  BatchSelectionModeLabels,
+  BatchSelectionModeValues,
+} from '@/schemas/settings.schema';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Input } from "@/components/ui/input";
-import { Globe, Calendar, Percent, Moon, RefreshCw } from "lucide-react";
+import {
+  Globe, Calendar, Percent, RefreshCw, Coins, Layers, AlertTriangle
+} from "lucide-react";
 import {ThemeSettingsBlock} from "@/components/settings/ThemeSettingsBlock";
-
-type ThemeValue = 'LIGHT' | 'DARK' | 'SYSTEM';
 
 export function MainSettingsPage() {
   const { data: settings, refetch, isLoading, isError, error } = useQuery({
     queryKey: ['my-settings'],
     queryFn: () => SettingsService.getMySettings(),
     retry: false
+  });
+
+  const { data: currencies } = useQuery({
+    queryKey: ['currencies'],
+    queryFn: () => currencyService.findAll(),
   });
 
   const updateMutation = useMutation({
@@ -29,6 +48,8 @@ export function MainSettingsPage() {
       toast.error('Saqlashda xatolik yuz berdi');
     }
   });
+
+  const batchMode = (settings?.batchSelectionMode ?? 'AUTO_FIFO') as BatchSelectionMode;
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -112,6 +133,82 @@ export function MainSettingsPage() {
                     <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                   </select>
                 </div>
+              </div>
+            </div>
+
+            <hr className="border-muted/50" />
+
+            {/* Группа: Учёт себестоимости */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 opacity-30">
+                <Coins size={16} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Tannarx hisobi</span>
+              </div>
+
+              {/* Базовая валюта — в неё пересчитывается себестоимость всех
+                  партий. Без неё курс не к чему приводить. */}
+              <div className="space-y-2">
+                <Label className="font-bold text-xs uppercase ml-1 flex items-center gap-2">
+                  <Globe size={14} /> Baza valyuta
+                </Label>
+                <Select
+                  value={settings?.baseCurrencyId ?? undefined}
+                  onValueChange={(v) => updateMutation.mutate({ baseCurrencyId: v })}
+                >
+                  <SelectTrigger className="h-14 w-full rounded-2xl bg-muted/50 border-none font-black text-lg">
+                    <SelectValue placeholder="Valyutani tanlang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies?.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.code} — {c.name} <span className="opacity-50">{c.symbol}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] font-bold opacity-40 ml-1 leading-relaxed">
+                  Barcha partiyalar tannarxi shu valyutaga o‘tkaziladi. Xarid
+                  o‘tkazilganda kurs hujjatga muzlatiladi.
+                </p>
+              </div>
+
+              {!settings?.baseCurrencyId && (
+                <div className="flex items-start gap-2 p-4 rounded-2xl bg-destructive/10 border border-destructive/20">
+                  <AlertTriangle className="size-4 text-destructive shrink-0 mt-0.5" />
+                  <p className="text-[11px] font-bold text-destructive leading-relaxed">
+                    Baza valyuta tanlanmagan. Tannarx xarid valyutasida
+                    saqlanadi va turli valyutadagi xaridlarni solishtirib
+                    bo‘lmaydi.
+                  </p>
+                </div>
+              )}
+
+              {/* Порядок списания партий. На продажи повлияет, когда
+                  появится FIFO-списание. */}
+              <div className="space-y-2">
+                <Label className="font-bold text-xs uppercase ml-1 flex items-center gap-2">
+                  <Layers size={14} /> Partiya tanlash tartibi
+                </Label>
+                <Select
+                  value={batchMode}
+                  onValueChange={(v) =>
+                    updateMutation.mutate({ batchSelectionMode: v as BatchSelectionMode })
+                  }
+                >
+                  <SelectTrigger className="h-14 w-full rounded-2xl bg-muted/50 border-none font-black text-base">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BatchSelectionModeValues.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {BatchSelectionModeLabels[m]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] font-bold opacity-40 ml-1 leading-relaxed">
+                  {BatchSelectionModeHints[batchMode]}
+                </p>
               </div>
             </div>
 

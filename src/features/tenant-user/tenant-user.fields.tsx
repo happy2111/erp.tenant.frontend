@@ -13,8 +13,7 @@ export const tenantUserFields: CrudField<TenantUser>[] = [
     name: "profile.lastName",
     label: "Фамилия",
     type: "text",
-    required: true,
-    placeholder: "Абдурахимов",
+    placeholder: "Абдурахимов (необязательно)",
   },
   {
     name: "profile.patronymic",

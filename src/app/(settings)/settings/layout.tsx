@@ -11,7 +11,7 @@ interface DashboardLayoutProps {
   children: ReactNode
 }
 
-import {Home, LayoutTemplate, CalendarCheck, ArrowBigLeft} from "lucide-react";
+import {Home, LayoutTemplate, CalendarCheck, ArrowBigLeft, Smartphone} from "lucide-react";
 
 const sidebarGroups: SidebarGroup[] = [
   {
@@ -36,6 +36,11 @@ const sidebarGroups: SidebarGroup[] = [
         name: "Rassrochka",
         url: '/settings/installments',
         icon: CalendarCheck,
+      },
+      {
+        name: "Telefon ulash",
+        url: '/settings/phone-link',
+        icon: Smartphone,
       },
     ],
   },

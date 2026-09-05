@@ -160,10 +160,24 @@ export function TenantUserDetails({ userId }: { userId: string }) {
                 user.cutomer_links.map((link: any, idx: number) => (
                   <div key={idx} className="p-4 rounded-3xl bg-blue-500/5 border border-blue-500/20 hover:border-blue-500/40 transition-all group shadow-sm">
                     <div className="flex items-center justify-between mb-2">
-                      <Badge className="bg-blue-500/10 text-blue-600 border-none text-[9px] uppercase font-black">
-                        {link.type || "CLIENT"}
-                      </Badge>
-                      {link.isBlacklisted && <Badge variant="destructive" className="text-[9px]">Blacklist</Badge>}
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {link.isClient ? (
+                          <Badge className="bg-blue-500/10 text-blue-600 border-none text-[9px] uppercase font-black">
+                            Клиент
+                          </Badge>
+                        ) : null}
+                        {link.isSupplier ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[9px] uppercase font-black">
+                            Поставщик
+                          </Badge>
+                        ) : null}
+                        {!link.isClient && !link.isSupplier ? (
+                          <Badge className="bg-blue-500/10 text-blue-600 border-none text-[9px] uppercase font-black">
+                            —
+                          </Badge>
+                        ) : null}
+                      </div>
+                      {link.isBlacklisted && <Badge variant="destructive" className="text-[9px]">Qora roʻyxat</Badge>}
                     </div>
                     <div className="font-bold text-base group-hover:text-primary transition-colors">
                       {link.organization?.name}

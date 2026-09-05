@@ -25,6 +25,7 @@ export function CustomerSelector({ className }: { className?: string }) {
     queryKey: ['pos-customers', debouncedSearch],
     queryFn: () => OrganizationCustomerService.getAllAdmin({
       search: debouncedSearch,
+      isClient: true,
       limit: 10,
     }),
     enabled: isOpen,

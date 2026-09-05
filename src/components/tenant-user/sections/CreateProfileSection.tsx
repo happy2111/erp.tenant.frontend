@@ -171,28 +171,59 @@ export function CreateProfileSection({ onChange, initialData }:
           <div>
             <h3 className={labelStyle + " text-primary mb-4"}>Pasport ma&apos;lumotlari</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-1">
-                <label className={labelStyle}>Seriya</label>
-                <Input
-                  placeholder="AA"
-                  maxLength={2}
-                  className="uppercase"
-                  value={state.passportSeries}
-                  onChange={(e) => setState(s => ({ ...s, passportSeries: e.target.value.toUpperCase() }))}
-                />
-              </div>
-              <div className="md:col-span-1">
-                <label className={labelStyle}>Raqam</label>
-                <Input
-                  placeholder="1234567"
-                  value={state.passportNumber}
-                  onChange={(e) => setState(s => ({ ...s, passportNumber: e.target.value }))}
-                />
+              <div className="md:col-span-2">
+                <label className={labelStyle}>Passport seriyasi</label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="AA"
+                    maxLength={2}
+                    className="uppercase w-20 text-center tracking-widest"
+                    value={state.passportSeries.replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase()}
+                    onChange={(e) => {
+                      const letters = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+                      const digits = state.passportSeries.replace(/[^0-9]/g, "").slice(0, 7);
+                      setState((s) => ({
+                        ...s,
+                        passportSeries: letters && digits ? `${letters} ${digits}` : letters || digits,
+                      }));
+                    }}
+                  />
+                  <span className="text-muted-foreground/40">|</span>
+                  <Input
+                    placeholder="1234567"
+                    maxLength={7}
+                    className="tracking-wide"
+                    value={state.passportSeries.replace(/[^0-9]/g, "").slice(0, 7)}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 7);
+                      const letters = state.passportSeries.replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase();
+                      setState((s) => ({
+                        ...s,
+                        passportSeries: letters && digits ? `${letters} ${digits}` : letters || digits,
+                      }));
+                    }}
+                  />
+                </div>
               </div>
               <div className="md:col-span-2">
+                <label className={labelStyle}>JSHSHIR</label>
+                <Input
+                  placeholder="14 ta raqam"
+                  maxLength={14}
+                  inputMode="numeric"
+                  value={state.passportNumber}
+                  onChange={(e) =>
+                    setState((s) => ({
+                      ...s,
+                      passportNumber: e.target.value.replace(/[^0-9]/g, "").slice(0, 14),
+                    }))
+                  }
+                />
+              </div>
+              <div className="md:col-span-4">
                 <label className={labelStyle}>Kim tomonidan berilgan</label>
                 <Input
-                  placeholder="IIB tomonidan..."
+                  placeholder="Mirobod IIB"
                   value={state.issuedBy}
                   onChange={(e) => setState(s => ({ ...s, issuedBy: e.target.value }))}
                 />
@@ -225,42 +256,51 @@ export function CreateProfileSection({ onChange, initialData }:
             <h3 className={labelStyle + " text-primary mb-4"}>Manzil va hudud</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className={labelStyle}>Mamlakat</label>
+                <label className={labelStyle}>Davlat</label>
                 <Input
+                  placeholder="O'zbekiston"
                   value={state.country}
                   onChange={(e) => setState(s => ({ ...s, country: e.target.value }))}
                 />
               </div>
               <div>
-                <label className={labelStyle}>Viloyat / Hudud</label>
+                <label className={labelStyle}>Viloyat</label>
                 <Input
-                  placeholder="Toshkent sh."
+                  placeholder="Toshkent viloyati"
                   value={state.region}
                   onChange={(e) => setState(s => ({ ...s, region: e.target.value }))}
                 />
               </div>
               <div>
-                <label className={labelStyle}>Shahar / Tuman</label>
+                <label className={labelStyle}>Hudud</label>
                 <Input
-                  placeholder="Mirzo Ulug'bek t."
+                  placeholder="Mirzo Ulug'bek tumani"
+                  value={state.district}
+                  onChange={(e) => setState(s => ({ ...s, district: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className={labelStyle}>Shahar</label>
+                <Input
+                  placeholder="Toshkent"
                   value={state.city}
                   onChange={(e) => setState(s => ({ ...s, city: e.target.value }))}
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4 mt-4">
               <div>
-                <label className={labelStyle}>Doimiy yashash manzili</label>
+                <label className={labelStyle}>Yashash manzili</label>
                 <Input
-                  placeholder="Ko'cha, uy, xonadon..."
+                  placeholder="Amir Temur ko'chasi, 45"
                   value={state.address}
                   onChange={(e) => setState(s => ({ ...s, address: e.target.value }))}
                 />
               </div>
-              <div>
-                <label className={labelStyle}>Ro&apos;yxatdan o&apos;tgan manzili (Propiska)</label>
+              <div className="md:col-span-2">
+                <label className={labelStyle}>Propiska</label>
                 <Input
-                  placeholder="Pasport bo'yicha manzil..."
+                  placeholder="Toshkent, Shayxontohur tumani"
                   value={state.registration}
                   onChange={(e) => setState(s => ({ ...s, registration: e.target.value }))}
                 />

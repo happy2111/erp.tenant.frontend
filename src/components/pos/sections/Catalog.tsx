@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {PosFilter} from "@/components/pos/modals/PosFiler";
 import {CategoriesService} from "@/services/categories.service";
+import { PRODUCT_LABELS } from "@/lib/product-labels";
 
 export function PosCatalog() {
   const [search, setSearch] = useState('');
@@ -197,7 +198,7 @@ export function PosCatalog() {
             value="variants"
             className="shrink-0 rounded-xl px-6 font-bold text-xs uppercase tracking-tighter"
           >
-            Variantlar
+            {PRODUCT_LABELS.variant.shortPlural}
           </TabsTrigger>
 
           <TabsTrigger
@@ -218,7 +219,7 @@ export function PosCatalog() {
             value="instances"
             className="shrink-0 rounded-xl px-6 font-bold text-xs uppercase tracking-tighter"
           >
-            Namunalar
+            {PRODUCT_LABELS.instance.shortPlural}
           </TabsTrigger>
         </TabsList>
 

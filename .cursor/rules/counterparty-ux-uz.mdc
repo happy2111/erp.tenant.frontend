@@ -1,0 +1,65 @@
+---
+description: Kontragent UX — sof o‘zbek til, qora ro‘yxat, Apple bottom sheet
+alwaysApply: true
+---
+
+# Kontragent / telefon band UX (foydalanuvchi izohlari)
+
+Bu qoida foydalanuvchi so‘rovlaridan: Apple Maps uslubidagi bottom sheet,
+sof o‘zbekcha matnlar, bir xil atamalar, soddalashtirilgan telefon-band flow.
+
+## Til — majburiy
+
+- Foydalanuvchi ko‘radigan matnlar — **faqat sof o‘zbekcha**. Inglizcha badge/label yo‘q.
+- `Blacklist` demang. Hamma joyda bir xil: **Qora roʻyxat**.
+- `Login` / `badge login` demang. Badge va bo‘lim: **Tizim hisobi**.
+- Design-board va app matnlari **bir xil** o‘zbekcha bo‘lsin.
+- Kodda API/field nomi `isBlacklisted`, `userId` qolishi mumkin — faqat **UI matni** o‘zbekcha.
+
+## Telefon band — 3 holat (faqat shular)
+
+### 1. Tizim hisobi bor (`userId`)
+
+- **Sheet ochilmaydi.**
+- Telefon maydoni ostida xato:
+  «Bu raqamda tizim hisobi bor — boshqa telefon kiriting»
+- Boshqa amallar yoʻq.
+
+### 2. Oddiy kontragent (mijoz / ta'minotchi, sheet)
+
+Sarlavha: **Bunday raqam bor**. Chip: **Mijoz** / **Ta'minotchi**.
+
+Faqat shu amallar:
+
+| UI matn | Harakat |
+|---------|---------|
+| **Ta'minotchi qilish** / **Mijoz qilish** | Yetishmayotgan rolni qoʻshish (soʻralgan rolga qarab) |
+| **Kartochkani ochish** | `/counterparty/[id]` |
+| **Maʼlumot qoʻshish / tahrirlash** | `/counterparty/[id]/edit` |
+| **Yopish** | Sheetni yopish |
+
+Boshqa raqam, telefonsiz yaratish, tizim hisobini ochish — **yoʻq**.
+
+### 3. Qora roʻyxat (`isBlacklisted`)
+
+Sarlavha: **Qora roʻyxatdagi mijoz**. Apple circular amallar — **faqat 3 ta**:
+
+| UI matn | Harakat |
+|---------|---------|
+| **Tahrirlash** | Edit sahifa |
+| **Qora roʻyxatdan olib tashlash** | `PATCH isBlacklisted: false` |
+| **Yopish** | Sheetni yopish |
+
+Baribir ochish, Boshqa raqam, Tizim hisobi — **yoʻq**.
+
+## Prioritet
+
+1. `userId` → maydon xatosi (hatto blacklist boʻlsa ham sheet yoʻq).
+2. `isBlacklisted` → qora roʻyxat sheet.
+3. Aks holda → oddiy «Bunday raqam bor» sheet.
+
+## Bottom sheet — Apple Maps uslubi
+
+- Katta yuqori radius (~28–36), markazda **grabber**, **blur** (`expo-blur`).
+- Qora-kulrang sheet, oq matn.
+- Qora roʻyxatda asosiy amallar — yumaloq circular tugmalar.

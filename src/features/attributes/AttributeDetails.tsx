@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AttributesService } from "@/services/attributes.service";
 import { AttributeValuesService } from "@/services/attribute-values.service";
 import { Button } from "@/components/ui/button";
@@ -25,38 +25,46 @@ import {
   Key,
   ListTree,
   Type,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import {Label} from "@/components/ui/label";
-import {Switch} from "@/components/ui/switch"; // Или ваш аналог для уведомлений
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { PRODUCT_LABELS } from "@/lib/product-labels";
 
 export function AttributeDetails({ attributeId }: { attributeId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const scope = searchParams.get("scope") || "variant";
   const queryClient = useQueryClient();
 
-  // Состояния для CRUD значений
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingValue, setEditingValue] = useState<{ id: string; value: string } | null>(null);
+  const [editingValue, setEditingValue] = useState<{
+    id: string;
+    value: string;
+  } | null>(null);
   const [newValue, setNewValue] = useState("");
 
-  // 1. Получение данных атрибута
   const { data: attribute, isLoading, error } = useQuery({
     queryKey: ["attributes", attributeId],
     queryFn: () => AttributesService.getByIdAdmin(attributeId),
   });
 
-  const [isRequired, setIsRequired] = useState<boolean>(attribute?.isRequired ?? false);
+  const [isRequired, setIsRequired] = useState(false);
 
-  // 2. Мутации для CRUD значений
+  useEffect(() => {
+    if (attribute) setIsRequired(attribute.isRequired);
+  }, [attribute]);
+
   const createMutation = useMutation({
-    mutationFn: () => AttributeValuesService.create({ attributeId, value: newValue }),
+    mutationFn: () =>
+      AttributeValuesService.create({ attributeId, value: newValue }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attributes", attributeId] });
       setIsDialogOpen(false);
       setNewValue("");
-      toast.success("Qiymat muvaffaqiyatli qo&apos;shildi");
-    }
+      toast.success("Qiymat muvaffaqiyatli qo'shildi");
+    },
   });
 
   const updateMutation = useMutation({
@@ -66,60 +74,83 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
       queryClient.invalidateQueries({ queryKey: ["attributes", attributeId] });
       setEditingValue(null);
       toast.success("Qiymat yangilandi");
-    }
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => AttributeValuesService.hardDelete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attributes", attributeId] });
-      toast.success("Qiymat o&apos;chirildi");
+      toast.success("Qiymat o'chirildi");
     },
     onError: (err: any) => {
       const errorMessage =
         err?.response?.data?.message?.message ||
         err?.response?.data?.message ||
-        "Ошибка удаления";
+        "O‘chirishda xatolik";
 
       toast.error(errorMessage);
-      console.error("Ошибка удаления характеристики:", err);
-    }
+    },
   });
 
-  const hadleCheckUpdate = (v: boolean) => {
+  const patchFlags = async (
+    dto: Partial<{
+      isRequired: boolean;
+      isForVariant: boolean;
+      isForInstance: boolean;
+    }>,
+  ) => {
     try {
-      // alert(v)
-      setIsRequired(v);
-      AttributesService.update(attributeId, {isRequired: v});
-    } catch (error: any) {
-      toast.error(error.message);
+      await AttributesService.update(attributeId, dto);
+      queryClient.invalidateQueries({ queryKey: ["attributes", attributeId] });
+      queryClient.invalidateQueries({ queryKey: ["attributes"] });
+      toast.success("Saqlandi");
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message?.message ||
+          err?.response?.data?.message ||
+          err.message ||
+          "Xatolik",
+      );
+      throw err;
     }
   };
 
+  const handleRequiredChange = async (v: boolean) => {
+    const prev = isRequired;
+    setIsRequired(v);
+    try {
+      await patchFlags({ isRequired: v });
+    } catch {
+      setIsRequired(prev);
+    }
+  };
 
-  if (isLoading) return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-      <Loader2 className="size-10 text-primary animate-spin" />
-      <p className="text-muted-foreground animate-pulse font-medium">Yuklanmoqda...</p>
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="size-10 text-primary animate-spin" />
+        <p className="text-muted-foreground animate-pulse font-medium">
+          Yuklanmoqda...
+        </p>
+      </div>
+    );
 
-  if (error || !attribute) return (
-    <div className="p-12 text-center bg-destructive/10 rounded-[2rem] border border-destructive/20 text-destructive">
-      Xarakteristika ma&apos;lumotlarini yuklashda xatolik
-    </div>
-  );
+  if (error || !attribute)
+    return (
+      <div className="p-12 text-center bg-destructive/10 rounded-[2rem] border border-destructive/20 text-destructive">
+        Xarakteristika ma&apos;lumotlarini yuklashda xatolik
+      </div>
+    );
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto p-4 lg:p-8 animate-in fade-in duration-500">
-
-      {/* --- TOP BAR --- */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
         <div className="space-y-3">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.back()}
+            onClick={() => router.push(`/attributes?scope=${scope}`)}
             className="group -ml-2 text-muted-foreground hover:text-primary rounded-full"
           >
             <ArrowLeft className="mr-2 size-4 transition-transform group-hover:-translate-x-1" />
@@ -130,41 +161,94 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
               <Settings2 className="size-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-black tracking-tight">{attribute.name}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge className="bg-primary/10 text-primary border-none text-[10px] font-bold uppercase">
-                  Xarakteristika
-                </Badge>
-                <span className="text-xs text-muted-foreground font-mono opacity-60">Key: {attribute.key}</span>
+              <h1 className="text-3xl font-black tracking-tight">
+                {attribute.name}
+              </h1>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                {attribute.isForVariant && (
+                  <Badge className="bg-primary/10 text-primary border-none text-[10px] font-bold uppercase">
+                    {PRODUCT_LABELS.variant.short}
+                  </Badge>
+                )}
+                {attribute.isForInstance && (
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-bold uppercase"
+                  >
+                    {PRODUCT_LABELS.instance.short}
+                  </Badge>
+                )}
+                <span className="text-xs text-muted-foreground font-mono opacity-60">
+                  Kalit: {attribute.key}
+                </span>
               </div>
             </div>
           </div>
         </div>
-
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-        {/* --- LEFT: Info --- */}
         <div className="lg:col-span-4 space-y-6">
-          <GlassCard title="Asosiy ma&apos;lumotlar" icon={<Key className="size-4 text-primary" />}>
-            <Info label="Nomi (RU/UZ)" value={attribute.name} />
-            <Info label="System Key" value={attribute.key} />
+          <GlassCard
+            title="Asosiy ma’lumotlar"
+            icon={<Key className="size-4 text-primary" />}
+          >
+            <Info label="Nomi" value={attribute.name} />
+            <Info label="Tizim kaliti" value={attribute.key} />
             <div className="h-px bg-border/40 my-4" />
 
-            <div className="py-3 px-1 group flex justify-between">
-              <Label htmlFor="airplane-mode">Majburiy</Label>
-              <Switch id="airplane-mode" checked={isRequired} onCheckedChange={(v) => hadleCheckUpdate(v)} />
+            <div className="py-3 px-1 flex justify-between items-center">
+              <Label htmlFor="attr-required">Majburiy</Label>
+              <Switch
+                id="attr-required"
+                checked={isRequired}
+                onCheckedChange={handleRequiredChange}
+              />
+            </div>
+
+            <div className="py-3 px-1 flex justify-between items-center">
+              <Label htmlFor="attr-variant">
+                {PRODUCT_LABELS.attributes.forVariant}
+              </Label>
+              <Switch
+                id="attr-variant"
+                checked={attribute.isForVariant}
+                onCheckedChange={async (v) => {
+                  try {
+                    await patchFlags({ isForVariant: v });
+                  } catch {
+                    /* toast already shown */
+                  }
+                }}
+              />
+            </div>
+
+            <div className="py-3 px-1 flex justify-between items-center">
+              <Label htmlFor="attr-instance">
+                {PRODUCT_LABELS.attributes.forInstance}
+              </Label>
+              <Switch
+                id="attr-instance"
+                checked={attribute.isForInstance}
+                onCheckedChange={async (v) => {
+                  try {
+                    await patchFlags({ isForInstance: v });
+                  } catch {
+                    /* toast already shown */
+                  }
+                }}
+              />
             </div>
           </GlassCard>
         </div>
 
-        {/* --- RIGHT: Values CRUD --- */}
         <div className="lg:col-span-8 space-y-6">
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
               <ListTree className="size-5 text-primary" />
-              <h2 className="text-xl font-bold tracking-tight">Qiymatlar ro&apos;yxati</h2>
+              <h2 className="text-xl font-bold tracking-tight">
+                Qiymatlar ro&apos;yxati
+              </h2>
             </div>
             <Button
               size="sm"
@@ -186,7 +270,9 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
                     <div className="size-8 rounded-xl bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                       <Type className="size-4 text-muted-foreground group-hover:text-primary" />
                     </div>
-                    <span className="font-bold tracking-tight text-lg">{item.value}</span>
+                    <span className="font-bold tracking-tight text-lg">
+                      {item.value}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -194,7 +280,9 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
                       variant="ghost"
                       size="icon"
                       className="size-8 rounded-lg text-muted-foreground hover:text-primary"
-                      onClick={() => setEditingValue({ id: item.id, value: item.value })}
+                      onClick={() =>
+                        setEditingValue({ id: item.id, value: item.value })
+                      }
                     >
                       <Edit3 className="size-4" />
                     </Button>
@@ -203,7 +291,8 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
                       size="icon"
                       className="size-8 rounded-lg text-muted-foreground hover:text-destructive"
                       onClick={() => {
-                        if(confirm("Haqiqatan ham o&apos;chirmoqchimisiz?")) deleteMutation.mutate(item.id);
+                        if (confirm("Haqiqatan ham o'chirmoqchimisiz?"))
+                          deleteMutation.mutate(item.id);
                       }}
                     >
                       <Trash2 className="size-4" />
@@ -220,7 +309,6 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
         </div>
       </div>
 
-      {/* --- DIALOG: CREATE VALUE --- */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="rounded-[2rem] max-w-[400px]">
           <DialogHeader>
@@ -228,14 +316,16 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
           </DialogHeader>
           <div className="py-4">
             <Input
-              placeholder="Qiymatni kiriting (masalan: Qizil, XL...)"
+              placeholder="Qiymatni kiriting (masalan: Qizil, 70%...)"
               value={newValue}
               onChange={(e) => setNewValue(e.target.value)}
               className="rounded-xl h-12"
             />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Bekor qilish</Button>
+            <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>
+              Bekor qilish
+            </Button>
             <Button
               disabled={!newValue || createMutation.isPending}
               onClick={() => createMutation.mutate()}
@@ -246,7 +336,6 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
         </DialogContent>
       </Dialog>
 
-      {/* --- DIALOG: EDIT VALUE --- */}
       <Dialog open={!!editingValue} onOpenChange={() => setEditingValue(null)}>
         <DialogContent className="rounded-[2rem] max-w-[400px]">
           <DialogHeader>
@@ -256,15 +345,27 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
             <Input
               placeholder="Qiymat"
               value={editingValue?.value || ""}
-              onChange={(e) => setEditingValue(prev => prev ? {...prev, value: e.target.value} : null)}
+              onChange={(e) =>
+                setEditingValue((prev) =>
+                  prev ? { ...prev, value: e.target.value } : null,
+                )
+              }
               className="rounded-xl h-12"
             />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditingValue(null)}>Bekor qilish</Button>
+            <Button variant="ghost" onClick={() => setEditingValue(null)}>
+              Bekor qilish
+            </Button>
             <Button
               disabled={updateMutation.isPending}
-              onClick={() => editingValue && updateMutation.mutate({ id: editingValue.id, value: editingValue.value })}
+              onClick={() =>
+                editingValue &&
+                updateMutation.mutate({
+                  id: editingValue.id,
+                  value: editingValue.value,
+                })
+              }
             >
               Saqlash
             </Button>
@@ -275,9 +376,15 @@ export function AttributeDetails({ attributeId }: { attributeId: string }) {
   );
 }
 
-// --- HELPER COMPONENTS ---
-
-function GlassCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function GlassCard({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <Card className="bg-card/30 backdrop-blur-xl border-border/60 shadow-2xl shadow-black/[0.02] rounded-[2.5rem] overflow-hidden">
       <CardHeader className="flex flex-row items-center gap-3 pb-2 border-b border-border/20 bg-muted/5">
@@ -288,21 +395,29 @@ function GlassCard({ title, icon, children }: { title: string; icon: React.React
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
-        {children}
-      </CardContent>
+      <CardContent className="pt-6">{children}</CardContent>
     </Card>
   );
 }
 
-function Info({ label, value }: { label: string; value: string | null | undefined }) {
+function Info({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
   return (
     <div className="py-3 px-1 group">
       <div className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.15em] mb-1 group-hover:text-primary transition-colors">
         {label}
       </div>
       <div className="text-sm font-semibold tracking-tight">
-        {value || <span className="text-muted-foreground/30 font-normal italic">ko&apos;rsatilmagan</span>}
+        {value || (
+          <span className="text-muted-foreground/30 font-normal italic">
+            ko&apos;rsatilmagan
+          </span>
+        )}
       </div>
     </div>
   );

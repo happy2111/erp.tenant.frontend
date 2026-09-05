@@ -23,6 +23,7 @@ import {cn} from "@/lib/utils";
 import * as React from "react";
 import {
   ArrowLeftRight,
+  Boxes,
   Building,
   CalendarCheck, ChartLine, Cog, Contact,
   CreditCard, Cuboid, Euro, Landmark, Layers,
@@ -32,6 +33,7 @@ import {
   ShoppingCart, Tag, User, UserStar
 } from "lucide-react"
 import MineSidebarInsets from "@/components/MineSidebarInsets"
+import { PRODUCT_LABELS } from "@/lib/product-labels"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -54,6 +56,11 @@ const sidebarGroups = [
         actions: [
           { label: "Xarid qo'shish", url: "/purchases/create", icon: Plus },
         ],
+      },
+      {
+        name: "Partiyalar",
+        url: "/purchases/batches",
+        icon: Boxes,
       },
       {
         name: "Bo'lib to'lashlar",
@@ -86,21 +93,24 @@ const sidebarGroups = [
         ],
       },
       {
-        name: "Mahsolot Variantlari",
+        name: PRODUCT_LABELS.variant.plural,
         url: "/product-variants",
         icon: Layers,
         actions: [
           {
-            label: "Mahsulot Variantlari qo'shish",
+            label: PRODUCT_LABELS.variant.add,
             url: "/product-variants/create",
             icon: Plus,
           }
         ]
       },
-      {name: "Mahsulot namunasi", url: "/product-instances", icon: Cuboid,
+      {
+        name: PRODUCT_LABELS.instance.plural,
+        url: "/product-instances",
+        icon: Cuboid,
         actions: [
           {
-            label: "Mahsulot namunasi qo'shish",
+            label: PRODUCT_LABELS.instance.add,
             url: "/product-instances/create",
             icon: Plus,
           },
@@ -108,7 +118,7 @@ const sidebarGroups = [
       },
       {name: "Kategoriyalar", url: "/categories", icon: List},
       {name: "Brandlar", url: "/products/brands", icon: Tag},
-      {name: "Xarakteristikalar", url: "/attributes", icon: Settings2},
+      {name: PRODUCT_LABELS.attributes.page, url: "/attributes", icon: Settings2},
     ],
   },
   {

@@ -17,6 +17,8 @@ interface ConfirmDialogProps {
   title?: string;
   description?: string;
   onConfirm: () => void | Promise<void>;
+  confirmLabel?: string;
+  cancelLabel?: string;
 }
 
 export function ConfirmDialog({
@@ -25,6 +27,8 @@ export function ConfirmDialog({
                                 title = "Подтвердите действие",
                                 description = "Вы уверены, что хотите удалить элемент?",
                                 onConfirm,
+                                confirmLabel = "Подтвердить",
+                                cancelLabel = "Отмена",
                               }: ConfirmDialogProps) {
   const handleConfirm = async () => {
     await onConfirm();
@@ -69,14 +73,14 @@ export function ConfirmDialog({
               className="w-full h-16 rounded-4xl text-base font-black uppercase backdrop-blur-2xl transition-all active:scale-[0.98]"
               onClick={() => onOpenChange(false)}
             >
-              Отмена
+              {cancelLabel}
             </Button>
             <Button
               variant="destructive"
               className="w-full h-16 rounded-4xl text-base font-black uppercase backdrop-blur-2xl transition-all active:scale-[0.98]"
               onClick={handleConfirm}
             >
-              Подтвердить
+              {confirmLabel}
             </Button>
           </DialogFooter>
         </div>

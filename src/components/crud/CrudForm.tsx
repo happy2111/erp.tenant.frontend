@@ -23,6 +23,8 @@ interface Props<T, Dto extends FieldValues> {
   schema: any;
   defaultValues?: Partial<Dto>;
   onSubmit: (dto: Dto) => Promise<void>;
+  submitLabel?: string;
+  submittingLabel?: string;
 }
 
 export function CrudForm<T, Dto extends FieldValues>({
@@ -30,6 +32,8 @@ export function CrudForm<T, Dto extends FieldValues>({
                                    schema,
                                    defaultValues,
                                    onSubmit,
+                                   submitLabel = "Сохранить",
+                                   submittingLabel = "Сохранение...",
                                  }: Props<T, Dto>) {
   const form = useForm<Dto>({
     resolver: zodResolver(schema),
@@ -155,7 +159,7 @@ export function CrudForm<T, Dto extends FieldValues>({
         className="w-full h-16 rounded-4xl text-xl font-black uppercase tracking-[0.2em] backdrop-blur-2xl transition-all active:scale-[0.98]"
         disabled={form.formState.isSubmitting}
       >
-        {form.formState.isSubmitting ? "Сохранение..." : "Сохранить"}
+        {form.formState.isSubmitting ? submittingLabel : submitLabel}
       </Button>
     </form>
   );
