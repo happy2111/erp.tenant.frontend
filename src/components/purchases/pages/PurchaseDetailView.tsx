@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ElementType } from 'react';
+import { useState, type ElementType, Fragment } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PurchasesService } from '@/services/purchases.service';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,9 @@ import {
   Boxes,
   ArrowLeftRight,
   AlertTriangle,
-  Wallet
+  Wallet,
+  Hash,
+  Smartphone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -33,6 +35,7 @@ import {
   BatchSourceLabels,
   PurchaseStatusLabels,
   PurchaseStatusStyles,
+  type PurchaseItem,
 } from "@/schemas/purchases.schema";
 import {
   ConfirmPurchaseDialog
@@ -43,6 +46,7 @@ import {
 import {
   PayPurchaseDialog
 } from "@/components/purchases/dialogs/PayPurchaseDialog";
+import { PRODUCT_LABELS } from "@/lib/product-labels";
 
 export function PurchaseDetailView({ id }: { id: string }) {
   const router = useRouter();
@@ -171,9 +175,11 @@ export function PurchaseDetailView({ id }: { id: string }) {
                   <tbody className="text-sm">
                     {purchase.items.map((item) => {
                       const variantId = item.product_variant?.id ?? item.productVariantId;
+                      const namunaRows = getNamunaRows(item);
+                      const isNamuna = namunaRows.length > 0;
                       return (
+                      <Fragment key={item.id}>
                       <tr
-                        key={item.id}
                         role="link"
                         tabIndex={0}
                         onClick={() => router.push(`/product-variants/${variantId}`)}
@@ -187,9 +193,17 @@ export function PurchaseDetailView({ id }: { id: string }) {
                       >
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
-                            <span className="font-bold group-hover:text-primary transition-colors">
-                              {item.product_variant?.title}
-                            </span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold group-hover:text-primary transition-colors">
+                                {item.product_variant?.title}
+                              </span>
+                              {isNamuna && (
+                                <Badge className="h-5 text-[8px] font-black uppercase bg-violet-500/15 text-violet-600 border-none px-1.5">
+                                  <Smartphone className="size-2.5 mr-1" />
+                                  {PRODUCT_LABELS.instance.short}
+                                </Badge>
+                              )}
+                            </div>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-[9px] font-black opacity-30 uppercase">
                                 SKU: {item.product_variant?.sku || 'N/A'}
@@ -214,6 +228,63 @@ export function PurchaseDetailView({ id }: { id: string }) {
                           {item.total.toLocaleString()} {purchase.currency?.symbol}
                         </td>
                       </tr>
+
+                      {isNamuna && (
+                        <tr className="border-b border-border/5 bg-violet-500/[0.03]">
+                          <td colSpan={5} className="px-6 py-3">
+                            <div className="rounded-2xl border border-violet-500/15 bg-background/60 divide-y divide-border/30 overflow-hidden">
+                              {namunaRows.map((row) => (
+                                <div
+                                  key={row.key}
+                                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3"
+                                >
+                                  <div className="min-w-0 space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <Hash className="size-3 opacity-40 shrink-0" />
+                                      <span className="font-mono text-xs font-bold truncate">
+                                        {row.serialNumber}
+                                      </span>
+                                      {row.status && (
+                                        <Badge
+                                          variant="outline"
+                                          className="h-4 text-[8px] font-bold uppercase opacity-60"
+                                        >
+                                          {row.status}
+                                        </Badge>
+                                      )}
+                                      {row.isDraft && (
+                                        <span className="text-[8px] font-black uppercase opacity-40">
+                                          Qoralama
+                                        </span>
+                                      )}
+                                    </div>
+                                    {row.attrs.length > 0 && (
+                                      <div className="flex flex-wrap gap-1.5 pl-5">
+                                        {row.attrs.map((a) => (
+                                          <span
+                                            key={a.key}
+                                            className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-muted/60"
+                                          >
+                                            <span className="opacity-50">{a.name}: </span>
+                                            {a.value}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="sm:text-right shrink-0 pl-5 sm:pl-0">
+                                    <span className="text-xs font-black text-primary">
+                                      {row.unitCost.toLocaleString()}{' '}
+                                      {purchase.currency?.symbol}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      </Fragment>
                       );
                     })}
                   </tbody>
@@ -458,6 +529,44 @@ export function PurchaseDetailView({ id }: { id: string }) {
       />
     </div>
   );
+}
+
+type NamunaRow = {
+  key: string;
+  serialNumber: string;
+  unitCost: number;
+  status?: string;
+  isDraft?: boolean;
+  attrs: { key: string; name: string; value: string }[];
+};
+
+/** После проведения — product_instances; в черновике — instancesJson */
+function getNamunaRows(item: PurchaseItem): NamunaRow[] {
+  if (item.product_instances?.length) {
+    return item.product_instances.map((inst) => ({
+      key: inst.id,
+      serialNumber: inst.serialNumber,
+      unitCost: inst.costPrice ?? item.price - item.discount,
+      status: inst.currentStatus,
+      attrs: (inst.attributes ?? [])
+        .map((a, i) => ({
+          key: a.id ?? `${inst.id}-${i}`,
+          name: a.value?.attribute?.name ?? 'Attr',
+          value: a.value?.value ?? '—',
+        }))
+        .filter((a) => a.value !== '—'),
+    }));
+  }
+
+  const drafts = item.instancesJson ?? [];
+  return drafts.map((draft, i) => ({
+    key: `${item.id}-draft-${i}`,
+    serialNumber: draft.serialNumber,
+    unitCost:
+      (draft.price ?? item.price) - (draft.discount ?? item.discount),
+    isDraft: true,
+    attrs: [],
+  }));
 }
 
 // Помощник для рендеринга строк с иконками

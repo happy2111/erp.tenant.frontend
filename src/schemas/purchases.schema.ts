@@ -326,6 +326,42 @@ export type PriceHistoryItem = z.infer<typeof PriceHistoryItemSchema>;
 export const PriceHistoryResponseSchema = z.array(PriceHistoryItemSchema);
 
 // ─── Позиция закупки (ответ сервера) ─────────────────────────────────
+/** Черновик namuna до проведения — лежит в PurchaseItem.instancesJson */
+export const PurchaseItemInstanceDraftSchema = z.object({
+  serialNumber: z.string(),
+  price: z.number().nullable().optional(),
+  discount: z.number().nullable().optional(),
+  attributeValueIds: z.array(z.string()).optional().default([]),
+});
+
+export const PurchaseItemInstanceSchema = z.object({
+  id: z.string().uuid(),
+  serialNumber: z.string(),
+  currentStatus: z.string(),
+  costPrice: z.coerce.number().nullable().optional(),
+  costPriceBase: z.coerce.number().nullable().optional(),
+  attributes: z
+    .array(
+      z.object({
+        id: z.string().uuid().optional(),
+        value: z
+          .object({
+            value: z.string(),
+            attribute: z
+              .object({
+                id: z.string().uuid().optional(),
+                name: z.string(),
+                key: z.string().optional(),
+              })
+              .optional(),
+          })
+          .optional(),
+      }),
+    )
+    .optional()
+    .default([]),
+});
+
 export const PurchaseItemSchema = z.object({
   id: z.string().uuid(),
   productVariantId: z.string().uuid(),
@@ -337,6 +373,15 @@ export const PurchaseItemSchema = z.object({
 
   batchNumber: z.string().nullable().optional(),
   expiryDate: z.coerce.date().nullable().optional(),
+
+  /** Черновик экземпляров (пока документ DRAFT) */
+  instancesJson: z
+    .array(PurchaseItemInstanceDraftSchema)
+    .nullable()
+    .optional(),
+
+  /** Созданные при проведении ProductInstance */
+  product_instances: z.array(PurchaseItemInstanceSchema).optional().default([]),
 
   product_variant: z
     .object({
