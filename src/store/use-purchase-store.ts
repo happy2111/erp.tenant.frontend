@@ -276,7 +276,7 @@ export const usePurchaseStore = create<PurchaseState>()(
         if (version < 3) {
           // Старые строки без instances остаются bulk — ок
         }
-        return state as PurchaseState;
+        return state as unknown as PurchaseState;
       },
     },
   ),
