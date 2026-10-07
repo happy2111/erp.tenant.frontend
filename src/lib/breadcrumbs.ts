@@ -22,6 +22,9 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   purchases: "Xaridlar",
   batches: "Partiyalar",
   settings: "Sozlamalar",
+  installments: "Rassrochka",
+  "phone-link": "Telefon ulash",
+  integration: "Integration API",
 
   create: "Yaratish",
   edit: "Tahrirlash",
