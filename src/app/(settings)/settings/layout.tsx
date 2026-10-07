@@ -11,7 +11,7 @@ interface DashboardLayoutProps {
   children: ReactNode
 }
 
-import {Home, LayoutTemplate, CalendarCheck, ArrowBigLeft, Smartphone} from "lucide-react";
+import {Home, CalendarCheck, ArrowBigLeft, Smartphone, KeyRound} from "lucide-react";
 
 const sidebarGroups: SidebarGroup[] = [
   {
@@ -41,6 +41,11 @@ const sidebarGroups: SidebarGroup[] = [
         name: "Telefon ulash",
         url: '/settings/phone-link',
         icon: Smartphone,
+      },
+      {
+        name: "Integration API",
+        url: '/settings/integration',
+        icon: KeyRound,
       },
     ],
   },
